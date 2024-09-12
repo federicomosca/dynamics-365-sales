@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b0f6f479-9267-4db4-b967-20f08dc9b081</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>RSMNG.TAUMEDIKA.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Account\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\account.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\contact.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\EntityGenericConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\GlobalBooleanConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\GlobalOptionSetConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\lead.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\pricelevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\product.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\productpricelevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\quote.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\quotedetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_additionalexpense.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_address.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_agentcommission.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_autonumber.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_bankdetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_cap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_commission.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_country.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_document.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_paymentmethod.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_paymentschedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_paymentterm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_vatnumber.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\salesorder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\salesorderdetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\systemuser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\uom.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\uomschedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
+  </ItemGroup>
+</Project>

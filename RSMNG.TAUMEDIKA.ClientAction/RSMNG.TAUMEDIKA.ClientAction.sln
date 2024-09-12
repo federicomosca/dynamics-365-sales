@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSMNG.TAUMEDIKA.ClientAction", "RSMNG.TAUMEDIKA.ClientAction.csproj", "{8659F88D-3CFA-4E05-A5BC-26D6F012B002}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RSMNG.Plugins", "..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.shproj", "{CCBCE3A2-1D8B-474B-AA24-A9224C96B8AE}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RSMNG.TAUMEDIKA.Shared", "..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.shproj", "{B0F6F479-9267-4DB4-B967-20F08DC9B081}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8659F88D-3CFA-4E05-A5BC-26D6F012B002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8659F88D-3CFA-4E05-A5BC-26D6F012B002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8659F88D-3CFA-4E05-A5BC-26D6F012B002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8659F88D-3CFA-4E05-A5BC-26D6F012B002}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9D1F4033-85FC-4987-8673-561830075489}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.projitems*{8659f88d-3cfa-4e05-a5bc-26d6f012b002}*SharedItemsImports = 4
+		..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems*{8659f88d-3cfa-4e05-a5bc-26d6f012b002}*SharedItemsImports = 4
+		..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems*{b0f6f479-9267-4db4-b967-20f08dc9b081}*SharedItemsImports = 13
+		..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.projitems*{ccbce3a2-1d8b-474b-aa24-a9224c96b8ae}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal
