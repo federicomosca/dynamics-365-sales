@@ -1,0 +1,18 @@
+﻿################################################################################
+# Il file gitignore è stato creato automaticamente da Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/RSMNG.TAUMEDIKA.ClientAction/.vs
+/RSMNG.TAUMEDIKA.ClientAction/bin/Debug
+/RSMNG.TAUMEDIKA.ClientAction/obj
+/RSMNG.TAUMEDIKA.ClientAction/packages
+/RSMNG.TAUMEDIKA.Plugins/.vs
+/RSMNG.TAUMEDIKA.Plugins/bin/Debug
+/RSMNG.TAUMEDIKA.Plugins/obj
+/RSMNG.TAUMEDIKA.Plugins/packages
+/RSMNG.TAUMEDIKA.Resources/.vs/RSMNG.TAUMEDIKA.Resources
+/RSMNG.TAUMEDIKA.Resources/bin
+/RSMNG.TAUMEDIKA.Resources/obj
+/RSMNG.TAUMEDIKA.Resources/packages/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1
+/RSMNG.TAUMEDIKA.Shared/.vs
