@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RSMNG.TAUMEDIKA.Plugins.res_Address
+namespace RSMNG.TAUMEDIKA.Plugins.Address
 {
     class PreCreate : RSMNG.BaseClass
     {

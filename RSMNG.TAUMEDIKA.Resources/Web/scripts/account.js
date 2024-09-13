@@ -53,24 +53,24 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
     //---------------------------------------------------
     _self.onChangeVatNumber = function (executionContext) {
 
-        var formContext = executionContext.getFormContext();
-        if (formContext.getAttribute(_self.formModel.fields.res_accounttypecodes) != null) {
-            let res_accounttypecodes = formContext.getAttribute(_self.formModel.fields.res_accounttypecodes).getValue();
-            if (res_accounttypecodes.length() > 11) {
+        let formContext = executionContext.getFormContext();
+
+        if (formContext.getAttribute(_self.formModel.fields.res_vatnumber) != null) {
+            let res_vatnumber = formContext.getAttribute(_self.formModel.fields.res_vatnumber).getValue();
+            formContext.getControl(_self.formModel.fields.res_vatnumber).clearNotification("01");
+            if (res_vatnumber != null && res_vatnumber.length() > 11) {
                 let actionCollection = {
                     message: 'cancellare il campo'
-
                 };
                 actionCollection.actions = [function () {
-                    formContext.getAttribute(fieldName).setValue(null);
+                    formContext.getAttribute(_self.formModel.fields.res_vatnumber).setValue(null);
                 }];
-                formContext.getControl(fieldName).addNotification({
+                formContext.getControl(_self.formModel.fields.res_vatnumber).addNotification({
                     messages: [message],
                     notificationLevel: "RECOMMENDATION",
-                    uniqueId: notificationId,
+                    uniqueId: "01",
                     actions: [actionCollection]
                 });
-
             }
         }
     };
@@ -119,6 +119,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
 
 
         //Init function
+        _self.onChangeVatNumber(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
