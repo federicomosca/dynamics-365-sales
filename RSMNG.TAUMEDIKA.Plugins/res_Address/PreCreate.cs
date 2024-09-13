@@ -21,9 +21,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.res_Address
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Genera
-            PluginRegion = "Funzione1";
+            #region GeneraNome
+            PluginRegion = "GeneraNome";
 
+            EntityReference erCustomer = 
+                Entity customer = crmServiceProvider.Service.Retrieve(DataModel.res_address.res_customerid, erCustomer.Id, new Microsoft.Xrm.Sdk.Query.ColumnSet());
             #endregion
         }
     }
