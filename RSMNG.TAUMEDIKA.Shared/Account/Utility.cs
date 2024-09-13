@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,10 +15,10 @@ namespace RSMNG.TAUMEDIKA.Shared.Account
             {
                 return ret;
             }
-            Entity enEntity = service.Retrieve(account.logicalName, entityId, new ColumnSet(new string[] { account.accountid, account.name }));
-            if (enEntity.Attributes.Contains(account.name) && enEntity.Attributes[account.name] != null)
+            Entity enEntity = service.Retrieve(DataModel.account.logicalName, entityId, new ColumnSet(new string[] { DataModel.account.accountid, DataModel.account.name }));
+            if (enEntity.Attributes.Contains(DataModel.account.name) && enEntity.Attributes[DataModel.account.name] != null)
             {
-                ret = enEntity.GetAttributeValue<string>(account.name);
+                ret = enEntity.GetAttributeValue<string>(DataModel.account.name);
             }
 
             return ret;
