@@ -85,7 +85,36 @@
     <Content Include="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Resources\Web\res_scripts\template.ribbon.js">
       <Link>Web\template.ribbon.js</Link>
     </Content>
+    <Content Include="DataModel\account.js" />
+    <Content Include="DataModel\contact.js" />
+    <Content Include="DataModel\EntityGenericConstants.js" />
+    <Content Include="DataModel\GlobalOptionSetsConstants.js" />
+    <Content Include="DataModel\lead.js" />
+    <Content Include="DataModel\pricelevel.js" />
+    <Content Include="DataModel\product.js" />
+    <Content Include="DataModel\productpricelevel.js" />
+    <Content Include="DataModel\quote.js" />
+    <Content Include="DataModel\quotedetail.js" />
+    <Content Include="DataModel\res_additionalexpense.js" />
+    <Content Include="DataModel\res_address.js" />
+    <Content Include="DataModel\res_agentcommission.js" />
+    <Content Include="DataModel\res_autonumber.js" />
+    <Content Include="DataModel\res_bankdetails.js" />
+    <Content Include="DataModel\res_cap.js" />
+    <Content Include="DataModel\res_commission.js" />
+    <Content Include="DataModel\res_country.js" />
+    <Content Include="DataModel\res_document.js" />
+    <Content Include="DataModel\res_paymentmethod.js" />
+    <Content Include="DataModel\res_paymentschedule.js" />
+    <Content Include="DataModel\res_paymentterm.js" />
+    <Content Include="DataModel\res_vatnumber.js" />
+    <Content Include="DataModel\salesorder.js" />
+    <Content Include="DataModel\salesorderdetail.js" />
+    <Content Include="DataModel\systemuser.js" />
+    <Content Include="DataModel\uom.js" />
+    <Content Include="DataModel\uomschedule.js" />
     <Content Include="Web.config" />
+    <Content Include="Web\scripts\account.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -100,9 +129,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="DataModel\" />
     <Folder Include="Web\pages\" />
-    <Folder Include="Web\scripts\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
