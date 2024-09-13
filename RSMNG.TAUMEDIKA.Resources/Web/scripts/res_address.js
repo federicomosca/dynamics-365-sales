@@ -79,7 +79,7 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         var formContext = executionContext.getFormContext();
     };
-
+    //---------------------------------------------------
     function isCustomerAddress(formContext) {
 
         const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
@@ -95,7 +95,36 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
                 }
             });
         }
-    }
+    };
+    //---------------------------------------------------
+    function hasPostalCode(formContext) {
+
+        const postalCodeAttribute = formContext.getAttribute(_self.formModel.fields.res_postalcode);
+        const hasPostalCode = postalCodeAttribute ? postalCodeAttribute.getValue() : null;
+
+        const cityControl = formContext.getControl(_self.formModel.fields.res_city);
+
+        if (cityControl) cityControl.setDisabled(!hasPostalCode);
+    };
+    //---------------------------------------------------
+    function hasCity(formContext) {
+
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.res_city);
+        const city = cityAttribute ? cityAttribute.getValue() : null;
+
+        const fieldsToEnable = [
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.res_province,
+            _self.formModel.fields.res_countryid
+        ];
+
+        fieldsToEnable.forEach(field => {
+            const control = formContext.getControl(field);
+            if (control) {
+                if (city) control.setDisabled(false); else control.setDisabled(true); 
+            } 
+        });
+    };
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
@@ -114,6 +143,8 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
 
         //Init function
+        hasPostalCode(formContext);
+        hasCity(formContext);
         isCustomerAddress(formContext);
 
         switch (formContext.ui.getFormType()) {
