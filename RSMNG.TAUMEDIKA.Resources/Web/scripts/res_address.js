@@ -68,7 +68,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
-
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
@@ -79,6 +78,52 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    function isCustomerAddress(formContext) {
+
+        const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
+        const isCustomerAddress = isCustomerAddressAttribute ? isCustomerAddressAttribute.getValue() : null;
+
+        if (isCustomerAddress) {
+            Object.values(_self.formModel.fields).forEach(field => {
+                const control = formContext.getControl(_self.formModel.fields[field]);
+
+                if (control) {
+                    if (field === "res_isdefault") control.setDisabled(false);
+                    else control.setDisabled(true);
+                }
+            });
+        }
+    };
+    //---------------------------------------------------
+    function hasPostalCode(formContext) {
+
+        const postalCodeAttribute = formContext.getAttribute(_self.formModel.fields.res_postalcode);
+        const hasPostalCode = postalCodeAttribute ? postalCodeAttribute.getValue() : null;
+
+        const cityControl = formContext.getControl(_self.formModel.fields.res_city);
+
+        if (cityControl) cityControl.setDisabled(!hasPostalCode);
+    };
+    //---------------------------------------------------
+    function hasCity(formContext) {
+
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.res_city);
+        const city = cityAttribute ? cityAttribute.getValue() : null;
+
+        const fieldsToEnable = [
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.res_province,
+            _self.formModel.fields.res_countryid
+        ];
+
+        fieldsToEnable.forEach(field => {
+            const control = formContext.getControl(field);
+            if (control) {
+                if (city) control.setDisabled(false); else control.setDisabled(true); 
+            } 
+        });
     };
     //---------------------------------------------------
     /* 
@@ -96,9 +141,11 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        console.log("i'm here")
 
         //Init function
+        hasPostalCode(formContext);
+        hasCity(formContext);
+        isCustomerAddress(formContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
