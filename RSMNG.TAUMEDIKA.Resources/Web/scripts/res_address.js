@@ -68,7 +68,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
-
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
@@ -80,6 +79,23 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         var formContext = executionContext.getFormContext();
     };
+
+    function isCustomerAddress(formContext) {
+
+        const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
+        const isCustomerAddress = isCustomerAddressAttribute ? isCustomerAddressAttribute.getValue() : null;
+
+        if (isCustomerAddress) {
+            Object.values(_self.formModel.fields).forEach(field => {
+                const control = formContext.getControl(_self.formModel.fields[field]);
+
+                if (control) {
+                    if (field === "res_isdefault") control.setDisabled(false);
+                    else control.setDisabled(true);
+                }
+            });
+        }
+    }
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
@@ -96,9 +112,9 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        console.log("i'm here")
 
         //Init function
+        isCustomerAddress(formContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
