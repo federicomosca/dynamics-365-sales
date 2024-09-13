@@ -82,8 +82,8 @@
     <Content Include="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Resources\Web\res_scripts\template.js">
       <Link>Web\template.js</Link>
     </Content>
-    <Content Include="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Resources\Web\res_scripts\template.ribbon.js">
-      <Link>Web\template.ribbon.js</Link>
+    <Content Include="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Resources\Web\res_scripts\template_ribbon.js">
+      <Link>Web\template_ribbon.js</Link>
     </Content>
     <Content Include="DataModel\account.js" />
     <Content Include="DataModel\contact.js" />
