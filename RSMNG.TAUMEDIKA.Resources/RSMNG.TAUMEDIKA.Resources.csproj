@@ -115,6 +115,7 @@
     <Content Include="DataModel\uomschedule.js" />
     <Content Include="Web.config" />
     <Content Include="Web\scripts\account.js" />
+    <Content Include="Web\scripts\res_global.js" />
     <Content Include="Web\scripts\res_address.js" />
   </ItemGroup>
   <ItemGroup>

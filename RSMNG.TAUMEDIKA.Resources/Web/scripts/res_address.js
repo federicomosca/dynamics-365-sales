@@ -55,72 +55,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     };
 
     /*
-    Esempio di stringa interpolata
-    */
-    _self._interpolateString = `${null} example`;
-
-    /*
-    Esempio di fetch lato client 
-        - solo dimostrativo per far vedere la modalità di sviluppo ed esecuzione della fetch
-    */
-    _self.getName = async function (accountId) {
-
-        return new Promise(function (resolve, reject) {
-
-            var fetchXML = `?fetchXml=<fetch distinct='false' mapping='logical'>
-			<entity name='account'>
-			<attribute name='name'/>
-			<filter>
-			<condition attribute='account' operator='eq' value='${accountId}'/>
-			</filter>
-			</entity>
-			</fetch>`;
-
-            Xrm.WebApi.retrieveMultipleRecords("account", fetchXML).then(
-                function success(result) {
-
-                    resolve(result.entities.length == 1 && result.entities[0].name != undefined && result.entities[0].name != null ? result.entities[0].name : null);
-
-                },
-                function (error) {
-
-                    reject(error);
-
-                }
-            );
-        });
-    };
-
-    /*
-    Esempio di chiamata della funzione asincrona
-    */
-    _self.onChange = async function (executionContext) {
-
-        try {
-            let name = await _self.getName(formContext.data.entity.getId());
-
-        } catch (ex) {
-            RSMNG.PROGETTO.GLOBAL.errorMessage(ex);
-        }
-
-    };
-
-    /*
-    Esempio di una funzione di filtro di una LookUp
-    */
-    _self.addFilter = function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        var status = "0";
-
-        var filterXml = '';
-        filterXml = `<filter><condition attribute='statuscode' operator='eq' value='${status}'/></filter>`;
-        formContext.getControl("res_accountid").addCustomFilter(filterXml, 'account');
-
-    };
-
-    /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
     */
@@ -155,7 +89,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
-        await import('../res_lib/RSMNG.CORE.js');
         await import('../res_scripts/res_global.js');
 
         //init formContext
