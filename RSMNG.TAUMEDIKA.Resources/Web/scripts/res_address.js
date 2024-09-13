@@ -80,7 +80,7 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-    function isCustomerAddress(formContext) {
+    _self.isCustomerAddress = formContext => {
 
         const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
         const isCustomerAddress = isCustomerAddressAttribute ? isCustomerAddressAttribute.getValue() : null;
@@ -90,24 +90,24 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
                 const control = formContext.getControl(_self.formModel.fields[field]);
 
                 if (control) {
-                    if (field === "res_isdefault") control.setDisabled(false);
-                    else control.setDisabled(true);
+                    if (field === "res_isdefault") { control.setDisabled(false); }
+                    else { control.setDisabled(true); }
                 }
             });
         }
     };
     //---------------------------------------------------
-    function hasPostalCode(formContext) {
+    _self.hasPostalCode = formContext => {
 
         const postalCodeAttribute = formContext.getAttribute(_self.formModel.fields.res_postalcode);
         const hasPostalCode = postalCodeAttribute ? postalCodeAttribute.getValue() : null;
 
         const cityControl = formContext.getControl(_self.formModel.fields.res_city);
 
-        if (cityControl) cityControl.setDisabled(!hasPostalCode);
+        if (cityControl) { cityControl.setDisabled(!hasPostalCode); }
     };
     //---------------------------------------------------
-    function hasCity(formContext) {
+    _self.hasCity = formContext => {
 
         const cityAttribute = formContext.getAttribute(_self.formModel.fields.res_city);
         const city = cityAttribute ? cityAttribute.getValue() : null;
@@ -121,8 +121,8 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         fieldsToEnable.forEach(field => {
             const control = formContext.getControl(field);
             if (control) {
-                if (city) control.setDisabled(false); else control.setDisabled(true); 
-            } 
+                if (city) { control.setDisabled(false); } else { control.setDisabled(true); }
+            }
         });
     };
     //---------------------------------------------------
@@ -143,9 +143,9 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
 
         //Init function
-        hasPostalCode(formContext);
-        hasCity(formContext);
-        isCustomerAddress(formContext);
+        _self.hasPostalCode(formContext);
+        _self.hasCity(formContext);
+        _self.isCustomerAddress(formContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
