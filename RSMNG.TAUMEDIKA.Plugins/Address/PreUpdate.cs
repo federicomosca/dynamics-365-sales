@@ -27,6 +27,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
+                List<string> mandatoryFields = new List<string> {
+                DataModel.res_address.res_customerid,
+                DataModel.res_address.res_addressField,
+                DataModel.res_address.res_postalcode,
+                DataModel.res_address.res_city
+            };
+
+                crmServiceProvider.VerifyMandatoryField(mandatoryFields);
+
                 #region CheckDefaultDuplicates
                 PluginRegion = "CheckDefaultDuplicates";
 
