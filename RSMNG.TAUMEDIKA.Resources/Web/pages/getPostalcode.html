@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista CAP</title>
+    <link rel="stylesheet" href="../res_lib/suite.css">
+    <style>
+        .dhx_grid-row:hover {
+            background-color: var(--dhx-color-primary-light-hover);
+        }
+    </style>
+    <script type="text/javascript" src="../res_lib/suite.js"></script>
+    <script src="../res_scripts/res_global.js" type="text/jscript"></script>
+    <script>
+        var rowSel = null;
+        onLoad = async function () {
+            debugger;
+            if (parent._Xrm == null || parent._Xrm == undefined) {
+                alert("La form non è inizializzata");
+                window.returnValue = null;
+                window.close();
+            }
+            let Xrm = parent._Xrm;
+
+            const formconfig = {
+                css: "dhx_widget--bordered",
+                padding: "40px",
+                width: "600px",
+                rows: [
+                    {
+                        name: "cap",
+                        type: "input",
+                        label: "C.A.P.",
+                        labelPosition: "left",
+                        labelWidth: "70px",
+                        helpMessage: "Digita il CAP da ricercare",
+                        placeholder: "Cerca il CAP",
+                        maxlength: 5
+                    },
+                    {
+                        type: "container", //container for any widget except Form and Layout
+                        name: "grid",
+                        label: "Lista dei C.A.P. trovati",
+                        helpMessage: "Seleziona il C.A.P. desiderato",
+                        height: "400px",
+                    },
+                    {
+                        align: "end",
+                        cols: [
+                            {
+                                name: "ok",
+                                type: "button",
+                                submit: true,
+                                text: "Ok",
+                                size: "medium",
+                                view: "flat",
+                                color: "primary",
+                                disabled: true
+                            },
+                            {
+                                name: "cancel",
+                                type: "button",
+                                submit: true,
+                                text: "Annulla",
+                                size: "medium",
+                                view: "flat",
+                                color: "primary"
+                            }
+                        ]
+                    }
+                ]
+            };
+            const dataset = await getCAP();
+            const grid = new dhx.Grid(null, {
+                columns: [
+                    { width: "50px", id: "code", header: [{ text: "C.A.P." }] },
+                    { width: "150px", id: "city", header: [{ text: "Città" }] },
+                    { width: "150px", id: "province", header: [{ text: "Provincia" }] },
+                    { width: "150px", id: "country", header: [{ text: "Nazione" }] },
+                    { width: "150px", id: "id", header: [{ text: "Id" }] }
+                ],
+                data: dataset,
+                adjust: true,
+                selection: "row"
+            });
+            grid.events.on("cellClick", function (row, column, events) {
+                rowSel = row;
+                form.getItem("ok").enable();
+            });
+            const form = new dhx.Form("content", formconfig);
+            form.getItem("ok").events.on("click", function () {
+                console.log(JSON.stringify(rowSel));
+                window.returnValue = JSON.parse(JSON.stringify(rowSel));
+                window.close();
+            });
+            form.getItem("cancel").events.on("click", function () {
+                window.returnValue = null;
+                window.close();
+            });
+            form.getItem("cap").events.on("input", function (inputValue) {
+                onFilterGrid(grid, inputValue == "" ? null : inputValue);
+            });
+            form.getItem("grid").attach(grid);
+            onFilterGrid(grid, null);
+            form.setFocus("cap");
+        };
+        onFilterGrid = function (grid, inputValue) {
+            grid.data.filter(function (item) {
+                return item.code.includes(inputValue);
+            });
+        };
+        getCAP = async function () {
+            return new Promise(function (resolve, reject) {
+                Xrm.WebApi.retrieveMultipleRecords("res_cap", "?$select=res_code,res_city,_res_countryid_value,res_province").then(
+                    function success(results) {
+                        console.log(results);
+                        let caps = [];
+                        for (var i = 0; i < results.entities.length; i++) {
+                            var result = results.entities[i];
+                            // Columns
+                            let res_capid = result["res_capid"]; // Guid
+                            let res_code = result["res_code"]; // Text
+                            let res_city = result["res_city"]; // Text
+                            let res_countryid = result["_res_countryid_value"]; // Lookup
+                            let res_countryid_formatted = result["_res_countryid_value@OData.Community.Display.V1.FormattedValue"];
+                            let res_countryid_lookuplogicalname = result["_res_countryid_value@Microsoft.Dynamics.CRM.lookuplogicalname"];
+                            let res_province = result["res_province"]; // Text
+                            let cap = {
+                                "code": res_code,
+                                "city": res_city,
+                                "province": res_province,
+                                "country": res_countryid_formatted,
+                                "id": res_capid
+                            };
+                            caps.push(cap);
+                        }
+                        resolve(caps);
+                    },
+                    function (error) {
+                        console.log(error.message);
+                        reject(error);
+                    }
+                );
+            });
+        };
+    </script>
+</head>
+<body onload="onLoad()">
+    <div id="content"></div>
+</body>
+</html>

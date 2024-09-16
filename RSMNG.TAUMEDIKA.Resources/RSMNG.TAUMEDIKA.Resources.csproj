@@ -114,6 +114,8 @@
     <Content Include="DataModel\uom.js" />
     <Content Include="DataModel\uomschedule.js" />
     <Content Include="Web.config" />
+    <Content Include="Web\pages\getPostalcode.html" />
+    <Content Include="Web\pages\postalcode.html" />
     <Content Include="Web\scripts\account.js" />
     <Content Include="Web\scripts\res_global.js" />
     <Content Include="Web\scripts\res_address.js" />
@@ -130,9 +132,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Web\pages\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

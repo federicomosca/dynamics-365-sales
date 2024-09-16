@@ -29,6 +29,18 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
             res_taxcode: "res_taxcode",
             ///Partita IVA
             res_vatnumber: "res_vatnumber",
+            ///Indirizzo
+            address1_line1: "address1_line1",
+            ///CAP
+            address1_postalcode: "address1_postalcode",
+            ///Città
+            address1_city: "address1_city",
+            ///Località
+            res_location: "res_location",
+            ///Provincia
+            address1_stateorprovince: "address1_stateorprovince",
+            ///Nazione
+            res_countryid: "res_countryid",
 
             /// Values for field Natura giuridica
             res_accountnaturecodeValues: {
@@ -54,26 +66,64 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
     _self.onChangeVatNumber = function (executionContext) {
 
         let formContext = executionContext.getFormContext();
+        let res_vatnumber = formContext.data.entity.attributes.get(_self.formModel.fields.res_vatnumber);
 
-        if (formContext.getAttribute(_self.formModel.fields.res_vatnumber) != null) {
-            let res_vatnumber = formContext.getAttribute(_self.formModel.fields.res_vatnumber).getValue();
+        if (res_vatnumber != null) {
+            let res_vatnumber_value = res_vatnumber.getValue();
             formContext.getControl(_self.formModel.fields.res_vatnumber).clearNotification("01");
-            if (res_vatnumber != null && res_vatnumber.length != 11) {
-                let actionCollection = {
-                    message: 'cancellare il campo'
-                };
-                actionCollection.actions = [function () {
-                    formContext.getAttribute(_self.formModel.fields.res_vatnumber).setValue(null);
-                }];
+            if (res_vatnumber_value != null && res_vatnumber_value.length != 11) {
                 formContext.getControl(_self.formModel.fields.res_vatnumber).addNotification({
                     messages: ["La Partita IVA non può essere maggiore di 11 caratteri."],
-                    notificationLevel: "WARNING",
+                    notificationLevel: "RECOMMENDATION",
                     uniqueId: "01",
-                    actions: [actionCollection]
+                    actions: null
                 });
+            } else {
+                Xrm.WebApi.retrieveMultipleRecords(_self.formModel.entity.logicalName, `?$filter=(${_self.formModel.fields.res_vatnumber} eq '${res_vatnumber_value}' and accountid ne ${formContext.data.entity.getId()})`).then(
+                    function success(results) {
+                        console.log(results);
+                        if (results.entities.length > 0) {
+                            formContext.getControl(_self.formModel.fields.res_vatnumber).addNotification({
+                                messages: [`Ci sono n° ${results.entities.length} con la stessa la Partita IVA '${res_vatnumber_value}'.`],
+                                notificationLevel: "RECOMMENDATION",
+                                uniqueId: "01",
+                                actions: null
+                            });
+                        }
+                    },
+                    function (error) {
+                        console.log(error.message);
+                    }
+                );
             }
         }
     };
+    //---------------------------------------------------
+    _self.onChangeAddress = function (executionContext) {
+        //Controllo i campi obbligatori
+        let formContext = executionContext.getFormContext();
+        let address1_line1 = formContext.data.entity.attributes.get(_self.formModel.fields.address1_line1);
+        let address1_postalcode = formContext.data.entity.attributes.get(_self.formModel.fields.address1_postalcode);
+        let address1_city = formContext.data.entity.attributes.get(_self.formModel.fields.address1_city);
+        let res_location = formContext.data.entity.attributes.get(_self.formModel.fields.res_location);
+        let address1_stateorprovince = formContext.data.entity.attributes.get(_self.formModel.fields.address1_stateorprovince);
+        let res_countryid = formContext.data.entity.attributes.get(_self.formModel.fields.res_countryid);
+
+        address1_line1.setRequiredLevel(address1_city.getValue() != null || address1_postalcode.getValue() != null ? "required" : "none");
+        address1_postalcode.setRequiredLevel(address1_line1.getValue() != null ? "required" : "none");
+    };
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext);
+                }
+            )
+        }
+
+    }
     //---------------------------------------------------
     _self.onSaveForm = function (executionContext) {
         if (executionContext.getEventArgs().getSaveMode() == 70) {
@@ -97,6 +147,8 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
 
         if (formContext.getAttribute(_self.formModel.fields.res_accountnaturecode) != null) {
             formContext.getControl(_self.formModel.fields.res_accountnaturecode).setDisabled(true);
+        } else {
+            formContext.getControl(_self.formModel.fields.res_accountnaturecode).setDisabled(false);
         }
     };
     //---------------------------------------------------
@@ -116,10 +168,17 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute(_self.formModel.fields.res_vatnumber).addOnChange(_self.onChangeVatNumber);
+        formContext.getAttribute(_self.formModel.fields.address1_line1).addOnChange(_self.onChangeAddress);
+        formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.onChangeAddress);
+        formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.onChangeAddress);
 
 
         //Init function
         _self.onChangeVatNumber(executionContext);
+        _self.onChangeAddress(executionContext);
+
+        //Init IFrame
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
