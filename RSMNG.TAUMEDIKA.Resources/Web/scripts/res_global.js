@@ -51,6 +51,24 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
 
         Xrm.Navigation.openErrorDialog(errorOptions);
     };
+    _self.getDataParam = function (queryString) {
+        var vals = new Array();
+        var retParam = new Array();
+        if (queryString != "") {
+            vals = queryString.substr(1).split("&");
+            for (var i in vals) {
+                vals[i] = vals[i].replace(/\+/g, " ").split("=");
+            }
+            for (var i in vals) {
+                if (vals[i][0].toLowerCase() == "data") {
+                    retParam = _self.parseDataValue(vals[i][1]);
+                    break;
+                }
+            }
+        }
+        return retParam;
+
+    };
 
 
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

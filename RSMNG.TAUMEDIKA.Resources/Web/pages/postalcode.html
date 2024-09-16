@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Scegli il cap da assegnare</title>
+    <link rel="stylesheet" href="../res_lib/suite.css">
+    <style>
+        div {
+            position: fixed;
+            top: 1pt;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+    </style>
+    <script type="text/javascript" src="../res_lib/suite.js"></script>
+    <script>
+        let form = null;
+        onLoad = function () {
+            debugger;
+            const formconfig = {
+                padding: 0,
+                rows: [
+                    {
+                        type: "button",
+                        name: "cap",
+                        text: "C.A.P.",
+                        size: "medium",
+                        view: "flat",
+                        color: "primary"
+                    }
+                ]
+            };
+            form = new dhx.Form("content", formconfig);
+            form.getItem("cap").events.on("click", function () {
+                let pageInput = {
+                    pageType: "webresource",
+                    webresourceName: "/res_pages/getPostalcode.html"
+                };
+                let navigationOptions = {
+                    target: 2,
+                    width: { value: 50, unit: "%" },
+                    height: { value: 50, unit: "%" },
+                    position: 1,
+                    title: 'Lista dei C.A.P.'
+                };
+                window._Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                    function success(result) {
+                        if (result.returnValue != null) {
+
+                        }
+                    },
+                    function error(error) {
+                        console.log(error.message)
+                    }
+                );
+            });
+
+            if (window._Xrm == undefined && parent._Xrm != undefined) {
+                setContext(parent._Xrm, parent._formContext);
+            }
+
+        };
+        setContext = function (_xrm, _formContext) {
+            window._Xrm = _xrm;
+            window._formContext = _formContext;
+            parent._Xrm = _xrm;
+            parent._formContext = _formContext;
+        }
+    </script>
+</head>
+<body onload="onLoad()">
+    <div id="content"></div>
+</body>
+</html>
