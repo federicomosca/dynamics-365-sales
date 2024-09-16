@@ -76,6 +76,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                                         <entity name=""res_address"">
                                         <attribute name=""res_isdefault"" />
                                         <filter>
+                                            <condition attribute=""statecode"" operator=""eq"" value=""0"" />
                                             <condition attribute=""res_customerid"" operator=""eq"" value=""{erCustomer.Id}"" />
                                             <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
                                         </filter>
