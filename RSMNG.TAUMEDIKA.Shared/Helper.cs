@@ -19,7 +19,7 @@ namespace RSMNG.TAUMEDIKA
                             <fetch returntotalrecordcount=""true"">
                               <entity name=""res_address"">
                                 <attribute name=""res_isdefault"" />
-                                <filter>
+                                <filter type=""and"">
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
                                   <condition attribute=""res_customerid"" operator=""eq"" value=""{customerIdString}"" />
                                   <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
