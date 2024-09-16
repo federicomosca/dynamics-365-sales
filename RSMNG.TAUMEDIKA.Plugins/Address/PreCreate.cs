@@ -54,6 +54,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             target[DataModel.res_address.res_name] = addressName;
             #endregion
+
+            #region CheckDefaultDuplicates
+            PluginRegion = "CheckDefaultDuplicates";
+
+            target.TryGetAttributeValue<bool>(DataModel.res_address.res_isdefault, out bool isDefault);
+
+            if (isDefault)
+            {
+                var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch>
+                                        <entity name=""res_address"">
+                                        <attribute name=""res_isdefault"" />
+                                        <filter>
+                                            <condition attribute=""res_customerid"" operator=""eq"" value=""{erCustomer.Id}"" />
+                                            <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
+                                        </filter>
+                                        </entity>
+                                    </fetch>";
+
+                EntityCollection addresses = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
+                if (addresses.Entities.Count > 0)
+                {
+                    foreach (Entity address in addresses.Entities)
+                    {
+                        address[DataModel.res_address.res_isdefault] = false;
+                        crmServiceProvider.Service.Update(address);
+                    }
+                }
+            }
+            #endregion
         }
     }
 }
