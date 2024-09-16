@@ -26,22 +26,33 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             #region GenerateName
             PluginRegion = "GenerateName";
 
+            string addressName = string.Empty;
+            string customerName = string.Empty;
+            string addressCity = string.Empty;
+            string addressStreet = string.Empty;
+
             target.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
-            ColumnSet customerColumns = new ColumnSet(
-                DataModel.account.name,
-                DataModel.contact.fullname
-                );
 
-            Entity customer = crmServiceProvider.Service.Retrieve(DataModel.res_address.res_customerid, erCustomer.Id, customerColumns);
-
-            if (customer != null)
+            if (erCustomer != null)
             {
-                customer.TryGetAttributeValue<string>(DataModel.account.name, out string accountName);
-                customer.TryGetAttributeValue<string>(DataModel.contact.fullname, out string contactName);
-
-                crmServiceProvider.TracingService.Trace($"Account Name: {accountName}, Contact Name: {contactName}");
+                if (erCustomer.LogicalName == "contact")
+                {
+                    Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(DataModel.contact.fullname));
+                    customerName = customer.GetAttributeValue<string>(DataModel.contact.fullname) ?? string.Empty;
+                }
+                if (erCustomer.LogicalName == "account")
+                {
+                    Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(DataModel.account.name));
+                    customerName = customer.GetAttributeValue<string>(DataModel.account.name) ?? string.Empty;
+                }
             }
 
+            addressStreet = target.GetAttributeValue<string>(DataModel.res_address.res_addressField) ?? string.Empty;
+            addressCity = target.GetAttributeValue<string>(DataModel.res_address.res_city) ?? string.Empty;
+
+            addressName = $"{customerName} {addressCity} {addressStreet}";
+
+            target[DataModel.res_address.res_name] = addressName;
             #endregion
         }
     }
