@@ -58,7 +58,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         if (formContext.getAttribute(_self.formModel.fields.res_vatnumber) != null) {
             let res_vatnumber = formContext.getAttribute(_self.formModel.fields.res_vatnumber).getValue();
             formContext.getControl(_self.formModel.fields.res_vatnumber).clearNotification("01");
-            if (res_vatnumber != null && res_vatnumber.length() > 11) {
+            if (res_vatnumber != null && res_vatnumber.length != 11) {
                 let actionCollection = {
                     message: 'cancellare il campo'
                 };
@@ -66,8 +66,8 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
                     formContext.getAttribute(_self.formModel.fields.res_vatnumber).setValue(null);
                 }];
                 formContext.getControl(_self.formModel.fields.res_vatnumber).addNotification({
-                    messages: [message],
-                    notificationLevel: "RECOMMENDATION",
+                    messages: ["La Partita IVA non può essere maggiore di 11 caratteri."],
+                    notificationLevel: "WARNING",
                     uniqueId: "01",
                     actions: [actionCollection]
                 });
