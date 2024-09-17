@@ -924,6 +924,74 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         }
     }
     //---------------------------------------------------
+    /**
+     * @param {any} formContext
+     * se il campo Indirizzo è valorizzato, il campo Città diventa required
+     */
+    _self.setRequiredCity = formContext => {
+
+        const addressAttribute = formContext.getAttribute(_self.formModel.fields.address1_name) ?? null;
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
+
+        const addressHasValue= addressAttribute ? addressAttribute.getValue() ?? null : null;
+
+        if (cityAttribute) {
+            if (addressHasValue) { cityAttribute.setRequiredLevel("required") }
+            else { cityAttribute.setRequiredLevel("none") }
+        }
+    }
+    //---------------------------------------------------
+    /**
+     * @param {any} formContext
+     * se il campo Città è valorizzato, il campo Località diventa editable
+     */
+    _self.setEditableLocation = formContext => {
+
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
+        const locationControl = formContext.getControl(_self.formModel.fields.res_location) ?? null;
+
+        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+
+        if (locationControl) {
+            if (cityHasValue) { locationControl.setDisabled(false) }
+            else { locationControl.setDisabled(true) }
+        }
+    }
+    //---------------------------------------------------
+    /**
+     * @param {any} formContext
+     * se il campo Città è valorizzato, il campo Provincia diventa editable
+     */
+    _self.setEditableStateOrProvince = formContext => {
+
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
+        const stateOrProvinceControl = formContext.getControl(_self.formModel.fields.address1_stateorprovince) ?? null;
+
+        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+
+        if (stateOrProvinceControl) {
+            if (cityHasValue) { stateOrProvinceControl.setDisabled(false) }
+            else { stateOrProvinceControl.setDisabled(true) }
+        }
+    }
+    //---------------------------------------------------
+    /**
+     * @param {any} formContext
+     * se il campo Città è valorizzato, il campo Nazione diventa editable
+     */
+    _self.setEditableCountry = formContext => {
+
+        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
+        const countryControl = formContext.getControl(_self.formModel.fields.res_countryid) ?? null;
+
+        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+
+        if (countryControl) {
+            if (cityHasValue) { countryControl.setDisabled(false) }
+            else { countryControl.setDisabled(true) }
+        }
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -942,6 +1010,10 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
 
         //Init function
         _self.setRequiredAddress(formContext);
+        _self.setRequiredCity(formContext);
+        _self.setEditableLocation(formContext);
+        _self.setEditableStateOrProvince(formContext);
+        _self.setEditableCountry(formContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
