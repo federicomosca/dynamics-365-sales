@@ -933,7 +933,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         const addressAttribute = formContext.getAttribute(_self.formModel.fields.address1_name) ?? null;
         const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
 
-        const addressHasValue= addressAttribute ? addressAttribute.getValue() ?? null : null;
+        const addressHasValue = addressAttribute ? addressAttribute.getValue() ?? null : null;
 
         if (cityAttribute) {
             if (addressHasValue) { cityAttribute.setRequiredLevel("required") }
@@ -950,7 +950,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
         const locationControl = formContext.getControl(_self.formModel.fields.res_location) ?? null;
 
-        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
 
         if (locationControl) {
             if (cityHasValue) { locationControl.setDisabled(false) }
@@ -967,7 +967,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
         const stateOrProvinceControl = formContext.getControl(_self.formModel.fields.address1_stateorprovince) ?? null;
 
-        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
 
         if (stateOrProvinceControl) {
             if (cityHasValue) { stateOrProvinceControl.setDisabled(false) }
@@ -984,11 +984,43 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
         const countryControl = formContext.getControl(_self.formModel.fields.res_countryid) ?? null;
 
-        const cityHasValue= cityAttribute ? cityAttribute.getValue() ?? null : null;
+        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
 
         if (countryControl) {
             if (cityHasValue) { countryControl.setDisabled(false) }
             else { countryControl.setDisabled(true) }
+        }
+    }
+    //---------------------------------------------------
+    /**
+     * @param {any} formContext
+     * al cambio della selezione nel campo lookup Nazione, viene valorizzato il campo Nazione (testo)
+     */
+    _self.onChangeCountry = executionContext => {
+
+        const formContext = executionContext.getFormContext();
+
+        const countryStringAttribute = formContext.getAttribute(_self.formModel.fields.address1_country);
+        const countryLookUpAttribute = formContext.getAttribute(_self.formModel.fields.res_countryid);
+
+        const countryLookUpValue = countryLookUpAttribute ? countryLookUpAttribute.getValue() ?? null : null;
+
+        if (countryLookUpValue) {
+
+            const countryId = (countryLookUpValue[0].id).replace(/[{}]/g, "");
+
+            Xrm.WebApi.retrieveRecord("res_country", countryId, "?$select=res_name").then(
+                country => {
+
+                    const countryName = country.res_name;
+                    if (countryName) {
+                        if (countryStringAttribute) { countryStringAttribute.setValue(countryName) }
+                    }
+                },
+                error => {
+                    console.log(error.message);
+                }
+            );
         }
     }
     //---------------------------------------------------
@@ -1007,6 +1039,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
+        formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
 
         //Init function
         _self.setRequiredAddress(formContext);
