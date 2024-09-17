@@ -18,7 +18,7 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_calculatedcommission_base: "res_calculatedcommission_base",
 	///Cliente
 	res_customerid: "res_customerid",
-	///Codice cliente
+	///Cod. Cliente
 	res_customernumber: "res_customernumber",
 	///Data
 	res_date: "res_date",
@@ -32,7 +32,7 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_documenttotal_base: "res_documenttotal_base",
 	///Tipo Documento
 	res_documenttypecode: "res_documenttypecode",
-	///Escluso dal calcolo provvigioni
+	///Escluso da calcolo provvigioni
 	res_isexcludedfromcalculation: "res_isexcludedfromcalculation",
 	///Ancora da saldare
 	res_ispendingpayment: "res_ispendingpayment",
@@ -44,7 +44,7 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_nettotalexcludingvat_base: "res_nettotalexcludingvat_base",
 	///Nome
 	res_nome: "res_nome",
-	///Nota
+	///Note
 	res_note: "res_note",
 	///Condizione di pagamento
 	res_paymenttermid: "res_paymenttermid",
@@ -73,7 +73,7 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 		RicevutaFiscale: 100000001
 	},
 
-	/// Values for field Escluso dal calcolo provvigioni
+	/// Values for field Escluso da calcolo provvigioni
 	res_isexcludedfromcalculationValues: {
 		No: 0,
 		Si: 1

@@ -39,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_description => "res_description";
 
 		/// <summary>
-		/// Display Name: Name,
+		/// Display Name: Nome,
 		/// Type: String,
 		/// Description: 
 		/// </summary>

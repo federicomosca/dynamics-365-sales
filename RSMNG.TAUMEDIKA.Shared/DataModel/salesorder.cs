@@ -407,7 +407,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_additionalexpenseid => "res_additionalexpenseid";
 
 		/// <summary>
-		/// Display Name: Coordinata Bancaria,
+		/// Display Name: Banca,
 		/// Type: Lookup,
 		/// Related entities: res_bankdetails,
 		/// Description: 
@@ -415,7 +415,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_bankdetailsid => "res_bankdetailsid";
 
 		/// <summary>
-		/// Display Name: Nazione,
+		/// Display Name: Nazione spedizione,
 		/// Type: Lookup,
 		/// Related entities: res_country,
 		/// Description: 
@@ -478,6 +478,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_origincode => "res_origincode";
 
 		/// <summary>
+		/// Display Name: Condizione di pagamento,
+		/// Type: Lookup,
+		/// Related entities: res_paymentterm,
+		/// Description: 
+		/// </summary>
+		public static string res_paymenttermid => "res_paymenttermid";
+
+		/// <summary>
 		/// Display Name: Riferimento spedizione,
 		/// Type: String,
 		/// Description: 
@@ -485,7 +493,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_shippingreference => "res_shippingreference";
 
 		/// <summary>
-		/// Display Name: Codice IVA,
+		/// Display Name: Codice IVA spesa accessoria,
 		/// Type: Lookup,
 		/// Related entities: res_vatnumber,
 		/// Description: 
@@ -566,7 +574,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string shipto_freighttermscode => "shipto_freighttermscode";
 
 		/// <summary>
-		/// Display Name: Indirizzo,
+		/// Display Name: Via spedizione,
 		/// Type: String,
 		/// Description: Digitare la prima riga dell'indirizzo di spedizione del cliente.
 		/// </summary>

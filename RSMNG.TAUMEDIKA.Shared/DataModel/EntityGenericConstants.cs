@@ -142,7 +142,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// <summary>
 		/// Values for field Stato
 		/// <summary>
-		public enum statecodeValues
+		public new enum statecodeValues
 		{
 			Attiva = 0,
 			Inattiva = 1
@@ -151,7 +151,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// <summary>
 		/// Values for field Motivo stato
 		/// <summary>
-		public enum statuscodeValues
+		public new enum statuscodeValues
 		{
 			Attiva_StateAttiva = 1,
 			Inattiva_StateInattiva = 2

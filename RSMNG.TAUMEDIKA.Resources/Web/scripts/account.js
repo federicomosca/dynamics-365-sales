@@ -41,6 +41,8 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
             address1_stateorprovince: "address1_stateorprovince",
             ///Nazione
             res_countryid: "res_countryid",
+            ///Nazione (Testo)
+            address1_country: "address1_country",
 
             /// Values for field Natura giuridica
             res_accountnaturecodeValues: {
@@ -105,21 +107,38 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         let address1_line1 = formContext.data.entity.attributes.get(_self.formModel.fields.address1_line1);
         let address1_postalcode = formContext.data.entity.attributes.get(_self.formModel.fields.address1_postalcode);
         let address1_city = formContext.data.entity.attributes.get(_self.formModel.fields.address1_city);
-        let res_location = formContext.data.entity.attributes.get(_self.formModel.fields.res_location);
-        let address1_stateorprovince = formContext.data.entity.attributes.get(_self.formModel.fields.address1_stateorprovince);
-        let res_countryid = formContext.data.entity.attributes.get(_self.formModel.fields.res_countryid);
+        let address1_city_obj = formContext.ui.controls.get(_self.formModel.fields.address1_city);
+        let res_location_obj = formContext.ui.controls.get(_self.formModel.fields.res_location);
+        let address1_stateorprovince_obj = formContext.ui.controls.get(_self.formModel.fields.address1_stateorprovince);
+        let address1_country_obj = formContext.ui.controls.get(_self.formModel.fields.address1_country);
+        let res_countryid_obj = formContext.ui.controls.get(_self.formModel.fields.res_countryid);
 
         address1_line1.setRequiredLevel(address1_city.getValue() != null || address1_postalcode.getValue() != null ? "required" : "none");
         address1_postalcode.setRequiredLevel(address1_line1.getValue() != null ? "required" : "none");
+        address1_city_obj.setDisabled(address1_postalcode.getValue() != null ? false : true);
+        res_location_obj.setDisabled(address1_city.getValue() != null ? false : true);
+        address1_stateorprovince_obj.setDisabled(address1_city.getValue() != null ? false : true);
+        address1_country_obj.setDisabled(true);
+        address1_country_obj.setVisible(false);
+        res_countryid_obj.setDisabled(address1_city.getValue() != null ? false : true);
+
     };
+    //---------------------------------------------------
+    _self.onChangeCountry = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        let res_countryid = formContext.data.entity.attributes.get(_self.formModel.fields.res_countryid);
+        let address1_country = formContext.data.entity.attributes.get(_self.formModel.fields.address1_country);
+
+        address1_country.setValue(res_countryid.getValue() != null ? res_countryid.getValue()[0].name : null);
+    };
+    //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
-        let address1_postalcode = formContext.data.entity.attributes.get(_self.formModel.fields.address1_postalcode);
         var wrControl = formContext.getControl("WebResource_postalcode");
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
-                    contentWindow.setContext(Xrm, address1_postalcode);
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
                 }
             )
         }
@@ -172,7 +191,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.address1_line1).addOnChange(_self.onChangeAddress);
         formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.onChangeAddress);
         formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.onChangeAddress);
-
+        formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
 
         //Init function
         _self.onChangeVatNumber(executionContext);

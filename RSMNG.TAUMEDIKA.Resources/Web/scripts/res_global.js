@@ -82,6 +82,44 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
         return retParam;
 
     };
+    //-------------------------------------------------------------------------------------
+    _self.getOptionSetMetadata = async function(entityLogicalName, optionSetFieldName) {
+        // Dataverse Web API URL
+        var apiUrl = Xrm.Utility.getGlobalContext().getClientUrl() + "/api/data/v9.1/EntityDefinitions(LogicalName='" + entityLogicalName + "')/Attributes(LogicalName='" + optionSetFieldName + "')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata";
+
+        // Create a new XMLHttpRequest
+        var req = new XMLHttpRequest();
+        req.open("GET", apiUrl, true);
+        req.setRequestHeader("OData-MaxVersion", "4.0");
+        req.setRequestHeader("OData-Version", "4.0");
+        req.setRequestHeader("Accept", "application/json");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+        // Handle the response
+        req.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                req.onreadystatechange = null;
+                if (this.status === 200) {
+                    // Parse the JSON response
+                    var result = JSON.parse(this.response);
+
+                    // Access the OptionSet options
+                    var optionSetOptions = result.OptionSet.Options;
+
+                    // Loop through each option and log the Value and Label
+                    optionSetOptions.forEach(function (option) {
+                        console.log("Value: " + option.Value + ", Label: " + option.Label.UserLocalizedLabel.Label);
+                    });
+                } else {
+                    console.error("Error retrieving option set metadata. Status: " + this.statusText);
+                }
+            }
+        };
+
+        // Send the request
+        req.send();
+    }
+    //-------------------------------------------------------------------------------------
     _self.retrieveAllRecords = async function (entityName, topCount, queryOptions = "") {
         let allRecords = [];
         let fetchMore = true;
