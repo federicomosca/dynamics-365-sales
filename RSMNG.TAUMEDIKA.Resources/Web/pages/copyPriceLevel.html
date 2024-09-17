@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="../res_lib/suite.css">
     
     <style>
+        
         .dhx_grid-row:hover {
             background-color: var(--dhx-color-primary-light-hover);        
         }
@@ -15,6 +16,7 @@
             transform: translate(-50%, -50%);
             display: none;
         }
+
         
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
@@ -24,23 +26,21 @@
         onLoad = async function () {
 
             //----------------------------------
-            let GLOBAL_ScopeValues;
+            let GLOBAL_data;
             //----------------------------------
 
-            GLOBAL_ScopeValues = RSMNG.Global.getDataParam();
-            //// Retrieve the data from Xrm
-            //var dataString = window.Xrm.Utility.getPageContext().input.data;
+            // prendo i dati passati alla finestra
+            GLOBAL_data = JSON.parse(RSMNG.TAUMEDIKA.GLOBAL.getDataParam(location.search));
+            
 
-            //// Parse the JSON data string
-            //GLOBAL_ScopeValues = JSON.parse(dataString.scopeValues);
-
-
-            console.log(GLOBAL_ScopeValues);
-
-            var ambito_OPT = [
-                { value: "Agenti", id: 100000 },
-                { value: "Sito Web", id: 100001 }
-            ];
+            console.log(GLOBAL_data.selectedScope);
+            // mappo i valori per il form
+            var ambito_OPT = GLOBAL_data.scopeValues.map(function(item) {
+                return {
+                    value: item.text,
+                    id: item.value
+                };
+            });
 
             const form = new dhx.Form("content", {
                 css: "dhx_widget--bordered",
@@ -49,7 +49,7 @@
                 rows: [
 
                     { type: "input", padding: "10px", label: "Nome listino", name: "name", required: true },
-                    { type: "combo", padding: "10px", label: "Ambito", multiselection: true, data: ambito_OPT, name: "ambito", height: "70px", required: true },
+                    { type: "combo", padding: "10px", label: "Ambito", multiselection: true, data: ambito_OPT, value: GLOBAL_data.selectedScope, name: "ambito", height: "70px", required: true },
                     {
                         padding: "20px",
                         cols: [
@@ -131,6 +131,6 @@
 </head>
 <body onload="onLoad()">
     <div id="content"></div>
-    <img src="res_images/spinner.svg" alt="Loading..." id="loader">
+    <img src="../res_images/spinner.svg" alt="Loading..." id="loader">
 </body>
 </html>

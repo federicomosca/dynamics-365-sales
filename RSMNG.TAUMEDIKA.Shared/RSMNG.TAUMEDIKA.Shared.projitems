@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Account\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Address\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\account.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\contact.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\EntityGenericConstants.cs" />
