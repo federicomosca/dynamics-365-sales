@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             try
             {
                 IOrganizationService serviceAdmin = crmServiceProvider.ServiceAdmin;
+                ITracingService tracingService = crmServiceProvider.TracingService;
                 String jsonDataOutput = "";
                 String actionName = (String)crmServiceProvider.PluginContext.InputParameters["actionName"];
                 String jsonDataInput = (String)crmServiceProvider.PluginContext.InputParameters["jsonDataInput"];
@@ -30,7 +32,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 Model.BasicOutput basicOutput = new Model.BasicOutput();
                 switch (actionName)
                 {
-                    case "AZIONE1":
+                    case "CASE":
 
                         #region Azione1
                         PluginRegion = "Azione1";
@@ -47,6 +49,9 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         #endregion
                         
                         break;
+                    case "COPYPRICELEVEL":
+                        jsonDataOutput = CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
+                        break;
                 }
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"JsonDataOutput:{jsonDataOutput}.");
                 crmServiceProvider.PluginContext.OutputParameters["jsonDataOutput"] = jsonDataOutput;
@@ -55,6 +60,19 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             {
                 throw new Exception("ERRORE CALL ACTION: " + ex);
             }
+        }
+
+        public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
+        {
+            string result = String.Empty;
+
+            trace.Trace("COPYPRICELEVEL");
+
+
+
+
+
+            return result;
         }
     }
 }

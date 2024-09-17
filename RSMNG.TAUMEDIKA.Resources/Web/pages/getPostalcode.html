@@ -7,101 +7,108 @@
         .dhx_grid-row:hover {
             background-color: var(--dhx-color-primary-light-hover);
         }
+        .separaBtn {
+            width:2px;
+        }
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
     <script>
         var rowSel = null;
+        var Xrm = null;
         onLoad = async function () {
-            debugger;
             if (parent._Xrm == null || parent._Xrm == undefined) {
                 alert("La form non è inizializzata");
                 window.returnValue = null;
                 window.close();
-            }
-            let Xrm = parent._Xrm;
+            } else {
+                Xrm = parent._Xrm;
 
-            const formconfig = {
-                css: "dhx_widget--bordered",
-                padding: "40px",
-                width: "600px",
-                rows: [
-                    {
-                        name: "cap",
-                        type: "input",
-                        label: "C.A.P.",
-                        labelPosition: "left",
-                        labelWidth: "70px",
-                        helpMessage: "Digita il CAP da ricercare",
-                        placeholder: "Cerca il CAP",
-                        maxlength: 5
-                    },
-                    {
-                        type: "container", //container for any widget except Form and Layout
-                        name: "grid",
-                        label: "Lista dei C.A.P. trovati",
-                        helpMessage: "Seleziona il C.A.P. desiderato",
-                        height: "400px",
-                    },
-                    {
-                        align: "end",
-                        cols: [
-                            {
-                                name: "ok",
-                                type: "button",
-                                submit: true,
-                                text: "Ok",
-                                size: "medium",
-                                view: "flat",
-                                color: "primary",
-                                disabled: true
-                            },
-                            {
-                                name: "cancel",
-                                type: "button",
-                                submit: true,
-                                text: "Annulla",
-                                size: "medium",
-                                view: "flat",
-                                color: "primary"
-                            }
-                        ]
-                    }
-                ]
-            };
-            const dataset = await getCAP();
-            const grid = new dhx.Grid(null, {
-                columns: [
-                    { width: "50px", id: "code", header: [{ text: "C.A.P." }] },
-                    { width: "150px", id: "city", header: [{ text: "Città" }] },
-                    { width: "150px", id: "province", header: [{ text: "Provincia" }] },
-                    { width: "150px", id: "country", header: [{ text: "Nazione" }] },
-                    { width: "150px", id: "id", header: [{ text: "Id" }] }
-                ],
-                data: dataset,
-                adjust: true,
-                selection: "row"
-            });
-            grid.events.on("cellClick", function (row, column, events) {
-                rowSel = row;
-                form.getItem("ok").enable();
-            });
-            const form = new dhx.Form("content", formconfig);
-            form.getItem("ok").events.on("click", function () {
-                console.log(JSON.stringify(rowSel));
-                window.returnValue = JSON.parse(JSON.stringify(rowSel));
-                window.close();
-            });
-            form.getItem("cancel").events.on("click", function () {
-                window.returnValue = null;
-                window.close();
-            });
-            form.getItem("cap").events.on("input", function (inputValue) {
-                onFilterGrid(grid, inputValue == "" ? null : inputValue);
-            });
-            form.getItem("grid").attach(grid);
-            onFilterGrid(grid, null);
-            form.setFocus("cap");
+                Xrm.Utility.showProgressIndicator("Caricamento in corso...");
+
+                const formconfig = {
+                    css: "dhx_widget--bordered",
+                    padding: "40px",
+                    width: "600px",
+                    rows: [
+                        {
+                            name: "cap",
+                            type: "input",
+                            label: "C.A.P.",
+                            labelPosition: "left",
+                            labelWidth: "70px",
+                            helpMessage: "Digita il CAP da ricercare",
+                            placeholder: "Cerca il CAP",
+                            maxlength: 5
+                        },
+                        {
+                            type: "container", //container for any widget except Form and Layout
+                            name: "grid",
+                            label: "Lista dei C.A.P. trovati",
+                            helpMessage: "Seleziona il C.A.P. desiderato",
+                            height: "400px",
+                        },
+                        {
+                            align: "end",
+                            cols: [
+                                {
+                                    name: "ok",
+                                    type: "button",
+                                    submit: true,
+                                    text: "Ok",
+                                    size: "medium",
+                                    view: "flat",
+                                    color: "primary",
+                                    disabled: true
+                                },
+                                {
+                                    name: "cancel",
+                                    type: "button",
+                                    text: "Annulla",
+                                    size: "medium",
+                                    view: "link",
+                                    color: "primary"
+                                }
+                            ]
+                        }
+                    ]
+                };
+                const dataset = await getCAP();
+                const grid = new dhx.Grid(null, {
+                    columns: [
+                        { width: "50px", id: "code", header: [{ text: "C.A.P." }] },
+                        { width: "150px", id: "city", header: [{ text: "Città" }] },
+                        { width: "150px", id: "province", header: [{ text: "Provincia" }] },
+                        { width: "150px", id: "country", header: [{ text: "Nazione" }] },
+                        { width: "150px", id: "id", header: [{ text: "Id" }] }
+                    ],
+                    data: dataset,
+                    adjust: true,
+                    selection: "row"
+                });
+                grid.events.on("cellClick", function (row, column, events) {
+                    rowSel = row;
+                    form.getItem("ok").enable();
+                });
+                const form = new dhx.Form("content", formconfig);
+                form.getItem("ok").events.on("click", function () {
+                    console.log(JSON.stringify(rowSel));
+                    window.returnValue = JSON.stringify(rowSel);
+                    window.close();
+                });
+                form.getItem("cancel").events.on("click", function () {
+                    window.returnValue = null;
+                    window.close();
+                });
+                form.getItem("cap").events.on("input", function (inputValue) {
+                    onFilterGrid(grid, inputValue == "" ? null : inputValue);
+                });
+                form.getItem("grid").attach(grid);
+                onFilterGrid(grid, null);
+                form.setFocus("cap");
+
+                Xrm.Utility.closeProgressIndicator();
+            }
         };
         onFilterGrid = function (grid, inputValue) {
             grid.data.filter(function (item) {

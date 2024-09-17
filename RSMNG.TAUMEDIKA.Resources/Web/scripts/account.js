@@ -114,11 +114,12 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
     };
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
+        let address1_postalcode = formContext.data.entity.attributes.get(_self.formModel.fields.address1_postalcode);
         var wrControl = formContext.getControl("WebResource_postalcode");
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext);
+                    contentWindow.setContext(Xrm, address1_postalcode);
                 }
             )
         }
