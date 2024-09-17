@@ -24,8 +24,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
             string contactId = target.Id.ToString();
 
-            #region CreateDefaultAddress
-            PluginRegion = "CreateDefaultAddress";
+            #region Crea indirizzo di default
+            PluginRegion = "Crea indirizzo di default";
 
             /**
              * controllo che i campi Indirizzo, Città e CAP siano valorizzati
