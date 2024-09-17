@@ -114,9 +114,12 @@
     <Content Include="DataModel\uom.js" />
     <Content Include="DataModel\uomschedule.js" />
     <Content Include="Web.config" />
+    <Content Include="Web\pages\copyPriceLevel.html" />
     <Content Include="Web\pages\getPostalcode.html" />
     <Content Include="Web\pages\postalcode.html" />
     <Content Include="Web\scripts\account.js" />
+    <Content Include="Web\scripts\pricelevel.js" />
+    <Content Include="Web\scripts\pricelevel_ribbon.js" />
     <Content Include="Web\scripts\res_global.js" />
     <Content Include="Web\scripts\res_address.js" />
   </ItemGroup>
