@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,8 +24,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region GenerateName
-            PluginRegion = "GenerateName";
+            #region Genera nome
+            PluginRegion = "Genera nome";
 
             string addressName = string.Empty;
             string customerName = string.Empty;
@@ -55,50 +56,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             target[DataModel.res_address.res_name] = addressName;
             #endregion
 
-            #region CheckDefaultDuplicates
-            PluginRegion = "CheckDefaultDuplicates";
+            #region Controllo duplicati default
+            PluginRegion = "Controllo duplicati default";
 
-            target.TryGetAttributeValue<bool?>(DataModel.res_address.res_isdefault, out bool? isDefault);
-
-            if (isDefault != null)
-            {
-                if (isDefault == true)
-                {
-                    var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                    <fetch>
-                                        <entity name=""res_address"">
-                                        <attribute name=""res_isdefault"" />
-                                        <filter>
-                                            <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                            <condition attribute=""res_customerid"" operator=""eq"" value=""{erCustomer.Id}"" />
-                                            <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
-                                        </filter>
-                                        </entity>
-                                    </fetch>";
-
-                    EntityCollection addresses = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
-                    if (addresses.Entities.Count > 0)
-                    {
-                        foreach (Entity address in addresses.Entities)
-                        {
-                            address[DataModel.res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(address);
-                        }
-                    }
-                }
-            }
+            Utility.CheckDefaultDuplicates(crmServiceProvider, PluginMessage, target);
             #endregion
 
-            #region CheckMandatoryFields
-            PluginRegion = "CheckMandatoryFields";
-            List<string> mandatoryFields = new List<string> {
-                DataModel.res_address.res_customerid,
-                DataModel.res_address.res_addressField,
-                DataModel.res_address.res_postalcode,
-                DataModel.res_address.res_city
-            };
-
-            crmServiceProvider.VerifyMandatoryField(mandatoryFields);
+            #region Controllo campi obbligatori
+            PluginRegion = "Controllo campi obbligatori";
+            crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
             #endregion
         }
     }
