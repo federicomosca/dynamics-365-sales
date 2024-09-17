@@ -36,7 +36,7 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_nome: "res_nome",
 	///Modalità pagamento
 	res_paymentmethod: "res_paymentmethod",
-	///Modalità di pagamento
+	///Modalità pagamento documento
 	res_paymentmethodid: "res_paymentmethodid",
 	///Rif. Pagamento
 	res_paymentreference: "res_paymentreference",
@@ -44,7 +44,7 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_paymentscheduleid: "res_paymentscheduleid",
 	///Data sollecito
 	res_reminderdate: "res_reminderdate",
-	///Descrizione Sollecito
+	///Descrizione sollecito
 	res_reminderdescription: "res_reminderdescription",
 	///Risorsa
 	res_resource: "res_resource",

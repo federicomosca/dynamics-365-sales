@@ -39,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string currentcost_base => "currentcost_base";
 
 		/// <summary>
-		/// Display Name: Unità di misura (peso),
+		/// Display Name: Unità predefinita,
 		/// Type: Lookup,
 		/// Related entities: uom,
 		/// Description: Unità predefinita per il prodotto.
@@ -279,6 +279,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// Description: 
 		/// </summary>
 		public static string res_origincode => "res_origincode";
+
+		/// <summary>
+		/// Display Name: Unità di misura (peso),
+		/// Type: Lookup,
+		/// Related entities: uom,
+		/// Description: 
+		/// </summary>
+		public static string res_uomweightid => "res_uomweightid";
 
 		/// <summary>
 		/// Display Name: Codice IVA,

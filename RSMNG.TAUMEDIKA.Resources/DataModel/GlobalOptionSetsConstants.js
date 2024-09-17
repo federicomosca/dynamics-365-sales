@@ -960,11 +960,11 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			string: 110000000
 		},
 
-		/// Consult Mode Type constants.
+		/// Tipo di modalità di consulenza constants.
 		msdyn_consultmodetypeValues: {
 			Chat: 0,
-			ChatAndVoice: 1,
-			Voice: 2
+			Chatevoce: 1,
+			Voce: 2
 		},
 
 		/// Stato constants.

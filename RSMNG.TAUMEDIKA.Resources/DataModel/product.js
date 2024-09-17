@@ -10,7 +10,7 @@ RSMNG.TAUMEDIKA.DataModel.product = {
 	currentcost: "currentcost",
 	///Costo corrente (Base)
 	currentcost_base: "currentcost_base",
-	///Unità di misura (peso)
+	///Unità predefinita
 	defaultuomid: "defaultuomid",
 	///Unità di vendita
 	defaultuomscheduleid: "defaultuomscheduleid",
@@ -70,6 +70,8 @@ RSMNG.TAUMEDIKA.DataModel.product = {
 	res_manufacturer: "res_manufacturer",
 	///Origine
 	res_origincode: "res_origincode",
+	///Unità di misura (peso)
+	res_uomweightid: "res_uomweightid",
 	///Codice IVA
 	res_vatnumberid: "res_vatnumberid",
 	///Dimensioni

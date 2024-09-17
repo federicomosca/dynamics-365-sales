@@ -94,9 +94,9 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	requestdeliveryby: "requestdeliveryby",
 	///Spesa accessoria
 	res_additionalexpenseid: "res_additionalexpenseid",
-	///Coordinata Bancaria
+	///Banca
 	res_bankdetailsid: "res_bankdetailsid",
-	///Nazione
+	///Nazione spedizione
 	res_countryid: "res_countryid",
 	///Data
 	res_date: "res_date",
@@ -112,9 +112,11 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	res_location: "res_location",
 	///Origine
 	res_origincode: "res_origincode",
+	///Condizione di pagamento
+	res_paymenttermid: "res_paymenttermid",
 	///Riferimento spedizione
 	res_shippingreference: "res_shippingreference",
-	///Codice IVA
+	///Codice IVA spesa accessoria
 	res_vatnumberid: "res_vatnumberid",
 	///Ordine
 	salesorderid: "salesorderid",
@@ -134,7 +136,7 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	shipto_fax: "shipto_fax",
 	///Condizioni di spedizione per indirizzo spedizione
 	shipto_freighttermscode: "shipto_freighttermscode",
-	///Indirizzo
+	///Via spedizione
 	shipto_line1: "shipto_line1",
 	///Via 2 spedizione
 	shipto_line2: "shipto_line2",

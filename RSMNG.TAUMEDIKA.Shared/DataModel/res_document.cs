@@ -68,7 +68,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_customerid => "res_customerid";
 
 		/// <summary>
-		/// Display Name: Codice cliente,
+		/// Display Name: Cod. Cliente,
 		/// Type: String,
 		/// Description: 
 		/// </summary>
@@ -120,7 +120,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_documenttypecode => "res_documenttypecode";
 
 		/// <summary>
-		/// Display Name: Escluso dal calcolo provvigioni,
+		/// Display Name: Escluso da calcolo provvigioni,
 		/// Type: Boolean,
 		/// Values:
 		/// Sì: 1,
@@ -168,7 +168,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_nome => "res_nome";
 
 		/// <summary>
-		/// Display Name: Nota,
+		/// Display Name: Note,
 		/// Type: Memo,
 		/// Description: 
 		/// </summary>
@@ -233,7 +233,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
-		/// Values for field Escluso dal calcolo provvigioni
+		/// Values for field Escluso da calcolo provvigioni
 		/// <summary>
 		public enum res_isexcludedfromcalculationValues
 		{

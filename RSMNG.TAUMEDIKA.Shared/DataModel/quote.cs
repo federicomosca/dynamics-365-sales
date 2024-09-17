@@ -462,7 +462,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_shippingreference => "res_shippingreference";
 
 		/// <summary>
-		/// Display Name: Codice IVA,
+		/// Display Name: Codice IVA spesa accessoria,
 		/// Type: Lookup,
 		/// Related entities: res_vatnumber,
 		/// Description: 

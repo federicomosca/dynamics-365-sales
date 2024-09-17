@@ -10,7 +10,7 @@ RSMNG.TAUMEDIKA.DataModel.res_vatnumber = {
 	res_code: "res_code",
 	///Descrizione
 	res_description: "res_description",
-	///Name
+	///Nome
 	res_name: "res_name",
 	///Aliquota
 	res_rate: "res_rate",
