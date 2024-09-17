@@ -7,8 +7,9 @@
         .dhx_grid-row:hover {
             background-color: var(--dhx-color-primary-light-hover);
         }
+
         .separaBtn {
-            width:2px;
+            width: 2px;
         }
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
@@ -80,7 +81,8 @@
                         { width: "150px", id: "city", header: [{ text: "Città" }] },
                         { width: "150px", id: "province", header: [{ text: "Provincia" }] },
                         { width: "150px", id: "country", header: [{ text: "Nazione" }] },
-                        { width: "150px", id: "id", header: [{ text: "Id" }] }
+                        { width: "0px", id: "countryid", header: [{ text: "Id" }], hidden: true },
+                        { width: "0px", id: "id", header: [{ text: "Id" }] , hidden:true }
                     ],
                     data: dataset,
                     adjust: true,
@@ -117,12 +119,21 @@
         };
         getCAP = async function () {
             return new Promise(function (resolve, reject) {
-                Xrm.WebApi.retrieveMultipleRecords("res_cap", "?$select=res_code,res_city,_res_countryid_value,res_province").then(
-                    function success(results) {
-                        console.log(results);
+                debugger;
+                var fetchXml = [
+                    "<entity name='res_cap'>",
+                    "<attribute name='res_code' />",
+                    "<attribute name='res_city' />",
+                    "<attribute name='res_countryid' />",
+                    "<attribute name='res_province' />",
+                    "</entity>",
+                ].join("");
+
+                RSMNG.TAUMEDIKA.GLOBAL.retrieveAllRecords("res_cap", 5000, fetchXml).then(results => {
+                    if (results != null && results.length > 0) {
                         let caps = [];
-                        for (var i = 0; i < results.entities.length; i++) {
-                            var result = results.entities[i];
+                        for (var i = 0; i < results.length; i++) {
+                            var result = results[i];
                             // Columns
                             let res_capid = result["res_capid"]; // Guid
                             let res_code = result["res_code"]; // Text
@@ -136,17 +147,18 @@
                                 "city": res_city,
                                 "province": res_province,
                                 "country": res_countryid_formatted,
+                                "countryid": res_countryid,
                                 "id": res_capid
                             };
                             caps.push(cap);
                         }
+                        console.log("Total records retrieved:", results.length);
+                        console.log(results);
                         resolve(caps);
-                    },
-                    function (error) {
-                        console.log(error.message);
-                        reject(error);
                     }
-                );
+                }).catch(error => {
+                    console.error("Error:", error);
+                });
             });
         };
     </script>
