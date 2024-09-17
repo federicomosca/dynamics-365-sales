@@ -42,7 +42,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 Entity postImage = target.GetPostImage(preImage);
 
                 postImage.TryGetAttributeValue<EntityReference>(DataModel.account.res_countryid, out EntityReference erCountry);
-                string countryName = erCountry != null ? Shared.Account.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : null;
+                string countryName = erCountry != null ? Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : null;
 
                 target[DataModel.account.address1_country] = countryName;
             }
