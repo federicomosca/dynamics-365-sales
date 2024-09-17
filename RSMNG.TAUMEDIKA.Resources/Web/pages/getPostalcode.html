@@ -11,6 +11,14 @@
         .separaBtn {
             width: 2px;
         }
+
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
@@ -25,7 +33,9 @@
             } else {
                 Xrm = parent._Xrm;
 
-                Xrm.Utility.showProgressIndicator("Caricamento in corso...");
+                //Xrm.Utility.showProgressIndicator("Caricamento in corso...");
+                //form.disable();
+                document.getElementById('loader').style.display = 'block';
 
                 const formconfig = {
                     css: "dhx_widget--bordered",
@@ -109,7 +119,9 @@
                 onFilterGrid(grid, null);
                 form.setFocus("cap");
 
-                Xrm.Utility.closeProgressIndicator();
+                //form.enable();
+                document.getElementById('loader').style.display = 'none';
+                //Xrm.Utility.closeProgressIndicator();
             }
         };
         onFilterGrid = function (grid, inputValue) {
@@ -165,5 +177,6 @@
 </head>
 <body onload="onLoad()">
     <div id="content"></div>
+    <img src="../res_images/spinner.svg" alt="Loading..." id="loader">
 </body>
 </html>
