@@ -41,7 +41,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Account
                 </filter>
               </entity>
             </fetch>";
-            return service.RetrieveMultiple(new FetchExpression(fetchXml)).TotalRecordCount == -1;
+            return service.RetrieveMultiple(new FetchExpression(fetchXml)).TotalRecordCount > 0;
         }
     }
 }
