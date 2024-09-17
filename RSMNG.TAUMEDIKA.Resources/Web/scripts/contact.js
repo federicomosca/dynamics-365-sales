@@ -993,7 +993,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
     }
     //---------------------------------------------------
     /**
-     * @param {any} formContext
+     * @param {any} executionContext
      * al cambio della selezione nel campo lookup Nazione, viene valorizzato il campo Nazione (testo)
      */
     _self.onChangeCountry = executionContext => {
