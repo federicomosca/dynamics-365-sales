@@ -29,13 +29,13 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
                 var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch returntotalrecordcount=""true"">
-                              <entity name=""res_address"">
-                                <attribute name=""res_isdefault"" />
+                              <entity name=""{DataModel.res_address.logicalName}"">
+                                <attribute name=""{DataModel.res_address.res_isdefault}"" />
                                 <filter type=""and"">
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                  <condition attribute=""res_customerid"" operator=""eq"" value=""{customerIdString}"" />
-                                  <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
-                                  <condition attribute=""res_iscustomeraddress"" operator=""eq"" value=""1"" />
+                                  <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
+                                  <condition attribute=""{DataModel.res_address.res_isdefault}"" operator=""eq"" value=""1"" />
+                                  <condition attribute=""{DataModel.res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
                             </fetch>";
@@ -70,7 +70,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 {
                     Entity postImage = target.GetPostImage(preImage);
                     target = postImage;
-                    updateCondition = $@"<condition attribute=""res_addressid"" operator=""ne"" value=""{target.Id}"" />";
+                    updateCondition = $@"<condition attribute=""{DataModel.res_address.res_addressid}"" operator=""ne"" value=""{target.Id}"" />";
                 }
             }
 
@@ -83,13 +83,13 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 {
                     var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
-                                        <entity name=""res_address"">
-                                        <attribute name=""res_isdefault"" />
+                                        <entity name=""{DataModel.res_address.logicalName}"">
+                                        <attribute name=""{DataModel.res_address.res_isdefault}"" />
                                         <filter>
                                             <condition attribute=""statecode"" operator=""eq"" value=""0"" />
                                             {updateCondition}
-                                            <condition attribute=""res_customerid"" operator=""eq"" value=""{erCustomer.Id}"" />
-                                            <condition attribute=""res_isdefault"" operator=""eq"" value=""1"" />
+                                            <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{erCustomer.Id}"" />
+                                            <condition attribute=""{DataModel.res_address.res_isdefault}"" operator=""eq"" value=""1"" />
                                         </filter>
                                         </entity>
                                     </fetch>";

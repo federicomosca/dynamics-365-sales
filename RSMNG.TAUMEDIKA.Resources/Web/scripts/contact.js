@@ -1024,6 +1024,18 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                }
+            )
+        }
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -1047,6 +1059,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         _self.setEditableLocation(formContext);
         _self.setEditableStateOrProvince(formContext);
         _self.setEditableCountry(formContext);
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
