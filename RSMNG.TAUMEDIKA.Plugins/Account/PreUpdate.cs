@@ -13,7 +13,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
         {
             PluginStage = Stage.PRE;
             PluginMessage = "Update";
-            PluginPrimaryEntityName = DataModel.res_address.logicalName;
+            PluginPrimaryEntityName = DataModel.account.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }

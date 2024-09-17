@@ -36,7 +36,7 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
         canExecute: async function (formContext) {
             return true;
         },
-        execute: function (formContext) {
+        execute: async function (formContext) {
 
             await import('../res_scripts/res_global.js');
 
@@ -92,55 +92,65 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 
             return true;
         },
-        execute: function (formContext, SelectedControlSelectedItemIds) {
+        execute: async function (formContext, SelectedControlSelectedItemIds) {
 
             await import('../res_scripts/res_global.js');
-            let scopeValues = await RSMNG.TAUMEDIKA.GLOBAL.getOptionSetMetadata("pricelevel", "res_scopetypecodes");
+            let optMetadata = await RSMNG.TAUMEDIKA.GLOBAL.getGlobalOptionSetMetadata("res_opt_scopetype");
+            let selectedScope = [];
+            let scopeTypeCodes = optMetadata.map(item => ({
+                text: item.Label.UserLocalizedLabel.Label,
+                value: item.Value
+            }));
+
             let pricelevelId = SelectedControlSelectedItemIds[0];
             let queryOptions = "?$select=begindate,enddate,transactioncurrencyid,res_scopetypecodes,res_isdefaultforwebsite,res_isdefaultforagents,description";
 
-            Xrm.WebApi.retrieveRecord("pricelevel", pricelevelId, queryOptions).then(
-                function success(result) {
 
-                    jsonDataInput = {
-                        scopeValues: scopeTypeCodes,
-                        selectedScope: selectedScope
+            jsonDataInput = {
+                scopeValues: scopeTypeCodes,
+                selectedScope: selectedScope
+            }
+
+            pageInput = {
+                pageType: 'webresource',
+                webresourceName: '/res_pages/copyPriceLevel.html',
+                data: JSON.stringify(jsonDataInput)
+            }
+
+            navigationOptions = {
+                target: 2,
+                width: { value: 35, unit: "%" },
+                height: { value: 360, unit: "px" },
+                position: 1,
+                title: 'Copia Listino'
+            }
+
+            Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                function (result) {
+
+                    if (result.returnValue != null) {
+
+                        console.log("navigate ok");
+
                     }
-
-                    pageInput = {
-                        pageType: 'webresource',
-                        webresourceName: '/res_pages/copyPriceLevel.html',
-                        data: JSON.stringify(jsonDataInput)
-                    }
-
-                    navigationOptions = {
-                        target: 2,
-                        width: { value: 35, unit: "%" },
-                        height: { value: 360, unit: "px" },
-                        position: 1,
-                        title: 'Copia Listino'
-                    }
-
-                    Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
-                        function (result) {
-
-                            if (result.returnValue != null) {
-
-                                console.log("navigate ok");
-
-                            }
-                        },
-
-                        function (error) {
-                            console.log(error.message);
-                        });
-                   
                 },
-                function error(error) {
 
-                    console.log(error);
-                }
-            );
+                function (error) {
+                    console.log(error.message);
+                });
+
+
+            //Xrm.WebApi.retrieveRecord("pricelevel", pricelevelId, queryOptions).then(
+            //    function success(result) {
+
+                    
+                   
+            //    },
+            //    function error(error) {
+
+            //        console.log(error);
+            //    }
+            //);
             
 
             
