@@ -16,8 +16,56 @@
     <script type="text/javascript" src="../res_lib/suite.js"></script>
     <script>
         let form = null;
+        //Form model
+        let formModel = {
+            entity: {
+                ///costanti entità
+                logicalName: "account",
+                displayName: "Account"
+            },
+            fields: {
+                ///Tipologia
+                res_accounttypecodes: "res_accounttypecodes",
+                ///Natura giuridica
+                res_accountnaturecode: "res_accountnaturecode",
+                ///Codice fiscale
+                res_taxcode: "res_taxcode",
+                ///Partita IVA
+                res_vatnumber: "res_vatnumber",
+                ///Indirizzo
+                address1_line1: "address1_line1",
+                ///CAP
+                address1_postalcode: "address1_postalcode",
+                ///Città
+                address1_city: "address1_city",
+                ///Località
+                res_location: "res_location",
+                ///Provincia
+                address1_stateorprovince: "address1_stateorprovince",
+                ///Nazione
+                res_countryid: "res_countryid",
+
+                /// Values for field Natura giuridica
+                res_accountnaturecodeValues: {
+                    Personafisica: 100000000,
+                    Personagiuridica: 100000001
+                },
+
+                /// Values for field Tipologia
+                res_accounttypecodesValues: {
+                    Cliente: 100000000,
+                    Fornitore: 100000001
+                },
+            },
+            tabs: {
+
+            },
+            sections: {
+
+            }
+        };
+
         onLoad = function () {
-            debugger;
             const formconfig = {
                 padding: 0,
                 rows: [
@@ -39,15 +87,16 @@
                 };
                 let navigationOptions = {
                     target: 2,
-                    width: { value: 50, unit: "%" },
-                    height: { value: 50, unit: "%" },
+                    width: { value: 500, unit: "px" },
+                    height: { value: 650, unit: "px" },
                     position: 1,
                     title: 'Lista dei C.A.P.'
                 };
                 window._Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
                     function success(result) {
                         if (result.returnValue != null) {
-
+                            let capJson = JSON.parse(result.returnValue);
+                            window._formContext.getAttribute(formModel.fields.address1_postalcode).setValue(capJson.code);
                         }
                     },
                     function error(error) {

@@ -1,0 +1,46 @@
+﻿using Microsoft.Xrm.Sdk;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RSMNG.TAUMEDIKA.Plugins.Account
+{
+    public class PostCreate : RSMNG.BaseClass
+    {
+        public PostCreate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        {
+            PluginStage = Stage.POST;
+            PluginMessage = "Create";
+            PluginPrimaryEntityName = DataModel.account.logicalName;
+            PluginRegion = "";
+            PluginActiveTrace = false;
+        }
+        public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
+        {
+            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+
+            string accountId = target.Id.ToString();
+
+            #region CreateDefaultAddress
+            PluginRegion = "CreateDefaultAddress";
+
+            /**
+             * controllo che i campi Indirizzo, Città e CAP siano valorizzati
+             * se almeno uno è valorizzato chiamo il metodo per controllare la presenza di altri address
+             * se non ve ne sono, viene creato un nuovo indirizzo con i valori dei suddetti campi 
+             * e viene settato come indirizzo di default
+             */
+            target.TryGetAttributeValue<string>(DataModel.account.address1_line1, out string address);
+            target.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
+            target.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string postalcode);
+
+            if (accountId!=null && (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode)))
+            {
+                Helper.CheckAddress(crmServiceProvider, target.LogicalName, accountId, address, city, postalcode);
+            }
+            #endregion
+        }
+    }
+}
