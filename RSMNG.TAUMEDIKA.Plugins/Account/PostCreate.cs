@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +24,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
             string accountId = target.Id.ToString();
 
-            #region CreateDefaultAddress
-            PluginRegion = "CreateDefaultAddress";
+            #region Crea indirizzo di default
+            PluginRegion = "Crea indirizzo di default";
 
             /**
              * controllo che i campi Indirizzo, Città e CAP siano valorizzati
@@ -38,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
             if (accountId!=null && (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode)))
             {
-                Helper.CheckAddress(crmServiceProvider, target.LogicalName, accountId, address, city, postalcode);
+                Utility.CheckAddress(crmServiceProvider, target.LogicalName, accountId, address, city, postalcode);
             }
             #endregion
         }
