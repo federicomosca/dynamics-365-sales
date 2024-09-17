@@ -23,19 +23,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            if (target != null)
+            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
             {
-                if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
-                {
-                    Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
-                    Entity postImage = target.GetPostImage(preImage);
+                Entity postImage = target.GetPostImage(preImage);
 
-                    postImage.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
-                    string countryName = erCountry != null ? erCountry.Name : string.Empty;
+                postImage.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
+                string countryName = erCountry != null ? erCountry.Name : string.Empty;
 
-                    target[DataModel.contact.address1_country] = countryName;
-                }
+                target[DataModel.contact.address1_country] = countryName;
             }
         }
     }
