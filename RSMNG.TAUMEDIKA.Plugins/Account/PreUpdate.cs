@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace RSMNG.TAUMEDIKA.Plugins.Account
 {
-    public class PreCreate : RSMNG.BaseClass
+    public class PreUpdate : RSMNG.BaseClass
     {
-        public PreCreate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        public PreUpdate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.PRE;
-            PluginMessage = "Create";
-            PluginPrimaryEntityName = DataModel.account.logicalName;
+            PluginMessage = "Update";
+            PluginPrimaryEntityName = DataModel.res_address.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
@@ -23,8 +23,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
             #region Controllo Codice fiscale
             PluginRegion = "Controllo Codice fiscale";
-            if (target.ContainsAttributeNotNull(DataModel.account.res_taxcode)) {
-                bool isExist = Shared.Account.Utility.CheckFiscalCode(crmServiceProvider.Service, (string)target.Attributes[DataModel.account.res_taxcode]);
+            if (target.ContainsAttributeNotNull(DataModel.account.res_taxcode))
+            {
+                bool isExist = Shared.Account.Utility.CheckFiscalCode(crmServiceProvider.Service, (string)target.Attributes[DataModel.account.res_taxcode],target.Id);
                 if (isExist)
                 {
                     throw new ApplicationException("il codice fiscale inserito è associato ad un'altro account.");
