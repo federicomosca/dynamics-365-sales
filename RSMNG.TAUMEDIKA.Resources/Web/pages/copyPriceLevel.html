@@ -3,10 +3,19 @@
 <head>
     <title>Copia Listino</title>
     <link rel="stylesheet" href="../res_lib/suite.css">
+    
     <style>
         .dhx_grid-row:hover {
-            background-color: var(--dhx-color-primary-light-hover);
+            background-color: var(--dhx-color-primary-light-hover);        
         }
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
@@ -14,7 +23,106 @@
         var rowSel = null;
         onLoad = async function () {
 
+            //----------------------------------
+            let GLOBAL_ScopeValues;
+            //----------------------------------
 
+            GLOBAL_ScopeValues = RSMNG.Global.getDataParam();
+            //// Retrieve the data from Xrm
+            //var dataString = window.Xrm.Utility.getPageContext().input.data;
+
+            //// Parse the JSON data string
+            //GLOBAL_ScopeValues = JSON.parse(dataString.scopeValues);
+
+
+            console.log(GLOBAL_ScopeValues);
+
+            var ambito_OPT = [
+                { value: "Agenti", id: 100000 },
+                { value: "Sito Web", id: 100001 }
+            ];
+
+            const form = new dhx.Form("content", {
+                css: "dhx_widget--bordered",
+                padding: "20px",
+
+                rows: [
+
+                    { type: "input", padding: "10px", label: "Nome listino", name: "name", required: true },
+                    { type: "combo", padding: "10px", label: "Ambito", multiselection: true, data: ambito_OPT, name: "ambito", height: "70px", required: true },
+                    {
+                        padding: "20px",
+                        cols: [
+                            { type: "button", name: "coppia", padding: "5px", text: "Coppia", size: "medium", view: "flat", submit: true, color: "primary", disabled: true },
+                            { type: "button", name: "annulla", padding: "5px", text: "Annulla", size: "medium", view: "flat", submit: true, color: "primary" }
+                        ]
+                    }
+
+                ]
+            });
+
+            form.events.on("change", function (name, value) {
+                const isFormValid = form.validate();
+
+                if (isFormValid) {
+                    form.getItem("coppia").enable();
+                } else {
+                    form.getItem("coppia").disable();
+                }
+            });
+
+
+
+
+            form.events.on("click", function (name, e) {
+                if (name === "coppia") {
+                    const formData = form.getValue();
+                    const jsonData = JSON.stringify(formData);
+
+                    console.log(jsonData);
+                    form.disable();
+                    document.getElementById('loader').style.display = 'block';
+
+                    // Make the API call
+                    /*        fetch("https://your-dataverse-endpoint/api/action", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: jsonData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Success:", data);
+                            // Unlock the form
+                            form.enable();
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            // Unlock the form even if there's an error
+                            form.enable();
+                        });
+                        */
+
+                    function simulateApiCall() {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                resolve({ message: "API call successful!" });
+                            }, 3000); // Simulate a 3-second delay
+                        });
+                    }
+
+                    simulateApiCall().then(response => {
+                        console.log(response);
+                        form.enable();
+                        document.getElementById('loader').style.display = 'none';
+                    });
+
+                }
+                else if (name === "annulla") {
+                    window.close();
+                }
+            });
 
         };
 
@@ -23,6 +131,6 @@
 </head>
 <body onload="onLoad()">
     <div id="content"></div>
-  
+    <img src="res_images/spinner.svg" alt="Loading..." id="loader">
 </body>
 </html>

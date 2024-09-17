@@ -51,6 +51,19 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
 
         Xrm.Navigation.openErrorDialog(errorOptions);
     };
+    _self.parseDataValue = function (datavalue) {
+        var ret = null;
+        if (datavalue != "") {
+            var vals = new Array();
+            vals = decodeURIComponent(datavalue).split("&");
+            for (var i in vals) {
+                vals[i] = vals[i].replace(/\+/g, " ").split("=");
+            }
+            ret = vals;
+
+        }
+        return ret;
+    };
     _self.getDataParam = function (queryString) {
         var vals = new Array();
         var retParam = new Array();
@@ -69,6 +82,39 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
         return retParam;
 
     };
+    _self.retrieveAllRecords = async function (entityName, topCount, queryOptions = "") {
+        let allRecords = [];
+        let fetchMore = true;
+        let fetchXmlPagingCookie = null;
 
+        while (fetchMore) {
+            let response;
+            try {
+                // Costruisci l'URL di richiesta con il cookie di paginazione se presente
+                let fetchXml = `<fetch mapping="logical" count="${topCount}" page="${allRecords.length / topCount + 1}">`;
+                if (fetchXmlPagingCookie) {
+                    fetchXml += `<cookie>${fetchXmlPagingCookie}</cookie>`;
+                }
+                fetchXml += queryOptions;
+                fetchXml += `</fetch>`;
+                response = await Xrm.WebApi.retrieveMultipleRecords(entityName, `?fetchXml=${encodeURIComponent(fetchXml)}`);
+            } catch (error) {
+                console.error("Error retrieving records:", error);
+                fetchMore = false;
+                continue;
+            }
 
+            // Aggiungi i record recuperati alla lista completa
+            allRecords = allRecords.concat(response.entities);
+
+            // Controlla se ci sono più pagine da recuperare
+            fetchMore = response["fetchXmlPagingCookie"] ? true : false;
+            if (fetchMore) {
+                // Estrai il cookie di paginazione per la richiesta successiva
+                fetchXmlPagingCookie = response["fetchXmlPagingCookie"];
+            }
+        }
+
+        return allRecords;
+    };
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

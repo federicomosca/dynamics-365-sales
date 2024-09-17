@@ -38,10 +38,12 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
         },
         execute: function (formContext) {
 
-            formContext.getControl()
+            let scopeTypeCodes =  formContext.getControl("res_scopetypecodes").getAttribute().getOptions();
+
+            
 
             jsonDataInput = {
-                test: "value"
+                scopeValues: scopeTypeCodes
             }
 
             pageInput = {
@@ -53,7 +55,7 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
             navigationOptions = {
                 target: 2,
                 width: { value: 40, unit: "%" },
-                height: { value: 70, unit: "%" },
+                height: { value: 50, unit: "%" },
                 position: 1,
                 title: 'Copia Listino'
             }
