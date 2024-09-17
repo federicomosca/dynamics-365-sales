@@ -29,10 +29,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                 Entity postImage = target.GetPostImage(preImage);
 
+                #region Valorizzo il campo Nazione (testo)
+                PluginRegion = "Valorizzo il campo Nazione (testo)";
                 postImage.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
                 string countryName = erCountry != null ? erCountry.Name : string.Empty;
 
                 target[DataModel.contact.address1_country] = countryName;
+                #endregion
             }
         }
     }

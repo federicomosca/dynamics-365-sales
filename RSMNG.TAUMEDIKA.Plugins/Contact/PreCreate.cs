@@ -23,10 +23,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
+            #region Valorizzo il campo Nazione (testo)
+            PluginRegion = "Valorizzo il campo Nazione (testo)";
             target.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
             string countryName = erCountry != null ? erCountry.Name : string.Empty;
 
             target[DataModel.contact.address1_name] = countryName;
+            #endregion
         }
     }
 }
