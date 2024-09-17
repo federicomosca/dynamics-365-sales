@@ -130,7 +130,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_paymentmethod => "res_paymentmethod";
 
 		/// <summary>
-		/// Display Name: Modalità di pagamento,
+		/// Display Name: Modalità pagamento documento,
 		/// Type: Lookup,
 		/// Related entities: res_paymentmethod,
 		/// Description: 
@@ -159,7 +159,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_reminderdate => "res_reminderdate";
 
 		/// <summary>
-		/// Display Name: Descrizione Sollecito,
+		/// Display Name: Descrizione sollecito,
 		/// Type: Memo,
 		/// Description: 
 		/// </summary>

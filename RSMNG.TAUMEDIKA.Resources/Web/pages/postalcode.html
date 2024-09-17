@@ -13,69 +13,68 @@
             right: 0;
         }
     </style>
-    <script type="text/javascript" src="../res_lib/suite.js"></script>
+    <script src="../res_lib/suite.js" type="text/javascript"></script>
+    <script src="../res_scripts/res_global.js" type="text/jscript"></script>
     <script>
-        let form = null;
-        //Form model
-        let formModel = {
-            entity: {
-                ///costanti entità
-                logicalName: "account",
-                displayName: "Account"
+        const DataModel = {
+            res_country : {
+	            ///Nazione constants.
+	            logicalName: "res_country",
+	            displayName: "Nazione",
+	            ///ID organizzazione
+	            organizationid: "organizationid",
+	            ///Nazione
+	            res_countryid: "res_countryid",
+	            ///Codice ISO (Apha3)
+	            res_isonumber: "res_isonumber",
+	            ///Nome
+	            res_name: "res_name",
             },
-            fields: {
-                ///Tipologia
-                res_accounttypecodes: "res_accounttypecodes",
-                ///Natura giuridica
-                res_accountnaturecode: "res_accountnaturecode",
-                ///Codice fiscale
-                res_taxcode: "res_taxcode",
-                ///Partita IVA
-                res_vatnumber: "res_vatnumber",
+            account : {
+	            ///Account constants.
+	            logicalName: "account",
+	            displayName: "Account",
                 ///Indirizzo
                 address1_line1: "address1_line1",
                 ///CAP
                 address1_postalcode: "address1_postalcode",
                 ///Città
                 address1_city: "address1_city",
-                ///Località
-                res_location: "res_location",
                 ///Provincia
                 address1_stateorprovince: "address1_stateorprovince",
                 ///Nazione
                 res_countryid: "res_countryid",
-
-                /// Values for field Natura giuridica
-                res_accountnaturecodeValues: {
-                    Personafisica: 100000000,
-                    Personagiuridica: 100000001
-                },
-
-                /// Values for field Tipologia
-                res_accounttypecodesValues: {
-                    Cliente: 100000000,
-                    Fornitore: 100000001
-                },
-            },
-            tabs: {
-
-            },
-            sections: {
-
+	            ///Nazione (Testo)
+	            address1_country: "address1_country",
             }
         };
+        let form = null;
+        //Form model
 
         onLoad = function () {
             const formconfig = {
                 padding: 0,
                 rows: [
                     {
+                    padding: 0,
+                    cols: [
+                    {
                         type: "button",
                         name: "cap",
-                        text: "C.A.P.",
+                        text: "SELEZIONA",
                         size: "medium",
                         view: "flat",
                         color: "primary"
+                    },
+                    {
+                        type: "button",
+                        name: "reset",
+                        text: "ANNULLA",
+                        size: "medium",
+                        view: "link",
+                        color: "primary"
+                    }
+                    ]
                     }
                 ]
             };
@@ -95,17 +94,34 @@
                 window._Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
                     function success(result) {
                         if (result.returnValue != null) {
+                            //Imposto in automatico i dati presi dal cap
                             let capJson = JSON.parse(result.returnValue);
-                            window._formContext.getAttribute(formModel.fields.address1_postalcode).setValue(capJson.code);
-                            window._formContext.getAttribute(formModel.fields.address1_postalcode).setValue(capJson.code);
-                            window._formContext.getAttribute(formModel.fields.address1_postalcode).setValue(capJson.code);
-                            window._formContext.getAttribute(formModel.fields.address1_postalcode).setValue(capJson.code);
+                            window._formContext.getAttribute(DataModel.account.address1_postalcode).setValue(capJson.code);
+                            window._formContext.getAttribute(DataModel.account.address1_city).setValue(capJson.city);
+                            window._formContext.getAttribute(DataModel.account.address1_stateorprovince).setValue(capJson.province);
+                            window._formContext.getAttribute(DataModel.account.address1_country).setValue(capJson.country);
+                            window._formContext.getAttribute(DataModel.account.res_countryid).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
                         }
+
+                        //Aggiorno in automatico i campi dell'indirizzo
+                        window._form.onChangeAddress(window._context);
                     },
                     function error(error) {
                         console.log(error.message)
                     }
                 );
+            });
+            form.getItem("reset").events.on("click", function () {
+                //Annullo i valori
+                window._formContext.getAttribute(DataModel.account.address1_postalcode).setValue(null);
+                window._formContext.getAttribute(DataModel.account.address1_city).setValue(null);
+                window._formContext.getAttribute(DataModel.account.address1_stateorprovince).setValue(null);
+                window._formContext.getAttribute(DataModel.account.res_countryid).setValue(null);
+                window._formContext.getAttribute(DataModel.account.address1_country).setValue(null);
+
+                //Aggiorno in automatico i campi dell'indirizzo
+                window._form.onChangeAddress(window._context);
+
             });
 
             if (window._Xrm == undefined && parent._Xrm != undefined) {
@@ -113,11 +129,15 @@
             }
 
         };
-        setContext = function (_xrm, _formContext) {
+        setContext = function (_xrm, _formContext, _form, _context) {
             window._Xrm = _xrm;
             window._formContext = _formContext;
+            window._form = _form;
+            window._context = _context;
             parent._Xrm = _xrm;
             parent._formContext = _formContext;
+            parent._form = _form;
+            parent._context = _context;
         }
     </script>
 </head>
