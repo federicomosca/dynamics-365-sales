@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.Shared.Contact;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             #region Valorizzo il campo Nazione (testo)
             PluginRegion = "Valorizzo il campo Nazione (testo)";
             target.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
-            string countryName = erCountry != null ? erCountry.Name : string.Empty;
+            string countryName = erCountry != null ? Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
             target[DataModel.contact.address1_name] = countryName;
             #endregion

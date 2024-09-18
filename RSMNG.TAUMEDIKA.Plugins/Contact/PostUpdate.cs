@@ -26,7 +26,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
-                if (preImage != null && preImage.Contains("contactid"))
+                if (preImage != null && preImage.Contains(DataModel.contact.contactid))
                 {
                     Entity postImage = target.GetPostImage(preImage);
 

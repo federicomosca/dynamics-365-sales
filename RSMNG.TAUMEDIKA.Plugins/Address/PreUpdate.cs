@@ -28,15 +28,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
+                #region Controllo campi obbligatori
+                PluginRegion = "Controllo campi obbligatori";
+                crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
+                #endregion
+
                 #region Controllo duplicati default
                 PluginRegion = "Controllo duplicati default";
 
                 Utility.CheckDefaultDuplicates(crmServiceProvider, PluginMessage, target, preImage);
-                #endregion
-
-                #region Controllo campi obbligatori
-                PluginRegion = "Controllo campi obbligatori";
-                crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
                 #endregion
             }
         }
