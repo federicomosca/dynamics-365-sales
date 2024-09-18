@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xrm.Sdk;
+using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +49,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         }
                         jsonDataOutput = Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
                         #endregion
-                        
+
                         break;
                     case "COPYPRICELEVEL":
                         jsonDataOutput = CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
@@ -64,15 +66,65 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
-            string result = String.Empty;
+            string result = "OK";
 
-            trace.Trace("COPYPRICELEVEL");
+            
+
+            try
+            {
+                //--- Deserializza --------------------------------------------------------------------------
+                PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(PriceLevel));
+                //-------------------------------------------------------------------------------------------
+
+                
+                Entity enPriceLevel = new Entity();
+
+                OptionSetValueCollection optSet = new OptionSetValueCollection(pl.selectedScope.Select(scope => new OptionSetValue(scope)).ToList());
 
 
+                enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
+                enPriceLevel.Attributes.Add(pricelevel.begindate, pl.begindate);
+                enPriceLevel.Attributes.Add(pricelevel.enddate, pl.enddate);
+                enPriceLevel.Attributes.Add(pricelevel.description, pl.description);
+                enPriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, new EntityReference("transactioncurrencyid", new Guid(pl.transactioncurrencyid)));
+                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, pl.isDefaultForAgents);
+                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
+                enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
 
+                service.Create(enPriceLevel);
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
 
 
             return result;
         }
     }
+
+    [System.Runtime.Serialization.DataContract]
+    public class PriceLevel
+    {
+        [System.Runtime.Serialization.DataMember]
+        public string name { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public int[] selectedScope { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public DateTime? begindate { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public DateTime? enddate { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public string transactioncurrencyid { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public bool isDefautWebsite { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public bool isDefaultForAgents { get; set; }
+        [System.Runtime.Serialization.DataMember]
+        public object description { get; set; }
+    }
+
+
+
 }

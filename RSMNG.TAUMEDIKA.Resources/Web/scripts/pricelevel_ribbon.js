@@ -40,14 +40,27 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
-            let scopeTypeCodes =  formContext.getControl("res_scopetypecodes").getAttribute().getOptions();
+            let scopeTypeCodes = formContext.getControl("res_scopetypecodes").getAttribute().getOptions();
             let selectedScope = formContext.getAttribute("res_scopetypecodes").getValue();
-            
+            let beginDate = formContext.getAttribute("begindate").getValue();
+            let endDate = formContext.getAttribute("enddate").getValue();
+            let transactionCurrency = formContext.getAttribute("transactioncurrencyid").getValue();
+            let isDefaultWebsite = formContext.getAttribute("res_isdefaultforwebsite").getValue();
+            let isDefaultForAgents = formContext.getAttribute("res_isdefaultforagents").getValue();
+            let description = formContext.getAttribute("description").getValue();
 
             jsonDataInput = {
                 scopeValues: scopeTypeCodes,
-                selectedScope: selectedScope
+                selectedScope: selectedScope,
+                begindate: beginDate,
+                enddate: endDate,
+                transactioncurrencyid: transactionCurrency === null ? null : RSMNG.TAUMEDIKA.GLOBAL.convertGuid(transactionCurrency[0].id),
+                isDefautWebsite: isDefaultWebsite,
+                isDefaultForAgents: isDefaultForAgents,
+                description: description
+
             }
+            console.log(jsonDataInput);
 
             pageInput = {
                 pageType: 'webresource',
@@ -95,65 +108,69 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
         execute: async function (formContext, SelectedControlSelectedItemIds) {
 
             await import('../res_scripts/res_global.js');
-            let optMetadata = await RSMNG.TAUMEDIKA.GLOBAL.getGlobalOptionSetMetadata("res_opt_scopetype");
             let selectedScope = [];
+            let optMetadata = await RSMNG.TAUMEDIKA.GLOBAL.getGlobalOptionSetMetadata("res_opt_scopetype");
+
             let scopeTypeCodes = optMetadata.map(item => ({
                 text: item.Label.UserLocalizedLabel.Label,
                 value: item.Value
             }));
 
             let pricelevelId = SelectedControlSelectedItemIds[0];
-            let queryOptions = "?$select=begindate,enddate,transactioncurrencyid,res_scopetypecodes,res_isdefaultforwebsite,res_isdefaultforagents,description";
+            let queryOptions = "?$select=begindate,enddate,_transactioncurrencyid_value,res_scopetypecodes,res_isdefaultforwebsite,res_isdefaultforagents,description";
 
+            Xrm.WebApi.retrieveRecord("pricelevel", pricelevelId, queryOptions).then(
+                function success(result) {
 
-            jsonDataInput = {
-                scopeValues: scopeTypeCodes,
-                selectedScope: selectedScope
-            }
-
-            pageInput = {
-                pageType: 'webresource',
-                webresourceName: '/res_pages/copyPriceLevel.html',
-                data: JSON.stringify(jsonDataInput)
-            }
-
-            navigationOptions = {
-                target: 2,
-                width: { value: 35, unit: "%" },
-                height: { value: 360, unit: "px" },
-                position: 1,
-                title: 'Copia Listino'
-            }
-
-            Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
-                function (result) {
-
-                    if (result.returnValue != null) {
-
-                        console.log("navigate ok");
+                    jsonDataInput = {
+                        scopeValues: scopeTypeCodes,
+                        selectedScope: result.res_scopetypecodes,
+                        begindate: result.begindate,
+                        enddate: result.enddate,
+                        transactioncurrencyid: result._transactioncurrencyid_value,
+                        isDefautWebsite: result.res_isdefaultforwebsite,
+                        isDefaultForAgents: result.res_isdefaultforagents,
+                        description: result.description
 
                     }
+
+                    pageInput = {
+                        pageType: 'webresource',
+                        webresourceName: '/res_pages/copyPriceLevel.html',
+                        data: JSON.stringify(jsonDataInput)
+                    }
+
+                    navigationOptions = {
+                        target: 2,
+                        width: { value: 35, unit: "%" },
+                        height: { value: 360, unit: "px" },
+                        position: 1,
+                        title: 'Copia Listino'
+                    }
+
+                    Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                        function (result) {
+
+                            if (result.returnValue != null) {
+
+                                console.log("navigate ok");
+
+                            }
+                        },
+
+                        function (error) {
+                            console.log(error.message);
+                        });
+
                 },
+                function error(error) {
 
-                function (error) {
-                    console.log(error.message);
-                });
+                    console.log(error);
+                }
+            );
 
 
-            //Xrm.WebApi.retrieveRecord("pricelevel", pricelevelId, queryOptions).then(
-            //    function success(result) {
 
-                    
-                   
-            //    },
-            //    function error(error) {
-
-            //        console.log(error);
-            //    }
-            //);
-            
-
-            
         }
     };
 }).call(RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME);
@@ -166,4 +183,3 @@ Alla call puoi aggiungere i namespace se hai necessità di estendere le funziona
 - RSMNG.PROGETTO.ENTITY.RIBBON.HOME
 */
 
- 

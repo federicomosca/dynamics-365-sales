@@ -119,9 +119,15 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             req.send();
         });
     };
-
+    //----------------------------------------------
+    _self.convertGuid = function (guidStr) {
+        var guid = guidStr.toLowerCase();
+        if (guidStr.startsWith('{')) {
+            guid = guid.replace('{', '').replace('}', '');
+        }
+        return guid;
+    };
     
-
     //-------------------------------------------------------------------------------------
     _self.retrieveAllRecords = async function (entityName, topCount, queryOptions = "") {
         let allRecords = [];
