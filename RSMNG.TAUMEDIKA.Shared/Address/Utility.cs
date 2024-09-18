@@ -23,7 +23,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         * se non esiste nessun address, creo un nuovo record address e lo valorizzo con i values passati come argomenti al metodo
         * metto Default a true
         */
-        public static EntityCollection CheckDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid newDefaultAddressId)
+        public static EntityCollection GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid newDefaultAddressId)
         {
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>

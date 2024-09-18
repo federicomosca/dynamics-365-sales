@@ -54,7 +54,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         );
 
                         //controllo se c'è già un indirizzo di default
-                        EntityCollection addresses = Utility.CheckDefaultAddress(crmServiceProvider, target.Id, addressId);
+                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id, addressId);
 
                         if (addresses.Entities.Count > 0)
                         {
