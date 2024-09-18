@@ -115,6 +115,7 @@
     <Compile Include="Address\PostUpdate.cs" />
     <Compile Include="Address\PreUpdate.cs" />
     <Compile Include="Contact\PostCreate.cs" />
+    <Compile Include="Contact\PostGrantAccess.cs" />
     <Compile Include="Contact\PostUpdate.cs" />
     <Compile Include="Contact\PreCreate.cs" />
     <Compile Include="Contact\PreUpdate.cs" />
