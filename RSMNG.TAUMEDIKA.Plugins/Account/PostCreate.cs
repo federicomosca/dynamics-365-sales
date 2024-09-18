@@ -36,10 +36,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
             if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
             {
+                crmServiceProvider.TracingService.Trace($"Address: {address}");
+                crmServiceProvider.TracingService.Trace($"City: {city}");
+                crmServiceProvider.TracingService.Trace($"Postal Code: {postalcode}");
                 /**
                  * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
                  */
-                Utility.CreateDefaultAddress(address, city, postalcode, target, crmServiceProvider.Service);
+                Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, address, city, postalcode);
             }
             #endregion
         }
