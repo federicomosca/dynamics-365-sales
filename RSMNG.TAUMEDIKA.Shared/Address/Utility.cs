@@ -23,41 +23,37 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         * se non esiste nessun address, creo un nuovo record address e lo valorizzo con i values passati come argomenti al metodo
         * metto Default a true
         */
-        public static EntityCollection CheckDefaultAddress(CrmServiceProvider crmServiceProvider, string logicalName, string customerIdString)
+        public static EntityCollection CheckDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid newDefaultAddressId)
         {
-            EntityCollection addresses = new EntityCollection();
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                            <fetch returntotalrecordcount=""true"">
+                            <fetch>
                               <entity name=""{DataModel.res_address.logicalName}"">
                                 <attribute name=""{DataModel.res_address.res_isdefault}"" />
                                 <filter type=""and"">
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                  <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
+                                  <condition attribute=""{DataModel.res_address.res_addressid}"" operator=""ne"" value=""{newDefaultAddressId.ToString()}"" />
+                                  <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{customerIdString.ToString()}"" />
                                   <condition attribute=""{DataModel.res_address.res_isdefault}"" operator=""eq"" value=""1"" />
-                                  <condition attribute=""{DataModel.res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
                             </fetch>";
 
-            addresses = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
-
-            return addresses;
+            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
         }
-        public static void CreateDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
+        public static Guid CreateNewDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
         {
             Entity enAddress = new Entity(DataModel.res_address.logicalName);
             enAddress[DataModel.res_address.res_addressField] = address;
             enAddress[DataModel.res_address.res_city] = city;
             enAddress[DataModel.res_address.res_postalcode] = postalcode;
 
-            //verificare se posso togliere questo passaggio ridondante
-            Guid customerId = new Guid(target.Id.ToString());
-            enAddress[DataModel.res_address.res_customerid] = new EntityReference(target.LogicalName, customerId);
+            enAddress[DataModel.res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
 
             enAddress[DataModel.res_address.res_isdefault] = true;
             enAddress[DataModel.res_address.res_iscustomeraddress] = true;
 
             Guid addressId = service.Create(enAddress);
+            return addressId;
         }
     }
 }

@@ -47,29 +47,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
                     if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
                     {
-                        EntityCollection addresses = Utility.CheckDefaultAddress(crmServiceProvider, postImage.LogicalName, postImage.Id.ToString());
+                        Guid addressId = Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
+                        address ?? preImage.GetAttributeValue<string>(DataModel.account.address1_name),
+                        city ?? preImage.GetAttributeValue<string>(DataModel.account.address1_city),
+                        postalcode ?? preImage.GetAttributeValue<string>(DataModel.account.address1_postalcode)
+                        );
 
-                        /**
-                         * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
-                         */
-                        Entity enAddress = new Entity(DataModel.res_address.logicalName);
-                        enAddress[DataModel.res_address.res_addressField] = address;
-                        enAddress[DataModel.res_address.res_city] = city;
-                        enAddress[DataModel.res_address.res_postalcode] = postalcode;
+                        //controllo se c'è già un indirizzo di default
+                        EntityCollection addresses = Utility.CheckDefaultAddress(crmServiceProvider, target.Id, addressId);
 
-                        Guid customerId = new Guid(postImage.Id.ToString());
-                        enAddress[DataModel.res_address.res_customerid] = new EntityReference(postImage.LogicalName, customerId);
-
-                        enAddress[DataModel.res_address.res_isdefault] = true;
-                        enAddress[DataModel.res_address.res_iscustomeraddress] = true;
-
-                        Guid addressId = crmServiceProvider.Service.Create(enAddress);
-
-                        if (addresses.TotalRecordCount != -1)
+                        if (addresses.Entities.Count > 0)
                         {
                             foreach (var duplicate in addresses.Entities)
                             {
                                 duplicate[DataModel.res_address.res_isdefault] = false;
+                                crmServiceProvider.Service.Update(duplicate);
                             }
                         }
                         #endregion

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using RSMNG.TAUMEDIKA.Shared.Contact;
+using RSMNG.TAUMEDIKA.Shared.Country;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,7 +29,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             target.TryGetAttributeValue<EntityReference>(DataModel.contact.res_countryid, out EntityReference erCountry);
             string countryName = erCountry != null ? Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
-            target[DataModel.contact.address1_name] = countryName;
+            target[DataModel.contact.address1_country] = countryName;
             #endregion
         }
     }

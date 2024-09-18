@@ -34,12 +34,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             target.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
             target.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
 
-            if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
+            if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(city) && !string.IsNullOrEmpty(postalcode))
             {
                 /**
                  * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
                  */
-                Utility.CreateDefaultAddress(target, crmServiceProvider.Service, address, city, postalcode);
+                Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, address, city, postalcode);
             }
             #endregion
         }
