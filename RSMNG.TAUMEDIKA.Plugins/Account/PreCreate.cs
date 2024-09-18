@@ -31,6 +31,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 }
             }
             #endregion
+
+            #region Imposto in automatico il campo Nazione testo
+            PluginRegion = "Imposto in automatico il campo Nazione testo";
+            target.TryGetAttributeValue<EntityReference>(DataModel.account.res_countryid, out EntityReference erCountry);
+            string countryName = erCountry != null ? Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : null;
+
+            target[DataModel.contact.address1_name] = countryName;
+            #endregion
         }
     }
 }

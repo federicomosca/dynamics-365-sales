@@ -13,7 +13,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
         {
             PluginStage = Stage.PRE;
             PluginMessage = "Update";
-            PluginPrimaryEntityName = DataModel.res_address.logicalName;
+            PluginPrimaryEntityName = DataModel.account.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
@@ -30,6 +30,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 {
                     throw new ApplicationException("il codice fiscale inserito è associato ad un'altro account.");
                 }
+            }
+            #endregion
+
+            #region Imposto in automatico il campo Nazione testo
+            PluginRegion = "Imposto in automatico il campo Nazione testo";
+            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
+            {
+                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+
+                Entity postImage = target.GetPostImage(preImage);
+
+                postImage.TryGetAttributeValue<EntityReference>(DataModel.account.res_countryid, out EntityReference erCountry);
+                string countryName = erCountry != null ? Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : null;
+
+                target[DataModel.account.address1_country] = countryName;
             }
             #endregion
         }

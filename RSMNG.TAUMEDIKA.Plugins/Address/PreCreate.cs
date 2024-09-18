@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +25,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
+            #region Controllo campi obbligatori
+            PluginRegion = "Controllo campi obbligatori";
+            crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
+            #endregion
+
             #region Genera nome
             PluginRegion = "Genera nome";
 
@@ -36,12 +42,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             if (erCustomer != null)
             {
-                if (erCustomer.LogicalName == "contact")
+                if (erCustomer.LogicalName == DataModel.contact.logicalName)
                 {
                     Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(DataModel.contact.fullname));
                     customerName = customer.GetAttributeValue<string>(DataModel.contact.fullname) ?? string.Empty;
                 }
-                if (erCustomer.LogicalName == "account")
+                if (erCustomer.LogicalName == DataModel.account.logicalName)
                 {
                     Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(DataModel.account.name));
                     customerName = customer.GetAttributeValue<string>(DataModel.account.name) ?? string.Empty;
@@ -54,17 +60,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             addressName = $"{customerName} {addressCity} {addressStreet}";
 
             target[DataModel.res_address.res_name] = addressName;
-            #endregion
-
-            #region Controllo duplicati default
-            PluginRegion = "Controllo duplicati default";
-
-            Utility.CheckDefaultDuplicates(crmServiceProvider, PluginMessage, target);
-            #endregion
-
-            #region Controllo campi obbligatori
-            PluginRegion = "Controllo campi obbligatori";
-            crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
             #endregion
         }
     }

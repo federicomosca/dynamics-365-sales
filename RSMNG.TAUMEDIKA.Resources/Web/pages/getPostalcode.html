@@ -33,9 +33,12 @@
             } else {
                 Xrm = parent._Xrm;
 
+                const CAP = Xrm.Page.getAttribute("address1_postalcode").getValue();
+
                 //Xrm.Utility.showProgressIndicator("Caricamento in corso...");
                 //form.disable();
                 document.getElementById('loader').style.display = 'block';
+
 
                 const formconfig = {
                     css: "dhx_widget--bordered",
@@ -50,7 +53,8 @@
                             labelWidth: "70px",
                             helpMessage: "Digita il CAP da ricercare",
                             placeholder: "Cerca il CAP",
-                            maxlength: 5
+                            maxlength: 5,
+                            value: CAP || ""
                         },
                         {
                             type: "container", //container for any widget except Form and Layout
@@ -92,7 +96,7 @@
                         { width: "150px", id: "province", header: [{ text: "Provincia" }] },
                         { width: "150px", id: "country", header: [{ text: "Nazione" }] },
                         { width: "0px", id: "countryid", header: [{ text: "Id" }], hidden: true },
-                        { width: "0px", id: "id", header: [{ text: "Id" }] , hidden:true }
+                        { width: "0px", id: "id", header: [{ text: "Id" }], hidden: true }
                     ],
                     data: dataset,
                     adjust: true,
@@ -116,7 +120,7 @@
                     onFilterGrid(grid, inputValue == "" ? null : inputValue);
                 });
                 form.getItem("grid").attach(grid);
-                onFilterGrid(grid, null);
+                onFilterGrid(grid, CAP);
                 form.setFocus("cap");
 
                 //form.enable();
