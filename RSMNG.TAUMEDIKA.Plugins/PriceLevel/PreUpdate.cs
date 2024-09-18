@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
 {
-    public class PreCreate : RSMNG.BaseClass
+    public class PreUpdate : RSMNG.BaseClass
     {
-        public PreCreate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        public PreUpdate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.PRE;
-            PluginMessage = "Create";
+            PluginMessage = "Update";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
@@ -27,9 +27,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             #region Controllo univocità DEFAULT PER AGENTI
             PluginRegion = "controllo univocità DEFAULT PER AGENTI";
 
-            bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
+            if(target.Contains(pricelevel.res_isdefaultforagents) || target.Contains(pricelevel.statecode))
+            {
+                bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
 
-            if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
+                if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
+            }
+            
             #endregion
 
 

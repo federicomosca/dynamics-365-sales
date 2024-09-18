@@ -119,7 +119,9 @@
     <Compile Include="Contact\PostUpdate.cs" />
     <Compile Include="Contact\PreCreate.cs" />
     <Compile Include="Contact\PreUpdate.cs" />
+    <Compile Include="PriceLevel\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreCreate.cs" />
+    <Compile Include="PriceLevel\Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quote\PrevCreate.cs" />
     <Compile Include="Address\PreCreate.cs" />
