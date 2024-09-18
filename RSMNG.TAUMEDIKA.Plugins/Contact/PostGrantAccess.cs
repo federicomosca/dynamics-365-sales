@@ -26,20 +26,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
             #region Gestisci permesso
 
-            // Ottieni il contesto del plugin
             IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
 
-            // Verifica se è presente un parametro "Target" nella richiesta
             if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference target)
             {
                 //qui definisco il record padre che sta condividendo i permessi
                 Guid contactId = target.Id;
-                var recordToShare = new EntityReference(DataModel.contact.logicalName, contactId);
 
                 if (context.InputParameters.Contains("PrincipalAccess") && context.InputParameters["PrincipalAccess"] is PrincipalAccess principalAccess)
                 {
                     //qui definisco l'utente (o team) a cui sto trasferendo i permessi
-                    Guid recipientId = principalAccess.Principal.Id;
+                    Guid principalId = principalAccess.Principal.Id;
+                    var principal = new EntityReference("systemuser", principalId);
 
                     //qui recupero i permessi selezionati nel record padre
                     AccessRights grantedAccessRights = principalAccess.AccessMask;
@@ -50,16 +48,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     {
                         foreach (var child in addresses.Entities)
                         {
-                            var grantChildAccessRequest = new GrantAccessRequest
-                            {
-                                Target = new EntityReference(DataModel.res_address.logicalName, child.Id), // Record figlio
-                                PrincipalAccess = new PrincipalAccess
-                                {
-                                    Principal = new EntityReference("systemuser", recipientId), // Utente destinatario
-                                    AccessMask = grantedAccessRights // Permessi trasferiti
-                                }
-                            };
-                            crmServiceProvider.Service.Execute(grantChildAccessRequest);
+                            crmServiceProvider.Service.GrantAccess(principal, target, grantedAccessRights);
                         }
                     }
                 }
