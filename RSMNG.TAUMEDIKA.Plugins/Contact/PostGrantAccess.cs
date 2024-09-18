@@ -1,4 +1,6 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
@@ -13,49 +15,65 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         public PostGrantAccess(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.POST;
-            PluginMessage = "Update";
+            PluginMessage = "GrantAccess";
             PluginPrimaryEntityName = DataModel.contact.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            crmServiceProvider.TracingService.Trace("I'm in the GrantAccess plugin");
 
-            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
+            #region Gestisci permesso
+
+            // Ottieni il contesto del plugin
+            IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
+
+            // Verifica se è presente un parametro "Target" nella richiesta
+            if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference targetEntity)
             {
-                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-                Entity postImage = target.GetPostImage(preImage);
+                Guid contactId = targetEntity.Id; // Questo è l'accountId
+                Guid userId = context.UserId;
 
-                #region Gestisci permesso
-
-                IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
-                if (context != null)
+                var grantAccessRequest = new GrantAccessRequest
+            {
+                Target = new EntityReference(DataModel.contact.logicalName, contactId), // Il record da condividere
+                PrincipalAccess = new PrincipalAccess
                 {
-                    Guid systemUserId = context.UserId;
-                    if (systemUserId != Guid.Empty)
-                    {
-                        try
-                        {
-                            Utility.CascadeSharingPermissions(DataModel.contact.logicalName, preImage.Id, systemUserId, crmServiceProvider.Service);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new InvalidPluginExecutionException($"Error in CascadeSharingPermissions: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("System User Id not found");
-                    }
+                    Principal = new EntityReference("systemuser", userId), // Utente o team
+                    AccessMask = AccessRights.ReadAccess // Tipo di permessi da concedere
                 }
-                else
-                {
-                    throw new InvalidPluginExecutionException("PluginContext is not of type IPluginExecutionContext.");
-                }
+            };
 
-                #endregion
+            // Esegui la richiesta
+            crmServiceProvider.Service.Execute(grantAccessRequest);
             }
+
+            //IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
+            //if (context != null)
+            //{
+            //    if (systemUserId != Guid.Empty)
+            //    {
+            //        try
+            //        {
+            //            Utility.CascadeSharingPermissions(DataModel.contact.logicalName, target.Id, systemUserId, crmServiceProvider.Service);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            throw new InvalidPluginExecutionException($"Error in CascadeSharingPermissions: {ex.Message}");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        throw new Exception("System User Id not found");
+            //    }
+            //}
+            //else
+            //{
+            //    throw new InvalidPluginExecutionException("PluginContext is not of type IPluginExecutionContext.");
+            //}
+
+            #endregion
         }
     }
 }
