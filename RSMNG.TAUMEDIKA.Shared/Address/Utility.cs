@@ -60,52 +60,5 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
             Guid addressId = crmServiceProvider.Service.Create(enAddress);
         }
-
-        public static void CheckDefaultDuplicates(CrmServiceProvider crmServiceProvider, string pluginMessage, Entity target, Entity preImage = null)
-        {
-            string updateCondition = string.Empty;
-            if (pluginMessage == "Update")
-            {
-                if (preImage != null)
-                {
-                    Entity postImage = target.GetPostImage(preImage);
-                    target = postImage;
-                    updateCondition = $@"<condition attribute=""{DataModel.res_address.res_addressid}"" operator=""ne"" value=""{target.Id}"" />";
-                }
-            }
-
-            target.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
-            target.TryGetAttributeValue<bool>(DataModel.res_address.res_isdefault, out bool isDefault);
-
-            if (isDefault)
-            {
-                if (erCustomer != null)
-                {
-                    var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                    <fetch>
-                                        <entity name=""{DataModel.res_address.logicalName}"">
-                                        <attribute name=""{DataModel.res_address.res_isdefault}"" />
-                                        <filter>
-                                            <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                            {updateCondition}
-                                            <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{erCustomer.Id}"" />
-                                            <condition attribute=""{DataModel.res_address.res_isdefault}"" operator=""eq"" value=""1"" />
-                                        </filter>
-                                        </entity>
-                                    </fetch>";
-
-                    EntityCollection addresses = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
-                    if (addresses.Entities.Count > 0)
-                    {
-                        foreach (Entity address in addresses.Entities)
-                        {
-                            address[DataModel.res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(address);
-                        }
-                    }
-                }
-            }
-
-        }
     }
 }

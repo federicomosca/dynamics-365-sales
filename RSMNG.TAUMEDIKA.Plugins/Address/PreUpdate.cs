@@ -32,12 +32,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 PluginRegion = "Controllo campi obbligatori";
                 crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
                 #endregion
-
-                #region Controllo duplicati default
-                PluginRegion = "Controllo duplicati default";
-
-                Utility.CheckDefaultDuplicates(crmServiceProvider, PluginMessage, target, preImage);
-                #endregion
             }
         }
     }

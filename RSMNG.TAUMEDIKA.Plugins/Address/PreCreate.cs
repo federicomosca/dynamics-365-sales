@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,12 +28,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
             crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
-            #endregion
-
-            #region Controllo duplicati default
-            PluginRegion = "Controllo duplicati default";
-
-            Utility.CheckDefaultDuplicates(crmServiceProvider, PluginMessage, target);
             #endregion
 
             #region Genera nome
