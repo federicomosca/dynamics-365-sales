@@ -25,17 +25,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
             #region Genero Nr. Ordine custom
             PluginRegion = "Genero Nr. Ordine custom";
+            
             string NrOrdine = String.Empty;
-            if (crmServiceProvider.PluginContext.ParentContext != null && crmServiceProvider.PluginContext.ParentContext.MessageName != "Revise")
+            crmServiceProvider.TracingService.Trace("dentro plugin");
+
+            //Prelevo l'AutoNumber per l'esecuzione
+            NrOrdine = Autonumber.GetAutoNumber(crmServiceProvider.ServiceFactory, DataModel.salesorder.logicalName, "", $@"{DateTime.Today.ToString("yyyy")}");
+            crmServiceProvider.TracingService.Trace("Value: " + NrOrdine + " " + DataModel.salesorder.logicalName);
+            if (!string.IsNullOrEmpty(NrOrdine))
             {
-                //Prelevo l'AutoNumber per l'esecuzione
-                NrOrdine = Autonumber.GetAutoNumber(crmServiceProvider.ServiceFactory, DataModel.salesorder.logicalName,"", $@"{DateTime.Today.ToString("yyyy")}");
-                if (!string.IsNullOrEmpty(NrOrdine))
-                {
-                    target.Attributes.Remove(DataModel.salesorder.ordernumber);
-                    target.Attributes.Add(DataModel.salesorder.ordernumber, NrOrdine);
-                }
+                target.Attributes.Remove(DataModel.salesorder.ordernumber);
+                target.Attributes.Add(DataModel.salesorder.ordernumber, NrOrdine);
             }
+
+
+            //if (crmServiceProvider.PluginContext.ParentContext != null && crmServiceProvider.PluginContext.ParentContext.MessageName != "Revise")
+            //{
+                
+            //}
             #endregion
         }
     }

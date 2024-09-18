@@ -26,16 +26,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             #region Genero Nr. Offerta custom
             PluginRegion = "Genero Nr. Offerta custom";
             string NrOfferta = String.Empty;
-            if (crmServiceProvider.PluginContext.ParentContext != null && crmServiceProvider.PluginContext.ParentContext.MessageName != "Revise")
-            {
+            crmServiceProvider.TracingService.Trace("00");
+                //if (crmServiceProvider.PluginContext.ParentContext != null && crmServiceProvider.PluginContext.ParentContext.MessageName != "Revise")
+                //{
                 //Prelevo l'AutoNumber per l'esecuzione
                 NrOfferta = Autonumber.GetAutoNumber(crmServiceProvider.ServiceFactory, DataModel.quote.logicalName,"", $@"{DateTime.Today.ToString("yyyy")}");
                 if (!string.IsNullOrEmpty(NrOfferta))
                 {
-                    target.Attributes.Remove(DataModel.quote.quotenumber);
-                    target.Attributes.Add(DataModel.quote.quotenumber, NrOfferta);
-                }
+                crmServiceProvider.TracingService.Trace("01");
+                target.Attributes.Remove(DataModel.quote.quotenumber);
+                target.Attributes.Add(DataModel.quote.quotenumber, NrOfferta);
+                //target[DataModel.quote.quotenumber] = NrOfferta;
             }
+            //}
             #endregion
         }
     }
