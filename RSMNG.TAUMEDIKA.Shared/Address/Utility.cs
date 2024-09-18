@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace RSMNG.TAUMEDIKA.Shared.Address
 {
@@ -22,12 +23,10 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         * se non esiste nessun address, creo un nuovo record address e lo valorizzo con i values passati come argomenti al metodo
         * metto Default a true
         */
-        public static void CheckAddress(CrmServiceProvider crmServiceProvider, string logicalName, string customerIdString, string address = "", string city = "", string postalcode = "", string pluginMessage = "")
+        public static EntityCollection CheckDefaultAddress(CrmServiceProvider crmServiceProvider, string logicalName, string customerIdString)
         {
-            if (!string.IsNullOrEmpty(pluginMessage))
-            {
-
-                var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            EntityCollection addresses = new EntityCollection();
+            var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch returntotalrecordcount=""true"">
                               <entity name=""{DataModel.res_address.logicalName}"">
                                 <attribute name=""{DataModel.res_address.res_isdefault}"" />
@@ -40,25 +39,25 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                               </entity>
                             </fetch>";
 
-                bool results = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses)).TotalRecordCount == -1;
+            addresses = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
 
-                if (results) { return; }
-            }
-            /**
-             * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
-             */
-            Entity enAddress = new Entity("res_address");
+            return addresses;
+        }
+        public static void CreateDefaultAddress(string address, string city, string postalcode, Entity target, IOrganizationService service)
+        {
+            Entity enAddress = new Entity(DataModel.res_address.logicalName);
             enAddress[DataModel.res_address.res_addressField] = address;
             enAddress[DataModel.res_address.res_city] = city;
             enAddress[DataModel.res_address.res_postalcode] = postalcode;
 
-            Guid customerId = new Guid(customerIdString);
-            enAddress[DataModel.res_address.res_customerid] = new EntityReference(logicalName, customerId);
+            //verificare se posso togliere questo passaggio ridondante
+            Guid customerId = new Guid(target.Id.ToString());
+            enAddress[DataModel.res_address.res_customerid] = new EntityReference(target.LogicalName, customerId);
 
             enAddress[DataModel.res_address.res_isdefault] = true;
             enAddress[DataModel.res_address.res_iscustomeraddress] = true;
 
-            Guid addressId = crmServiceProvider.Service.Create(enAddress);
+            Guid addressId = service.Create(enAddress);
         }
     }
 }

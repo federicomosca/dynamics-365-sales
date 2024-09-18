@@ -22,25 +22,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            string contactId = target.Id.ToString();
-
             #region Crea indirizzo di default
             PluginRegion = "Crea indirizzo di default";
 
             /**
              * controllo che i campi Indirizzo, Città e CAP siano valorizzati
-             * se almeno uno è valorizzato chiamo il metodo per controllare la presenza di altri address
-             * se non ve ne sono, viene creato un nuovo indirizzo con i valori dei suddetti campi 
+             * se almeno uno è valorizzato viene creato un nuovo indirizzo con i valori dei suddetti campi 
              * e viene settato come indirizzo di default
              */
-
             target.TryGetAttributeValue<string>(DataModel.contact.address1_name, out string address);
             target.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
             target.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
 
-            if (contactId != null & (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode)))
+            if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
             {
-                Utility.CheckAddress(crmServiceProvider, target.LogicalName, contactId, address, city, postalcode);
+                /**
+                 * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
+                 */
+                Utility.CreateDefaultAddress(address, city, postalcode, target, crmServiceProvider.Service);
             }
             #endregion
         }

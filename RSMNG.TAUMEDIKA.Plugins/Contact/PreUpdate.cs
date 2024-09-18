@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using RSMNG.TAUMEDIKA.Shared.Contact;
+using RSMNG.TAUMEDIKA.Shared.Country;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

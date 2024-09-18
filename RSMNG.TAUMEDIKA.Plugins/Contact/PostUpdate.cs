@@ -25,30 +25,77 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+                Entity postImage = target.GetPostImage(preImage);
 
-                if (preImage != null && preImage.Contains(DataModel.contact.contactid))
+                #region Crea indirizzo di default
+                PluginRegion = "Crea indirizzo di default";
+
+                /**
+                 * controllo che i campi Indirizzo, Città e CAP siano valorizzati
+                 * se almeno uno è valorizzato chiamo il metodo per controllare la presenza di altri address
+                 * se non ve ne sono, viene creato un nuovo indirizzo con i valori dei suddetti campi 
+                 * e viene settato come indirizzo di default
+                 */
+                postImage.TryGetAttributeValue<string>(DataModel.contact.address1_name, out string address);
+                postImage.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
+                postImage.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
+
+                if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
                 {
-                    Entity postImage = target.GetPostImage(preImage);
-
-                    string contactId = preImage.Id.ToString();
-
-                    #region Crea indirizzo di default
-                    PluginRegion = "Crea indirizzo di default";
+                    EntityCollection addresses = Utility.CheckDefaultAddress(crmServiceProvider, postImage.LogicalName, postImage.Id.ToString());
 
                     /**
-                     * controllo che i campi Indirizzo, Città e CAP siano valorizzati
-                     * se almeno uno è valorizzato chiamo il metodo per controllare la presenza di altri address
-                     * se non ve ne sono, viene creato un nuovo indirizzo con i valori dei suddetti campi 
-                     * e viene settato come indirizzo di default
+                     * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
                      */
-                    postImage.TryGetAttributeValue<string>(DataModel.contact.address1_name, out string address);
-                    postImage.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
-                    postImage.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
+                    Entity enAddress = new Entity(DataModel.res_address.logicalName);
+                    enAddress[DataModel.res_address.res_addressField] = address;
+                    enAddress[DataModel.res_address.res_city] = city;
+                    enAddress[DataModel.res_address.res_postalcode] = postalcode;
 
-                    if (!string.IsNullOrEmpty(contactId) && !string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(city) && !string.IsNullOrEmpty(postalcode))
+                    Guid customerId = new Guid(postImage.Id.ToString());
+                    enAddress[DataModel.res_address.res_customerid] = new EntityReference(postImage.LogicalName, customerId);
+
+                    enAddress[DataModel.res_address.res_isdefault] = true;
+                    enAddress[DataModel.res_address.res_iscustomeraddress] = true;
+
+                    Guid addressId = crmServiceProvider.Service.Create(enAddress);
+
+                    if (addresses.TotalRecordCount != -1)
                     {
-                        Utility.CheckAddress(crmServiceProvider, target.LogicalName, contactId, address, city, postalcode, PluginMessage);
+                        foreach (var duplicate in addresses.Entities)
+                        {
+                            duplicate[DataModel.res_address.res_isdefault] = false;
+                        }
                     }
+                    #endregion
+
+                    #region Gestisci permesso
+
+                    IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
+                    if (context != null)
+                    {
+                        Guid systemUserId = context.UserId;
+                        if (systemUserId != Guid.Empty)
+                        {
+                            try
+                            {
+                                Helper.CascadeSharingPermissions(DataModel.contact.logicalName, preImage.Id, systemUserId, crmServiceProvider.Service);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new InvalidPluginExecutionException($"Error in CascadeSharingPermissions: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("System User Id not found");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidPluginExecutionException("PluginContext is not of type IPluginExecutionContext.");
+                    }
+
                     #endregion
                 }
             }

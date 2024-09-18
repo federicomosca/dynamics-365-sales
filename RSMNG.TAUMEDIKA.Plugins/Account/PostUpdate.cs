@@ -45,11 +45,35 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     postImage.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
                     postImage.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string postalcode);
 
-                    if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(city) && !string.IsNullOrEmpty(postalcode))
+                    if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
                     {
-                        Utility.CheckAddress(crmServiceProvider, target.LogicalName, accountId, address, city, postalcode, PluginMessage);
+                        EntityCollection addresses = Utility.CheckDefaultAddress(crmServiceProvider, postImage.LogicalName, postImage.Id.ToString());
+
+                        /**
+                         * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
+                         */
+                        Entity enAddress = new Entity(DataModel.res_address.logicalName);
+                        enAddress[DataModel.res_address.res_addressField] = address;
+                        enAddress[DataModel.res_address.res_city] = city;
+                        enAddress[DataModel.res_address.res_postalcode] = postalcode;
+
+                        Guid customerId = new Guid(postImage.Id.ToString());
+                        enAddress[DataModel.res_address.res_customerid] = new EntityReference(postImage.LogicalName, customerId);
+
+                        enAddress[DataModel.res_address.res_isdefault] = true;
+                        enAddress[DataModel.res_address.res_iscustomeraddress] = true;
+
+                        Guid addressId = crmServiceProvider.Service.Create(enAddress);
+
+                        if (addresses.TotalRecordCount != -1)
+                        {
+                            foreach (var duplicate in addresses.Entities)
+                            {
+                                duplicate[DataModel.res_address.res_isdefault] = false;
+                            }
+                        }
+                        #endregion
                     }
-                    #endregion
                 }
             }
         }
