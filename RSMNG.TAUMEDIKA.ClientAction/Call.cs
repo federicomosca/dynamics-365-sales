@@ -97,7 +97,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 enPriceLevel.Attributes.Add(pricelevel.enddate, endDate);
                 enPriceLevel.Attributes.Add(pricelevel.description, pl.description);
                 enPriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, new EntityReference("transactioncurrency", new Guid(pl.transactioncurrencyid)));
-                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, pl.isDefaultForAgents);
+                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, false); // Esiste solo un record con isdefaultforagents a true, quindi questo valore a priori non può essere copiato.
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
 
