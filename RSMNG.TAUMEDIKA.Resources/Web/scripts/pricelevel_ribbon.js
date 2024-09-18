@@ -42,8 +42,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 
             let scopeTypeCodes = formContext.getControl("res_scopetypecodes").getAttribute().getOptions();
             let selectedScope = formContext.getAttribute("res_scopetypecodes").getValue();
-            let beginDate = formContext.getAttribute("begindate").getValue();
-            let endDate = formContext.getAttribute("enddate").getValue();
+            let beginDate = new Date(formContext.getAttribute("begindate").getValue());
+            let endDate = new Date(formContext.getAttribute("enddate").getValue());
             let transactionCurrency = formContext.getAttribute("transactioncurrencyid").getValue();
             let isDefaultWebsite = formContext.getAttribute("res_isdefaultforwebsite").getValue();
             let isDefaultForAgents = formContext.getAttribute("res_isdefaultforagents").getValue();
@@ -52,8 +52,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
             jsonDataInput = {
                 scopeValues: scopeTypeCodes,
                 selectedScope: selectedScope,
-                begindate: beginDate,
-                enddate: endDate,
+                begindate: beginDate.toISOString(),
+                enddate: endDate.toISOString(),
                 transactioncurrencyid: transactionCurrency === null ? null : RSMNG.TAUMEDIKA.GLOBAL.convertGuid(transactionCurrency[0].id),
                 isDefautWebsite: isDefaultWebsite,
                 isDefaultForAgents: isDefaultForAgents,
@@ -125,8 +125,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
                     jsonDataInput = {
                         scopeValues: scopeTypeCodes,
                         selectedScope: result.res_scopetypecodes,
-                        begindate: result.begindate,
-                        enddate: result.enddate,
+                        begindate: result.begindate !== null ? result.begindate.replace("Z", ".000Z") : null,
+                        enddate: result.enddate !== null ? result.enddate.replace("Z", ".000Z") : null,
                         transactioncurrencyid: result._transactioncurrencyid_value,
                         isDefautWebsite: result.res_isdefaultforwebsite,
                         isDefaultForAgents: result.res_isdefaultforagents,

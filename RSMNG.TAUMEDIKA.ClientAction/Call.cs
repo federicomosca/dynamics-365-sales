@@ -1,10 +1,13 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using Microsoft.SqlServer.Server;
+using Microsoft.Xrm.Sdk;
 using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +35,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ActionName:{actionName}.");
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"JsonDataInput:{jsonDataInput}.");
                 Model.BasicOutput basicOutput = new Model.BasicOutput();
+
                 switch (actionName)
                 {
                     case "CASE":
@@ -66,27 +70,33 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
-            string result = "OK";
+            string result = string.Empty;
 
-            
+            Model.BasicOutput basicOutput = new Model.BasicOutput() { result = 0, message = "Ok copia effettuata con successo." };
 
             try
             {
+                ThrowTestException(false);
+
                 //--- Deserializza --------------------------------------------------------------------------
                 PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(PriceLevel));
                 //-------------------------------------------------------------------------------------------
 
-                
-                Entity enPriceLevel = new Entity();
+
+                Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
                 OptionSetValueCollection optSet = new OptionSetValueCollection(pl.selectedScope.Select(scope => new OptionSetValue(scope)).ToList());
 
-
+                DateTime? beginnerDate = null;
+                DateTime? endDate = null;
+                if (pl.begindate != null) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+                if (pl.enddate != null) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+                
                 enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
-                enPriceLevel.Attributes.Add(pricelevel.begindate, pl.begindate);
-                enPriceLevel.Attributes.Add(pricelevel.enddate, pl.enddate);
+                enPriceLevel.Attributes.Add(pricelevel.begindate, beginnerDate);
+                enPriceLevel.Attributes.Add(pricelevel.enddate, endDate);
                 enPriceLevel.Attributes.Add(pricelevel.description, pl.description);
-                enPriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, new EntityReference("transactioncurrencyid", new Guid(pl.transactioncurrencyid)));
+                enPriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, new EntityReference("transactioncurrency", new Guid(pl.transactioncurrencyid)));
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, pl.isDefaultForAgents);
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
@@ -95,12 +105,25 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             }
             catch (Exception ex)
             {
-                result = ex.Message;
+                basicOutput.result= - 1;
+                basicOutput.message= ex.Message;
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
-
+            finally
+            {
+                result = RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
+            }
 
             return result;
+        }
+        static void ThrowTestException(bool isThrow)
+        {
+            if (isThrow)
+            {
+                // Simulate an exception
+                throw new InvalidOperationException("This is a test exception to force a catch block.");
+            }
+
         }
     }
 
@@ -112,9 +135,9 @@ namespace RSMNG.TAUMEDIKA.ClientAction
         [System.Runtime.Serialization.DataMember]
         public int[] selectedScope { get; set; }
         [System.Runtime.Serialization.DataMember]
-        public DateTime? begindate { get; set; }
+        public string begindate { get; set; }
         [System.Runtime.Serialization.DataMember]
-        public DateTime? enddate { get; set; }
+        public string enddate { get; set; }
         [System.Runtime.Serialization.DataMember]
         public string transactioncurrencyid { get; set; }
         [System.Runtime.Serialization.DataMember]

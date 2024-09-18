@@ -17,6 +17,9 @@
             transform: translate(-50%, -50%);
             display: none;
         }
+
+        .error-message {
+        }
     </style>
     <script type="text/javascript" src="../res_lib/suite.js"></script>
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
@@ -51,10 +54,11 @@
                     {
                         padding: "20px",
                         cols: [
-                            { type: "button", name: "coppia", padding: "5px", text: "Copia", size: "medium", view: "flat", submit: true, color: "primary", disabled: true },
+                            { type: "button", name: "copia", padding: "5px", text: "Copia", size: "medium", view: "flat", submit: true, color: "primary", disabled: true },
                             { type: "button", name: "annulla", padding: "5px", text: "Annulla", size: "medium", view: "flat", submit: true, color: "primary" }
                         ]
-                    }
+                    },
+                    { type: "text", name: "errorMessage", label: "", value: "test", hidden: true, css: "error-message" },
 
                 ]
             });
@@ -63,9 +67,9 @@
                 const isFormValid = form.validate();
 
                 if (isFormValid) {
-                    form.getItem("coppia").enable();
+                    form.getItem("copia").enable();
                 } else {
-                    form.getItem("coppia").disable();
+                    form.getItem("copia").disable();
                 }
             });
 
@@ -73,7 +77,7 @@
 
 
             form.events.on("click", function (name, e) {
-                if (name === "coppia") {
+                if (name === "copia") {
 
                     let out = {
                         name: form.getItem("name").getValue(),
@@ -115,16 +119,36 @@
                             if (response.ok) { return response.json(); }
                         }
                     ).then(function (responseBody) {
-                        var result = responseBody;
+                        var result = JSON.parse(responseBody.jsonDataOutput);
                         console.log(result);
+                        console.log(result.message);
 
-                        form.enable();
-                        document.getElementById('loader').style.display = 'none'; 
-                        var jsondataoutput = result["jsonDataOutput"]; // Edm.String
 
-                    }).catch(function (error) {
+
                         form.enable();
                         document.getElementById('loader').style.display = 'none';
+
+                        form.getItem("name").hide();
+                        form.getItem("ambito").hide();
+                        form.getItem("copia").hide();
+                        form.getItem("annulla").hide();
+                        form.getItem("errorMessage").setValue(result.message);
+                        form.getItem("errorMessage").show();
+
+
+
+
+                    }).catch(function (error) {
+                        form.getItem("name").hide();
+                        form.getItem("ambito").hide();
+                        form.getItem("copia").hide();
+                        form.getItem("annulla").hide();
+                        form.getItem("errorMessage").setValue(error.message).show();
+
+                        document.getElementById('loader').style.display = 'none';
+
+
+
                         console.log(error.message);
                     });
                     //--------------------------------------
