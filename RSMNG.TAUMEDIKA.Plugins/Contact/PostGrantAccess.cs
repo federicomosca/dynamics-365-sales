@@ -30,49 +30,40 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
 
             // Verifica se è presente un parametro "Target" nella richiesta
-            if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference targetEntity)
+            if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference target)
             {
-                Guid contactId = targetEntity.Id; // Questo è l'accountId
-                Guid userId = context.UserId;
+                //qui definisco il record padre che sta condividendo i permessi
+                Guid contactId = target.Id;
+                var recordToShare = new EntityReference(DataModel.contact.logicalName, contactId);
 
-                var grantAccessRequest = new GrantAccessRequest
-            {
-                Target = new EntityReference(DataModel.contact.logicalName, contactId), // Il record da condividere
-                PrincipalAccess = new PrincipalAccess
+                if (context.InputParameters.Contains("PrincipalAccess") && context.InputParameters["PrincipalAccess"] is PrincipalAccess principalAccess)
                 {
-                    Principal = new EntityReference("systemuser", userId), // Utente o team
-                    AccessMask = AccessRights.ReadAccess // Tipo di permessi da concedere
+                    //qui definisco l'utente (o team) a cui sto trasferendo i permessi
+                    Guid recipientId = principalAccess.Principal.Id;
+
+                    //qui recupero i permessi selezionati nel record padre
+                    AccessRights grantedAccessRights = principalAccess.AccessMask;
+
+                    EntityCollection addresses = Utility.CascadeSharingPermissions(contactId, crmServiceProvider.Service);
+
+                    if (addresses.Entities.Count > 0)
+                    {
+                        foreach (var child in addresses.Entities)
+                        {
+                            var grantChildAccessRequest = new GrantAccessRequest
+                            {
+                                Target = new EntityReference(DataModel.res_address.logicalName, child.Id), // Record figlio
+                                PrincipalAccess = new PrincipalAccess
+                                {
+                                    Principal = new EntityReference("systemuser", recipientId), // Utente destinatario
+                                    AccessMask = grantedAccessRights // Permessi trasferiti
+                                }
+                            };
+                            crmServiceProvider.Service.Execute(grantChildAccessRequest);
+                        }
+                    }
                 }
-            };
-
-            // Esegui la richiesta
-            crmServiceProvider.Service.Execute(grantAccessRequest);
             }
-
-            //IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
-            //if (context != null)
-            //{
-            //    if (systemUserId != Guid.Empty)
-            //    {
-            //        try
-            //        {
-            //            Utility.CascadeSharingPermissions(DataModel.contact.logicalName, target.Id, systemUserId, crmServiceProvider.Service);
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            throw new InvalidPluginExecutionException($"Error in CascadeSharingPermissions: {ex.Message}");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        throw new Exception("System User Id not found");
-            //    }
-            //}
-            //else
-            //{
-            //    throw new InvalidPluginExecutionException("PluginContext is not of type IPluginExecutionContext.");
-            //}
-
             #endregion
         }
     }
