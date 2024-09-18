@@ -41,6 +41,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 {
                     if (erCustomer != null)
                     {
+                        /**
+                         * controllo se ci sono già indirizzi correlati, attivi e con default=true
+                         * se ci sono eseguo l'update con default=false
+                         */
                         var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                         <entity name=""{DataModel.res_address.logicalName}"">
