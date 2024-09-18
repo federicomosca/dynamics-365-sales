@@ -43,7 +43,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
             return addresses;
         }
-        public static void CreateDefaultAddress(string address, string city, string postalcode, Entity target, IOrganizationService service)
+        public static void CreateDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
         {
             Entity enAddress = new Entity(DataModel.res_address.logicalName);
             enAddress[DataModel.res_address.res_addressField] = address;
