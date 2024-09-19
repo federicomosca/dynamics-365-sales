@@ -43,5 +43,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uom.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uomschedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Quote\Utility.cs" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using RSMNG.TAUMEDIKA.Shared.Country;
+using RSMNG.TAUMEDIKA.Shared.Quote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +24,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
+            #region Controllo campi obbligatori
+            PluginRegion = "Controllo campi obbligatori";
 
+            VerifyMandatoryField(crmServiceProvider, Utility.mandatoryFields);
+            #endregion
         }
     }
 }
