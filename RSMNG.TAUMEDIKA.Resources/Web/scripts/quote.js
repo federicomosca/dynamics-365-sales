@@ -432,8 +432,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
 
         if (bankControl) {
-            return;
-            //non mi è chiaro se Condizioni di pagamento è un option set o una look up
+            const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
+            if (paymentTermAttribute) {
+                const paymentTermId = paymentTermAttribute.getValue() ? paymentTermAttribute.getValue()[0].id : null;
+                if (paymentTermId) {
+                    const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
+                    Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
+                        paymentTerm => {
+                            const flag = paymentTerm.res_isbankvisible ?? null;
+                            bankControl.setVisible(flag);
+                        },
+                            error => {
+                                console.log(error.message)
+                            }
+                    );
+                }
+            }
         }
     }
     //---------------------------------------------------
