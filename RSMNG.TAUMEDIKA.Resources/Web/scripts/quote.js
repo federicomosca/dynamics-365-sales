@@ -377,7 +377,65 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.fillPriceLevelField = executionContext => {
+        const formContext = executionContext.getFormContext();
 
+        const priceLevelAttribute = formContext.getAttribute(_self.formModel.fields.pricelevelid);
+
+        if (priceLevelAttribute) {
+
+            var fetchData = {
+                "res_isdefaultforagents": "1",
+                "statecode": "0"
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch top='1'>",
+                "  <entity name='pricelevel'>",
+                "    <attribute name='pricelevelid'/>",
+                "    <attribute name='name'/>",
+                "    <filter>",
+                "      <condition attribute='res_isdefaultforagents' operator='eq' value='", fetchData.res_isdefaultforagents/*1*/, "'/>",
+                "      <condition attribute='statecode' operator='eq' value='", fetchData.statecode/*0*/, "'/>",
+                "    </filter>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+            Xrm.WebApi.retrieveMultipleRecords("pricelevel", fetchXml).then(
+                priceLevel => {
+                    if (priceLevel.entities.length < 0) return;
+                    const priceLevelId = priceLevel.entities[0].pricelevelid ?? null;
+                    const priceLevelName = priceLevel.entities[0].name ?? null;
+
+                    if (!priceLevelId || !priceLevelName)
+                    {
+                        console.log("id or name missing")
+                        return;
+                    }
+
+                    const priceLevelLookUp = [{
+                        id: priceLevelId,
+                        name: priceLevelName,
+                        entityType: "pricelevel"
+                    }];
+
+                    priceLevelAttribute.setValue(priceLevelLookUp);
+                },
+                error => {
+                    console.log(error.message);
+                }
+            );
+        }
+    }
+    //---------------------------------------------------
+    _self.handleFieldsVisibility = formContext => {
+        const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
+
+        if (bankControl) {
+            return;
+            //non mi è chiaro se Condizioni di pagamento è un option set o una look up
+        }
+    }
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
@@ -394,11 +452,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        formContext.getAttribute(_self.formModel.fields.effectivefrom).addOnChange(_self.checkDateConsistency);
-        formContext.getAttribute(_self.formModel.fields.effectiveto).addOnChange(_self.checkDateConsistency);
 
         //Init function
         _self.fillDateField(formContext);
+        _self.fillPriceLevelField(executionContext);
+        _self.handleFieldsVisibility(formContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
