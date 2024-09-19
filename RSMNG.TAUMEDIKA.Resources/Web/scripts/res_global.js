@@ -164,4 +164,30 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
 
         return allRecords;
     };
+
+    /**
+     * 
+     * @param {any} executionContext
+     * @param {any} startDate
+     * @param {any} endDate
+     * 
+     * @returns {void}
+     * 
+     * controlla che la data di inizio non sia antecedente alla data di fine,
+     * in caso contrario imposta la notifica sul campo che è stato modificato
+     */
+    _self.checkDateConsistency = (executionContext, startDate, endDate) => {
+        const formContext = executionContext.getFormContext();
+        const eventSourceAttribute = executionContext.getEventSource();
+        const eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
+
+        if (eventSourceControl) {
+            eventSourceControl.clearNotification();
+            if (startDate && endDate) {
+                if (Date.parse(startDate) > Date.parse(endDate)) {
+                    eventSourceControl.setNotification(`La data di inizio ${startDate} non può essere antecedente alla data di fine ${endDate}`);
+                }
+            }
+        }
+    }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);
