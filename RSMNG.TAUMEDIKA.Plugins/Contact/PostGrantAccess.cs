@@ -22,14 +22,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            crmServiceProvider.TracingService.Trace("I'm in the GrantAccess plugin");
-
-            #region Gestisci permesso
-
             IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
 
             if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference target)
             {
+                #region Gestisci permesso
+
                 //qui definisco il record padre che sta condividendo i permessi
                 Guid contactId = target.Id;
 
@@ -46,7 +44,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                     if (addresses.Entities.Count > 0)
                     {
-                        foreach (var child in addresses.Entities)
+                        foreach (var address in addresses.Entities)
                         {
                             crmServiceProvider.Service.GrantAccess(principal, target, grantedAccessRights);
                         }
