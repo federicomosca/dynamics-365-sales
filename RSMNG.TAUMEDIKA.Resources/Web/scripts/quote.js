@@ -377,6 +377,24 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.checkDateConsistency = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const eventSourceAttribute = executionContext.getEventSource();
+        const eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
+        eventSourceControl.getControl().clearNotification();
+
+        const startDate = formContext.getAttribute(_self.formModel.fields.effectivefrom)?.getValue() ?? null;
+        const endDate = formContext.getAttribute()?.getValue(_self.formModel.fields.effectiveto) ?? null;
+
+        if (eventSourceControl) {
+            if (startDate && endDate) {
+                if (Date.parse(startDate) > Date.parse(endDate)) {
+                    eventSourceControl.getControl().setNotification()
+                }
+            }
+        }
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -392,6 +410,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
+        formContext.getAttribute(_self.formModel.fields.effectivefrom).addOnChange(_self.checkDateConsistency);
+        formContext.getAttribute(_self.formModel.fields.effectiveto).addOnChange(_self.checkDateConsistency);
 
         //Init function
         _self.fillDateField(formContext);
