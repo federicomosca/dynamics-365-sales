@@ -57,30 +57,5 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             Guid addressId = service.Create(enAddress);
             return addressId;
         }
-
-        public static void CascadeSharingPermissions(string customerLogicalName, Guid customerId, Guid userId, IOrganizationService service)
-        {
-            /**
-             * questa funzione prende in ingresso logical name e id dell'entità (contact o account) su cui si è effettuata l'operazione di share,
-             * l'id dell'utente (o team) corrente e il service,
-             * recupera i permessi della stessa, recupera gli address correlati 
-             * e gli assegna gli stessi permessi (update)
-             */
-
-            var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                            <fetch>
-                              <entity name=""res_address"">
-                                <filter>
-                                  <condition attribute=""res_customerid"" operator=""eq"" value=""{customerId}"" />
-                                  <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                </filter>
-                              </entity>
-                            </fetch>";
-            EntityCollection addresses = service.RetrieveMultiple(new FetchExpression(fetchAddresses));
-            foreach (Entity address in addresses.Entities)
-            {
-                service.GrantAccess(address.ToEntityReference(), new EntityReference(systemuser.logicalName, userId), AccessRights.ReadAccess);
-            }
-        }
     }
 }
