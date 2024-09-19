@@ -14,7 +14,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
     {
         public PostCreate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
-            PluginStage = Stage.PRE;
+            PluginStage = Stage.POST;
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.quote.logicalName;
             PluginRegion = "";
@@ -24,7 +24,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
+            #region Valorizzazione campo data
+            PluginRegion = "Valorizzazione campo data";
 
+            //DateTime rcDate = (DateTime)target[DataModel.quote.createdon];
+
+            //target[DataModel.quote.res_date] = rcDate;
+
+            //crmServiceProvider.Service.Update(target);
+            #endregion
         }
     }
 }

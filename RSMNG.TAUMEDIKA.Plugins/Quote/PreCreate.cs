@@ -29,6 +29,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
             VerifyMandatoryField(crmServiceProvider, Utility.mandatoryFields);
             #endregion
+
+
         }
     }
 }

@@ -15,7 +15,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         public PreUpdate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.PRE;
-            PluginMessage = "Create";
+            PluginMessage = "Update";
             PluginPrimaryEntityName = DataModel.quote.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
