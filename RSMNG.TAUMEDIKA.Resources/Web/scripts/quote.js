@@ -483,6 +483,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const formContext = executionContext.getFormContext();
 
         const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
 
         const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
         const additionalExpenseValue = additionalExpenseAttribute ? additionalExpenseAttribute.getValue() ?? null : null;
@@ -494,8 +495,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             } else {
                 vatNumberAttribute.setRequiredLevel("none");
             }
-            // potrei gestirla con una notification invece che col required level
-            //oppure potrei mettere un flag (spesa accessoria: si/no), sull'onChange del flag cambio il setRequiredLevel
+        }
+
+        /**
+         * se il campo Spesa accessoria viene svuotato, 
+         * svuoto anche il campo Importo spesa accessoria
+         */
+        if (!vatNumberAttribute.getValue()) {
+            if (freightAmountAttribute) {
+                freightAmountAttribute.setValue(null);
+            }
         }
     }
     //---------------------------------------------------
