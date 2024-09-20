@@ -32,7 +32,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
             #region Valorizzazione automatica del campo Importo spesa accessoria
             PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
-            Decimal? amount = null;
+            Money amount = null;
             target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_additionalexpenseid, out EntityReference erAdditionalExpense);
             if (erAdditionalExpense != null)
             {
@@ -42,9 +42,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                     new ColumnSet(DataModel.res_additionalexpense.res_amount));
 
                 amount = enAdditionalExpense != null && enAdditionalExpense.Contains(DataModel.res_additionalexpense.res_amount) ?
-                    (Decimal?)enAdditionalExpense.GetAttributeValue<Money>(DataModel.res_additionalexpense.res_amount).Value : null;
+                    enAdditionalExpense.GetAttributeValue<Money>(DataModel.res_additionalexpense.res_amount) : null;
 
-                target[DataModel.quote.res_additionalexpenseid] = amount;
+                target[DataModel.quote.freightamount] = amount;
             }
             #endregion
         }
