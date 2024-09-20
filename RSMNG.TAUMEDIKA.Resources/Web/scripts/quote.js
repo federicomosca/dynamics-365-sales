@@ -433,6 +433,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
         const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+        const shipToLine1Control = formContext.getControl("shipto_composite_compositionLinkControl_shipto_line1");
+        const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
+
         /**
          * controllo visibilità campo Banca
          */
@@ -455,12 +458,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             }
         }
 
+        /**
+         * controllo visibilità campo "Codice IVA spesa accessoria"
+         * e controllo visibilità campo "Importo spesa accessoria"
+         */
         if (additionalExpenseAttribute) {
             const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
             if (additionalExpenseValue) {
-                /**
-                 * controllo visibilità campo "Codice IVA spesa accessoria"
-                 */
                 if (vatNumberAttribute) {
                     vatNumberAttribute.setRequiredLevel("required");
                 } else {
@@ -468,12 +472,27 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
 
                 /**
-                 * controllo visibilità campo "Importo spesa accessoria"
                  */
                 if (freightAmountControl) {
                     freightAmountControl.setDisabled(false);
                 } else {
                     freightAmountControl.setDisabled(true);
+                }
+            }
+        }
+
+        /**
+         * controllo visibilità campo Indirizzo spedizione
+         */
+        if (shipToLine1Control) {
+            if (willCallAttribute) {
+                const willCallValue = willCallAttribute.getValue() ?? null;
+                if (willCallValue == _self.formModel.fields.willcallValues.Indirizzo) {
+                    shipToLine1Control.setVisible(true)
+                    shipToLine1Control.getAttribute().setRequiredLevel("required");
+                } else {
+                    shipToLine1Control.setVisible(false);
+                    shipToLine1Control.getAttribute().setValue(null);
                 }
             }
         }
