@@ -30,7 +30,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             VerifyMandatoryField(crmServiceProvider, Utility.mandatoryFields);
             #endregion
 
+            #region Valorizzazione automatica del campo Importo spesa accessoria
+            //PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
+            //Money amount = null;
+            //target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_additionalexpenseid, out EntityReference erAdditionalExpense);
+            //if (erAdditionalExpense != null)
+            //{
+            //    Entity enAdditionalExpense = crmServiceProvider.Service.Retrieve(
+            //        DataModel.res_additionalexpense.logicalName,
+            //        erAdditionalExpense.Id,
+            //        new ColumnSet(DataModel.res_additionalexpense.res_amount));
 
+            //    amount = enAdditionalExpense != null && enAdditionalExpense.Contains(DataModel.res_additionalexpense.res_amount) ?
+            //        enAdditionalExpense.GetAttributeValue<Money>(DataModel.res_additionalexpense.res_amount) : null;
+
+            //    target[DataModel.quote.freightamount] = amount;
+            //}
+            #endregion
         }
     }
 }

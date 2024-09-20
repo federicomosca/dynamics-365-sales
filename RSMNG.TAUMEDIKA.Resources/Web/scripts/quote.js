@@ -407,8 +407,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                     const priceLevelId = priceLevel.entities[0].pricelevelid ?? null;
                     const priceLevelName = priceLevel.entities[0].name ?? null;
 
-                    if (!priceLevelId || !priceLevelName)
-                    {
+                    if (!priceLevelId || !priceLevelName) {
                         console.log("id or name missing")
                         return;
                     }
@@ -431,7 +430,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.handleFieldsVisibility = executionContext => {
         const formContext = executionContext.getFormContext();
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
-
+        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+        /**
+         * controllo visibilità campo Banca
+         */
         if (bankControl) {
             const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
             if (paymentTermAttribute) {
@@ -443,11 +447,63 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             const flag = paymentTerm.res_isbankvisible ?? null;
                             bankControl.setVisible(flag);
                         },
-                            error => {
-                                console.log(error.message)
-                            }
+                        error => {
+                            console.log(error.message)
+                        }
                     );
                 }
+            }
+        }
+
+        if (additionalExpenseAttribute) {
+            const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+            if (additionalExpenseValue) {
+                /**
+                 * controllo visibilità campo "Codice IVA spesa accessoria"
+                 */
+                if (vatNumberAttribute) {
+                    vatNumberAttribute.setRequiredLevel("required");
+                } else {
+                    vatNumberAttribute.setRequiredLevel("none");
+                }
+
+                /**
+                 * controllo visibilità campo "Importo spesa accessoria"
+                 */
+                if (freightAmountControl) {
+                    freightAmountControl.setDisabled(false);
+                } else {
+                    freightAmountControl.setDisabled(true);
+                }
+            }
+        }
+    }
+    //---------------------------------------------------
+    _self.onChangeAdditionalExpenseId = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
+
+        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+        const additionalExpenseValue = additionalExpenseAttribute ? additionalExpenseAttribute.getValue() ?? null : null;
+
+        if (vatNumberAttribute) {
+            vatNumberAttribute.setValue(null);
+            if (additionalExpenseValue) {
+                vatNumberAttribute.setRequiredLevel("required");
+            } else {
+                vatNumberAttribute.setRequiredLevel("none");
+            }
+        }
+
+        /**
+         * se il campo Spesa accessoria viene svuotato, 
+         * svuoto anche il campo Importo spesa accessoria
+         */
+        if (!vatNumberAttribute.getValue()) {
+            if (freightAmountAttribute) {
+                freightAmountAttribute.setValue(null);
             }
         }
     }
@@ -468,6 +524,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsVisibility);
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
 
         //Init function
         _self.fillDateField(formContext);
