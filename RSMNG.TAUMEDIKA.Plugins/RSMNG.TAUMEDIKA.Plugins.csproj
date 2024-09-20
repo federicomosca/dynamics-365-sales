@@ -128,6 +128,9 @@
     <Compile Include="Quote\PreCreate.cs" />
     <Compile Include="Quote\PrevCreate.cs" />
     <Compile Include="Address\PreCreate.cs" />
+    <Compile Include="SalesOrderDetail\PostUpdate.cs" />
+    <Compile Include="SalesOrderDetail\Utility.cs" />
+    <Compile Include="SalesOrder\PreCreate.cs" />
     <Compile Include="SalesOrder\PrevCreate.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +138,7 @@
     <None Include="packages.config" />
     <None Include="RSMNG.TAUMEDIKA.Plugins.snk" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.projitems" Label="Shared" />
   <Import Project="..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

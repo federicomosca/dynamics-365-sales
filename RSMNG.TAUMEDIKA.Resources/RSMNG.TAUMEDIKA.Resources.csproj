@@ -124,6 +124,7 @@
     <Content Include="Web\scripts\pricelevel_ribbon.js" />
     <Content Include="Web\scripts\res_global.js" />
     <Content Include="Web\scripts\res_address.js" />
+    <Content Include="Web\scripts\salesorder.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
