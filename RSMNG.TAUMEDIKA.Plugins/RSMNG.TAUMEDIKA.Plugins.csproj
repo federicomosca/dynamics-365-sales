@@ -134,7 +134,6 @@
     <Compile Include="SalesOrder\PreUpdate.cs" />
     <Compile Include="SalesOrder\PreCreate.cs" />
     <Compile Include="SalesOrder\PrevCreate.cs" />
-    <Compile Include="SalesOrder\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -9,7 +9,7 @@ using System.Net;
 using Microsoft.Crm.Sdk.Messages;
 using RSMNG.TAUMEDIKA.DataModel;
 
-namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
+namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
 
 {
     public class Utility
