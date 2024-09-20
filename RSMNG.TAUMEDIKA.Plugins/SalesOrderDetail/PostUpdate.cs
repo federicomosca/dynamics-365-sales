@@ -26,13 +26,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
+            var trace = crmServiceProvider.TracingService;
+
             if (target.Contains(salesorderdetail.res_taxableamount))
             {
+
                 EntityReference enSalesOrder = target.Contains(salesorderdetail.salesorderid) ? target.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) : preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
                
                 if(enSalesOrder != null)
                 {
-                    Utility.SetSalesOrder(crmServiceProvider.Service, target, enSalesOrder.Id);
+                    // viene sovrascritto dalla logica nativa
+                    //Utility.SetSalesOrder(crmServiceProvider.Service, trace, target, enSalesOrder.Id);
                 }
                 
             }

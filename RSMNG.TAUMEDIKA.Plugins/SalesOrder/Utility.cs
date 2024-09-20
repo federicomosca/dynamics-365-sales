@@ -9,20 +9,20 @@ using System.Net;
 using Microsoft.Crm.Sdk.Messages;
 using RSMNG.TAUMEDIKA.DataModel;
 
-namespace RSMNG.TAUMEDIKA.Shared.SalesOrderDetail
+namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
 {
     public class Utility
     {
-        public static void SetSalesOrder(IOrganizationService service, ITracingService trace, Entity target, Guid salesOrderId)
+        public static void CalculateSums(IOrganizationService service, ITracingService trace, Entity target)
         {
+            // Imposta Totale Righe sovrascrivendo la logica nativa
+
             Decimal taxableAmountSum = 0;
-            Decimal taxableAmount = 0;
 
             var fetchData = new
             {
-                salesorderid = salesOrderId,
-                salesorderdetailid = target.Id
+                salesorderid = target.Id,
             };
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch aggregate=""true"">
@@ -30,21 +30,18 @@ namespace RSMNG.TAUMEDIKA.Shared.SalesOrderDetail
                                 <attribute name=""res_taxableamount"" alias=""taxableAmount"" aggregate=""sum"" />
                                 <filter>
                                   <condition attribute=""salesorderid"" operator=""eq"" value=""{fetchData.salesorderid}"" />
-                                  <condition attribute='salesorderdetailid' operator='ne' value=""{fetchData.salesorderdetailid}"" />
                                 </filter>
                               </entity>
                             </fetch>";
 
             EntityCollection ecSum = service.RetrieveMultiple(new FetchExpression(fetchXml));
-            Entity enSalesOrder = new Entity(salesorder.logicalName, salesOrderId);
 
-            taxableAmount = target.ContainsAttributeNotNull(salesorderdetail.res_taxableamount) ? target.GetAttributeValue<Money>(salesorderdetail.res_taxableamount).Value : 0;
             taxableAmountSum = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
 
-            trace.Trace("sum: " + (taxableAmount + taxableAmountSum).ToString());
-            enSalesOrder[salesorder.totallineitemamount] = taxableAmount + taxableAmountSum != 0 ? new Money(taxableAmount + taxableAmountSum) : null;
+            
+            target[salesorder.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null;
 
-            service.Update(enSalesOrder);
+            
         }
     }
 }
