@@ -35,23 +35,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 target.Contains(salesorder.freightamount)
                 )
             {
-                decimal taxableAmountSum = 0;
+                decimal taxableAmountSum = 0;     // Somma 'Totale Imponibile' righe ordine
                 decimal taxRowsSum = 0;
                 decimal freightAmount = 0;
-                decimal totalDiscountAmount = 0;
+                decimal totalDiscountAmount = 0; // Sconto totale
                 decimal rateVatNumber = 0;
                 decimal freightAmountRate = 0;
+                decimal totalAmountlessFreight = 0; // Totale imponibile
+                bool isTrace = true;
 
-                //----Sconto Totale
-                Money totDiscount = target.Contains(salesorder.totaldiscountamount) ? target.GetAttributeValue<Money>(salesorder.totaldiscountamount) : preImage.GetAttributeValue<Money>(salesorder.totaldiscountamount);
-                totalDiscountAmount = totDiscount != null ? totDiscount.Value : 0;
 
                 //----Importo Spesa Accessoria
                 Money freightAmountMoney = target.Contains(salesorder.freightamount) ? target.GetAttributeValue<Money>(salesorder.freightamount) : preImage.GetAttributeValue<Money>(salesorder.freightamount);
                 freightAmount = freightAmountMoney != null ? freightAmountMoney.Value : 0;
 
                 //----Recupera Aliquota Codice IVA Spesa Accessoria
-                EntityReference erVatNumber = target.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid);
+                EntityReference erVatNumber = target.Contains(salesorder.res_vatnumberid) ? target.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid) : preImage.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid);
 
                 if(freightAmount != 0 && erVatNumber != null)
                 {
@@ -59,7 +58,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
                     rateVatNumber = enVatNumber.ContainsAttributeNotNull(res_vatnumber.res_rate) ? enVatNumber.GetAttributeValue<decimal>(res_vatnumber.res_rate) : 0;
                     
-                    freightAmountRate = freightAmount * rateVatNumber;
+                    freightAmountRate = freightAmount * (rateVatNumber / 100);
                 }
 
 
@@ -72,29 +71,48 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                             <fetch aggregate=""true"">
                               <entity name=""salesorderdetail"">
                                 <attribute name=""res_taxableamount"" alias=""taxableAmount"" aggregate=""sum"" />
+                                <attribute name=""manualdiscountamount"" alias=""ManualDiscountAmount"" aggregate=""sum"" />
                                 <attribute name=""tax"" alias=""Tax"" aggregate=""sum"" />
                                 <filter>
                                   <condition attribute=""salesorderid"" operator=""eq"" value=""{fetchData.salesorderid}"" />
                                 </filter>
                               </entity>
                             </fetch>";
+                if (isTrace) { crmServiceProvider.TracingService.Trace(fetchXml); }
 
                 EntityCollection ecSum = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-                if (ecSum != null && ecSum.Entities.Count > 0)
+                if (ecSum != null)
                 {
-                    totalDiscountAmount = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
+                    taxableAmountSum = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
                     taxRowsSum = ecSum[0].ContainsAliasNotNull("Tax") ? ecSum[0].GetAliasedValue<Money>("Tax").Value : 0;
+                    totalDiscountAmount = ecSum[0].ContainsAliasNotNull("ManualDiscountAmount") ? ecSum[0].GetAliasedValue<Money>("ManualDiscountAmount").Value : 0;
+
+                    if (isTrace) { crmServiceProvider.TracingService.Trace("totalDiscountAmount: " + taxableAmountSum.ToString() + "\n"+
+                                                                            "taxRowsSum: " + taxRowsSum); }
                 }
 
-                decimal totalAmountlessFreight = taxableAmountSum - totalDiscountAmount;
+                totalAmountlessFreight =  taxableAmountSum - totalDiscountAmount; // Totale imponibile
                 decimal totalTax = taxRowsSum + freightAmountRate;
+                decimal totalAmount = totalAmountlessFreight + totalTax;
 
-                target[salesorder.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null;
+                target[salesorder.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null; // Totale Righe = Somma totale imponibile righe
                 target[salesorder.totalamountlessfreight] = totalAmountlessFreight != 0 ? new Money(totalAmountlessFreight) : null;
+                target[salesorder.totaldiscountamount] = totalDiscountAmount != 0 ? new Money(totalDiscountAmount) : null;   // Somma Sconto Totale righe
                 target[salesorder.totaltax] = (totalTax) != 0 ? new Money(totalTax) : null;
 
-                target[salesorder.totalamount] = (totalAmountlessFreight + totalTax) != 0 ? new Money(totalAmountlessFreight + totalTax) : null;
+                target[salesorder.totalamount] = (totalAmount) != 0 ? new Money(totalAmount) : null;
+            
+                if (isTrace)
+                {
+                    crmServiceProvider.TracingService.Trace(
+                        "totallineitemamount: " + taxableAmountSum.ToString() +"\n" +
+                        "totalamountlessfreight: " + totalAmountlessFreight.ToString() +"\n" +
+                        "totaltax: " + totalTax.ToString() +"\n"+
+                        "totalamount: " + totalAmount.ToString()
+
+                        );
+                }
             }
         }
     }
