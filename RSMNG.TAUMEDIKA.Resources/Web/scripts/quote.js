@@ -428,7 +428,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
-    _self.handleFieldsVisibility = formContext => {
+    _self.handleFieldsVisibility = executionContext => {
+        const formContext = executionContext.getFormContext();
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
 
         if (bankControl) {
@@ -466,11 +467,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
+        formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsVisibility);
 
         //Init function
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
-        _self.handleFieldsVisibility(formContext);
+        _self.handleFieldsVisibility(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:

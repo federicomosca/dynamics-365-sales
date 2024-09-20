@@ -108,6 +108,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Account\PostGrantAccess.cs" />
     <Compile Include="Account\PostUpdate.cs" />
     <Compile Include="Account\PostCreate.cs" />
     <Compile Include="Account\PreCreate.cs" />
