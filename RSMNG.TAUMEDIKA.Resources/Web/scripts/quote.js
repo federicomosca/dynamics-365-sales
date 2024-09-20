@@ -427,7 +427,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
-    _self.handleFieldsVisibility = executionContext => {
+    _self.handleFieldsProperties = executionContext => {
         const formContext = executionContext.getFormContext();
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
         const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
@@ -435,6 +435,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
         const shipToLine1Control = formContext.getControl("shipto_composite_compositionLinkControl_shipto_line1");
         const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
+        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
 
         /**
          * controllo visibilità campo Banca
@@ -496,6 +497,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
             }
         }
+
+        /**
+         * controllo obbligatorietà del campo CAP spedizione
+         */
+        if (shipToPostalCodeControl) {
+            if (shipToLine1Control.getAttribute().getValue()) {
+                shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
+            }
+        }
     }
     //---------------------------------------------------
     _self.onChangeAdditionalExpenseId = executionContext => {
@@ -535,6 +545,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                }
+            )
+        }
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -556,7 +578,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //Init function
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
-        _self.handleFieldsVisibility(executionContext);
+        _self.handleFieldsProperties(executionContext);
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
