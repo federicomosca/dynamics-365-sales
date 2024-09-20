@@ -25,10 +25,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
-            Utility.CalculateSums(crmServiceProvider.Service, crmServiceProvider.TracingService, target);
+            if (target.Contains(salesorder.totallineitemamount) || target.Contains(salesorder.totaldiscountamount))
+            {
+                decimal taxableAmountSum;
+                decimal totalDiscountAmount;
+
+                taxableAmountSum = Utility.CalculateSums(crmServiceProvider.Service, crmServiceProvider.TracingService, target);
+
+                Money totDiscount = target.Contains(salesorder.totaldiscountamount) ? target.GetAttributeValue<Money>(salesorder.totaldiscountamount) : preImage.GetAttributeValue<Money>(salesorder.totaldiscountamount);
+                totalDiscountAmount = totDiscount != null ? totDiscount.Value : 0;
 
 
+                target[salesorder.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null;
+                target[salesorder.totalamountlessfreight] = taxableAmountSum - totalDiscountAmount;
+            }
         }
     }
 }

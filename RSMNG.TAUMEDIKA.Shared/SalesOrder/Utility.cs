@@ -14,7 +14,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
 {
     public class Utility
     {
-        public static void CalculateSums(IOrganizationService service, ITracingService trace, Entity target)
+        public static decimal CalculateSums(IOrganizationService service, ITracingService trace, Entity target)
         {
             // Imposta Totale Righe sovrascrivendo la logica nativa
 
@@ -36,10 +36,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
 
             EntityCollection ecSum = service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-            taxableAmountSum = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
+            return taxableAmountSum = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
 
             
-            target[salesorder.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null;
+            
 
             
         }
