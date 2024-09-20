@@ -491,6 +491,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         if (vatNumberAttribute) {
             vatNumberAttribute.setValue(null);
             if (additionalExpenseValue) {
+                Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
+                    additionalExpense => {
+                        formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
+                    },
+                    error => {
+                        console.error(error.message);
+                    }
+                );
                 vatNumberAttribute.setRequiredLevel("required");
             } else {
                 vatNumberAttribute.setRequiredLevel("none");
