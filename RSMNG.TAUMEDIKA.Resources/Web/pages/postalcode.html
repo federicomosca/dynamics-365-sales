@@ -155,6 +155,13 @@
             }
 
             switch (entityName) {
+                case "quote":
+                    entityFields.cap = "shipto_postalcode";
+                    entityFields.city = "shipto_city";
+                    entityFields.province = "shipto_stateorprovince";
+                    entityFields.nation = "shipto_country";
+                    entityFields.country = "res_countryid";
+                    break;
                 case "salesorder":
                     entityFields.cap = "shipto_postalcode";
                     entityFields.city = "shipto_city";
