@@ -511,37 +511,45 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.onChangeAdditionalExpenseId = executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
+        try {
+            const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+            const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
 
-        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
-        const additionalExpenseValue = additionalExpenseAttribute ? additionalExpenseAttribute.getValue() ?? null : null;
+            const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
 
-        if (vatNumberAttribute) {
-            vatNumberAttribute.setValue(null);
-            if (additionalExpenseValue) {
-                Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
-                    additionalExpense => {
-                        formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
-                    },
-                    error => {
-                        console.error(error.message);
+            if (vatNumberAttribute) {
+                vatNumberAttribute.setValue(null);
+                if (additionalExpenseAttribute) {
+                    const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+                    if (additionalExpenseValue) {
+                        Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
+                            additionalExpense => {
+                                formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
+                            },
+                            error => {
+                                console.error(error.message);
+                            }
+                        );
+                        vatNumberAttribute.setRequiredLevel("required");
+                    } else {
+                        vatNumberAttribute.setRequiredLevel("none");
                     }
-                );
-                vatNumberAttribute.setRequiredLevel("required");
-            } else {
-                vatNumberAttribute.setRequiredLevel("none");
+                } else {
+                    throw new Error("additional expense attribute is missing")
+                }
             }
-        }
 
-        /**
-         * se il campo Spesa accessoria viene svuotato, 
-         * svuoto anche il campo Importo spesa accessoria
-         */
-        if (!vatNumberAttribute.getValue()) {
-            if (freightAmountAttribute) {
-                freightAmountAttribute.setValue(null);
+            /**
+             * se il campo Spesa accessoria viene svuotato, 
+             * svuoto anche il campo Importo spesa accessoria
+             */
+            if (vatNumberAttribute.getValue() == null) {
+                if (freightAmountAttribute) {
+                    freightAmountAttribute.setValue(null);
+                }
             }
+        } catch {
+            console.error("Errore in onChangeAdditionalExpenseId", error);
         }
     }
     //---------------------------------------------------
@@ -560,7 +568,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
-    Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi
+    Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
     */
     _self.onLoadForm = async function (executionContext) {
 
@@ -572,7 +580,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsVisibility);
+        formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsProperties);
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
 
         //Init function
