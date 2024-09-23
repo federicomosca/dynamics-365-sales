@@ -436,6 +436,39 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const shipToLine1Control = formContext.getControl("shipto_composite_compositionLinkControl_shipto_line1");
         const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
         const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+        const locationControl = formContext.getControl(_self.formModel.fields.res_location);
+        const shipToCityControl = formContext.getControl("shipto_composite_compositionLinkControl_shipto_city");
+        const shipToStateOrProvinceControl = formContext.getControl(_self.formModel.fields.shipto_stateorprovince);
+        const countryControl = formContext.getControl(_self.formModel.fields.res_countryid);
+
+        /**
+         * controllo read-only campo Nazione spedizione
+         */
+        if (countryControl) {
+            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) {
+                countryControl.setDisabled(false);
+            } else {
+                countryControl.setDisabled(true);
+            }
+        }
+
+        /**
+         * controllo read-only campo Provincia
+         */
+        if (shipToStateOrProvinceControl) {
+            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) {
+                shipToStateOrProvinceControl.setDisabled(false);
+            } else {
+                shipToStateOrProvinceControl.setDisabled(true);
+            }
+        }
+
+        /**
+         * controllo read-only campo Località
+         */
+        if (locationControl) {
+            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) { locationControl.setDisabled(false); } else { locationControl.setDisabled(true); }
+        }
 
         /**
          * controllo visibilità campo Banca
@@ -483,17 +516,44 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
 
         /**
-         * controllo visibilità campo Indirizzo spedizione
+         * controllo visibilità campi in relazione al campo Spedizione
          */
-        if (shipToLine1Control) {
-            if (willCallAttribute) {
-                const willCallValue = willCallAttribute.getValue() ?? null;
-                if (willCallValue == _self.formModel.fields.willcallValues.Indirizzo) {
+        if (willCallAttribute) {
+            const willCallValue = willCallAttribute.getValue() ?? null;
+            if (willCallValue == _self.formModel.fields.willcallValues.Indirizzo) {
+                if (shipToLine1Control) {
                     shipToLine1Control.setVisible(true)
                     shipToLine1Control.getAttribute().setRequiredLevel("required");
-                } else {
+                }
+                if (locationControl) {
+                    locationControl.setVisible(true)
+                    locationControl.getAttribute().setRequiredLevel("required");
+                }
+                if (shipToStateOrProvinceControl) {
+                    shipToStateOrProvinceControl.setVisible(true)
+                    shipToStateOrProvinceControl.getAttribute().setRequiredLevel("required");
+                }
+                if (countryControl) {
+                    countryControl.setVisible(true)
+                    countryControl.getAttribute().setRequiredLevel("required");
+                }
+            }
+            if (willCallValue == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
+                if (shipToLine1Control) {
                     shipToLine1Control.setVisible(false);
                     shipToLine1Control.getAttribute().setValue(null);
+                }
+                if (locationControl) {
+                    locationControl.setVisible(false);
+                    locationControl.getAttribute().setValue(null);
+                }
+                if (shipToStateOrProvinceControl) {
+                    shipToStateOrProvinceControl.setVisible(false);
+                    shipToStateOrProvinceControl.getAttribute().setValue(null);
+                }
+                if (countryControl) {
+                    countryControl.setVisible(false);
+                    countryControl.getAttribute().setValue(null);
                 }
             }
         }
