@@ -36,6 +36,9 @@
                 let capField;
 
                 switch (Xrm._page._entityName) {
+                    case "res_address":
+                        capField = "res_postalcode";
+                        break;
                     case "salesorder":
                         capField = "shipto_postalcode";
                         break;
