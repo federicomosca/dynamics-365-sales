@@ -433,11 +433,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
         const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
-        const shipToLine1Control = formContext.getControl("shipto_composite_compositionLinkControl_shipto_line1");
+        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
         const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
         const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
         const locationControl = formContext.getControl(_self.formModel.fields.res_location);
-        const shipToCityControl = formContext.getControl("shipto_composite_compositionLinkControl_shipto_city");
+        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
         const shipToStateOrProvinceControl = formContext.getControl(_self.formModel.fields.shipto_stateorprovince);
         const countryControl = formContext.getControl(_self.formModel.fields.res_countryid);
 
@@ -516,49 +516,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
 
         /**
-         * controllo visibilità campi in relazione al campo Spedizione
-         */
-        if (willCallAttribute) {
-            const willCallValue = willCallAttribute.getValue() ?? null;
-            if (willCallValue == _self.formModel.fields.willcallValues.Indirizzo) {
-                if (shipToLine1Control) {
-                    shipToLine1Control.setVisible(true)
-                    shipToLine1Control.getAttribute().setRequiredLevel("required");
-                }
-                if (locationControl) {
-                    locationControl.setVisible(true)
-                    locationControl.getAttribute().setRequiredLevel("required");
-                }
-                if (shipToStateOrProvinceControl) {
-                    shipToStateOrProvinceControl.setVisible(true)
-                    shipToStateOrProvinceControl.getAttribute().setRequiredLevel("required");
-                }
-                if (countryControl) {
-                    countryControl.setVisible(true)
-                    countryControl.getAttribute().setRequiredLevel("required");
-                }
-            }
-            if (willCallValue == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
-                if (shipToLine1Control) {
-                    shipToLine1Control.setVisible(false);
-                    shipToLine1Control.getAttribute().setValue(null);
-                }
-                if (locationControl) {
-                    locationControl.setVisible(false);
-                    locationControl.getAttribute().setValue(null);
-                }
-                if (shipToStateOrProvinceControl) {
-                    shipToStateOrProvinceControl.setVisible(false);
-                    shipToStateOrProvinceControl.getAttribute().setValue(null);
-                }
-                if (countryControl) {
-                    countryControl.setVisible(false);
-                    countryControl.getAttribute().setValue(null);
-                }
-            }
-        }
-
-        /**
          * controllo obbligatorietà del campo CAP spedizione
          */
         if (shipToPostalCodeControl) {
@@ -625,6 +582,59 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.handleWillCallFields = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
+
+        const willCallControlsVisibility = [
+            _self.formModel.fields.res_shippingreference,
+            _self.formModel.fields.shipto_line1,
+            _self.formModel.fields.shipto_postalcode,
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.shipto_city,
+            _self.formModel.fields.shipto_stateorprovince,
+            _self.formModel.fields.shipto_country,
+            _self.formModel.fields.res_countryid,
+        ];
+
+        const willCallControlsRequirement = [
+            _self.formModel.fields.shipto_line1,
+            _self.formModel.fields.shipto_postalcode,
+            _self.formModel.fields.shipto_city,
+        ];
+
+        willCallControlsVisibility.forEach(field => {
+            const control = formContext.getControl(field);
+            if (!control) throw new Error(`${field} field is missing`);
+
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+                formContext.getControl("WebResource_postalcode").setVisible(true);
+                control.setVisible(true);
+            }
+
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
+                formContext.getControl("WebResource_postalcode").setVisible(false);
+                control.setVisible(false);
+                control.getAttribute().setValue(null)
+            }
+        });
+
+        willCallControlsRequirement.forEach(field => {
+            const control = formContext.getControl(field);
+
+            if (!control) throw new Error(`${field} field is missing`);
+
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+                control.getAttribute().setRequiredLevel("required");
+            }
+
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
+                control.getAttribute().setRequiredLevel("none");
+            }
+
+        })
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -642,8 +652,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsProperties);
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
+        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallFields);
 
         //Init function
+        _self.handleWillCallFields(executionContext);
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
         _self.handleFieldsProperties(executionContext);
