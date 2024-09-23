@@ -434,41 +434,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
         const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
-        const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
         const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
-        const locationControl = formContext.getControl(_self.formModel.fields.res_location);
-        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
-        const shipToStateOrProvinceControl = formContext.getControl(_self.formModel.fields.shipto_stateorprovince);
-        const countryControl = formContext.getControl(_self.formModel.fields.res_countryid);
-
-        /**
-         * controllo read-only campo Nazione spedizione
-         */
-        if (countryControl) {
-            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) {
-                countryControl.setDisabled(false);
-            } else {
-                countryControl.setDisabled(true);
-            }
-        }
-
-        /**
-         * controllo read-only campo Provincia
-         */
-        if (shipToStateOrProvinceControl) {
-            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) {
-                shipToStateOrProvinceControl.setDisabled(false);
-            } else {
-                shipToStateOrProvinceControl.setDisabled(true);
-            }
-        }
-
-        /**
-         * controllo read-only campo Località
-         */
-        if (locationControl) {
-            if (shipToCityControl && shipToCityControl.getAttribute().getValue()) { locationControl.setDisabled(false); } else { locationControl.setDisabled(true); }
-        }
 
         /**
          * controllo visibilità campo Banca
@@ -582,7 +548,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
-    _self.handleWillCallFields = executionContext => {
+    _self.handleWillCallRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
         const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
 
@@ -635,6 +601,27 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         })
     }
     //---------------------------------------------------
+    _self.handleShipToCityRelatedFields = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+
+        const shipToCityRelatedFields = [
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.shipto_stateorprovince,
+            _self.formModel.fields.res_countryid
+        ];
+
+        shipToCityRelatedFields.forEach(field => {
+            const control = formContext.getControl(field);
+            if (!control) throw new Error(`${field} field is missing`);
+
+            if (!shipToCityControl.getAttribute().getValue()) return;
+
+            control.setDisabled(false);
+        });
+        
+    }
+    //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
     per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
@@ -652,10 +639,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsProperties);
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
-        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallFields);
+        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityRelatedFields)
 
         //Init function
-        _self.handleWillCallFields(executionContext);
+        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleShipToCityRelatedFields(executionContext);
+
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
         _self.handleFieldsProperties(executionContext);

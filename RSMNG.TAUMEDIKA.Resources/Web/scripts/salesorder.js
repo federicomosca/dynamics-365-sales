@@ -506,6 +506,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             formContext.getControl(_self.formModel.fields.shipto_postalcode).getAttribute().setRequiredLevel("required");
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
@@ -515,6 +516,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         } else {
             if (isEvent) {
                 formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.res_shippingreference).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
@@ -527,6 +529,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             formContext.getControl(_self.formModel.fields.shipto_postalcode).getAttribute().setRequiredLevel("none");
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(false);
+            formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(false);
