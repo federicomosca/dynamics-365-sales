@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared.Quote;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             VerifyMandatoryField(crmServiceProvider, Utility.mandatoryFields);
             #endregion
 
-            #region Valorizzazione automatica del campo Importo spesa accessoria
+            #region Valorizzazione automatica del campo Importo spesa accessoria [disabled]
             //PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
             //Money amount = null;
             //target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_additionalexpenseid, out EntityReference erAdditionalExpense);

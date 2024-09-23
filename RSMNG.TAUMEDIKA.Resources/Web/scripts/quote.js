@@ -427,12 +427,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
-    _self.handleFieldsVisibility = executionContext => {
+    _self.handleFieldsProperties = executionContext => {
         const formContext = executionContext.getFormContext();
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
         const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
         const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+        const shipToLine1Control = formContext.getControl("shipto_composite_compositionLinkControl_shipto_line1");
+        const willCallAttribute = formContext.getAttribute(_self.formModel.fields.willcall);
+        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+
         /**
          * controllo visibilità campo Banca
          */
@@ -455,12 +459,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             }
         }
 
+        /**
+         * controllo visibilità campo "Codice IVA spesa accessoria"
+         * e controllo visibilità campo "Importo spesa accessoria"
+         */
         if (additionalExpenseAttribute) {
             const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
             if (additionalExpenseValue) {
-                /**
-                 * controllo visibilità campo "Codice IVA spesa accessoria"
-                 */
                 if (vatNumberAttribute) {
                     vatNumberAttribute.setRequiredLevel("required");
                 } else {
@@ -468,13 +473,37 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
 
                 /**
-                 * controllo visibilità campo "Importo spesa accessoria"
                  */
                 if (freightAmountControl) {
                     freightAmountControl.setDisabled(false);
                 } else {
                     freightAmountControl.setDisabled(true);
                 }
+            }
+        }
+
+        /**
+         * controllo visibilità campo Indirizzo spedizione
+         */
+        if (shipToLine1Control) {
+            if (willCallAttribute) {
+                const willCallValue = willCallAttribute.getValue() ?? null;
+                if (willCallValue == _self.formModel.fields.willcallValues.Indirizzo) {
+                    shipToLine1Control.setVisible(true)
+                    shipToLine1Control.getAttribute().setRequiredLevel("required");
+                } else {
+                    shipToLine1Control.setVisible(false);
+                    shipToLine1Control.getAttribute().setValue(null);
+                }
+            }
+        }
+
+        /**
+         * controllo obbligatorietà del campo CAP spedizione
+         */
+        if (shipToPostalCodeControl) {
+            if (shipToLine1Control.getAttribute().getValue()) {
+                shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
             }
         }
     }
@@ -491,6 +520,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         if (vatNumberAttribute) {
             vatNumberAttribute.setValue(null);
             if (additionalExpenseValue) {
+                Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
+                    additionalExpense => {
+                        formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
+                    },
+                    error => {
+                        console.error(error.message);
+                    }
+                );
                 vatNumberAttribute.setRequiredLevel("required");
             } else {
                 vatNumberAttribute.setRequiredLevel("none");
@@ -505,6 +542,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             if (freightAmountAttribute) {
                 freightAmountAttribute.setValue(null);
             }
+        }
+    }
+    //---------------------------------------------------
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                }
+            )
         }
     }
     //---------------------------------------------------
@@ -529,7 +578,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //Init function
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
-        _self.handleFieldsVisibility(executionContext);
+        _self.handleFieldsProperties(executionContext);
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
