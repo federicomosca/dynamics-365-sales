@@ -126,6 +126,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             res_isinvoicerequested: "res_isinvoicerequested",
             ///Località
             res_location: "res_location",
+            ///Condizioni di pagamento (campo lookup)
+            res_paymenttermid: "res_paymenttermid",
             ///Riferimento spedizione
             res_shippingreference: "res_shippingreference",
             ///Codice IVA spesa accessoria
@@ -427,112 +429,44 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
-    _self.handleFieldsProperties = executionContext => {
+    _self.onChangeAdditionalExpenseId = executionContext => {
         const formContext = executionContext.getFormContext();
-        const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
-        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
-        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
-        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
-        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
 
-        /**
-         * controllo visibilità campo Banca
-         */
-        if (bankControl) {
-            const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
-            if (paymentTermAttribute) {
-                const paymentTermId = paymentTermAttribute.getValue() ? paymentTermAttribute.getValue()[0].id : null;
-                if (paymentTermId) {
-                    const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
-                    Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
-                        paymentTerm => {
-                            const flag = paymentTerm.res_isbankvisible ?? null;
-                            bankControl.setVisible(flag);
+        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
+
+        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+
+        if (vatNumberAttribute) {
+            vatNumberAttribute.setValue(null);
+            if (additionalExpenseAttribute) {
+                const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+                if (additionalExpenseValue) {
+                    Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
+                        additionalExpense => {
+                            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
                         },
                         error => {
-                            console.log(error.message)
+                            console.error(error.message);
                         }
                     );
-                }
-            }
-        }
-
-        /**
-         * controllo visibilità campo "Codice IVA spesa accessoria"
-         * e controllo visibilità campo "Importo spesa accessoria"
-         */
-        if (additionalExpenseAttribute) {
-            const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
-            if (additionalExpenseValue) {
-                if (vatNumberAttribute) {
                     vatNumberAttribute.setRequiredLevel("required");
                 } else {
                     vatNumberAttribute.setRequiredLevel("none");
                 }
-
-                /**
-                 */
-                if (freightAmountControl) {
-                    freightAmountControl.setDisabled(false);
-                } else {
-                    freightAmountControl.setDisabled(true);
-                }
+            } else {
+                throw new Error("additional expense attribute is missing")
             }
         }
 
         /**
-         * controllo obbligatorietà del campo CAP spedizione
+         * se il campo Spesa accessoria viene svuotato, 
+         * svuoto anche il campo Importo spesa accessoria
          */
-        if (shipToPostalCodeControl) {
-            if (shipToLine1Control.getAttribute().getValue()) {
-                shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
+        if (vatNumberAttribute.getValue() == null) {
+            if (freightAmountAttribute) {
+                freightAmountAttribute.setValue(null);
             }
-        }
-    }
-    //---------------------------------------------------
-    _self.onChangeAdditionalExpenseId = executionContext => {
-        const formContext = executionContext.getFormContext();
-
-        try {
-            const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-            const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
-
-            const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
-
-            if (vatNumberAttribute) {
-                vatNumberAttribute.setValue(null);
-                if (additionalExpenseAttribute) {
-                    const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
-                    if (additionalExpenseValue) {
-                        Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
-                            additionalExpense => {
-                                formContext.getAttribute(_self.formModel.fields.freightamount).setValue(additionalExpense.res_amount);
-                            },
-                            error => {
-                                console.error(error.message);
-                            }
-                        );
-                        vatNumberAttribute.setRequiredLevel("required");
-                    } else {
-                        vatNumberAttribute.setRequiredLevel("none");
-                    }
-                } else {
-                    throw new Error("additional expense attribute is missing")
-                }
-            }
-
-            /**
-             * se il campo Spesa accessoria viene svuotato, 
-             * svuoto anche il campo Importo spesa accessoria
-             */
-            if (vatNumberAttribute.getValue() == null) {
-                if (freightAmountAttribute) {
-                    freightAmountAttribute.setValue(null);
-                }
-            }
-        } catch {
-            console.error("Errore in onChangeAdditionalExpenseId", error);
         }
     }
     //---------------------------------------------------
@@ -552,6 +486,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const formContext = executionContext.getFormContext();
         const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
 
+        /**
+         * mostro/nascondo tutti i campi relativi al campo Spedizione
+         * e gestisco obbligatorietà e read-only
+         */
+
         const willCallControlsVisibility = [
             _self.formModel.fields.res_shippingreference,
             _self.formModel.fields.shipto_line1,
@@ -567,6 +506,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             _self.formModel.fields.shipto_line1,
             _self.formModel.fields.shipto_postalcode,
             _self.formModel.fields.shipto_city,
+        ];
+
+        const cityRelatedFields = [
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.shipto_stateorprovince,
+            _self.formModel.fields.shipto_country,
         ];
 
         willCallControlsVisibility.forEach(field => {
@@ -598,13 +543,25 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 control.getAttribute().setRequiredLevel("none");
             }
 
-        })
+        });
+
+        cityRelatedFields.forEach(field => {
+            const control = formContext.getControl(field);
+            const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+
+            if (!control) throw new Error(`${field} field is missing`);
+
+            if (!shipToCityControl.getAttribute().getValue()) { control.setDisabled(true); }
+        });
     }
     //---------------------------------------------------
     _self.handleShipToCityRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
         const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
 
+        /**
+         * se Città spedizione è valorizzato, i campi correlati (Località, Provincia, Nazione spedizione) sono editabili
+         */
         const shipToCityRelatedFields = [
             _self.formModel.fields.res_location,
             _self.formModel.fields.shipto_stateorprovince,
@@ -619,7 +576,90 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             control.setDisabled(false);
         });
-        
+
+    }
+    //---------------------------------------------------
+    _self.handleBankVisibility = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
+
+        /**
+         * controllo visibilità campo Banca
+         */
+        if (bankControl) {
+            const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
+            if (paymentTermAttribute) {
+                const paymentTermId = paymentTermAttribute.getValue() ? paymentTermAttribute.getValue()[0].id : null;
+                if (paymentTermId) {
+                    const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
+                    Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
+                        paymentTerm => {
+                            const flag = paymentTerm.res_isbankvisible ?? null;
+                            bankControl.setVisible(flag);
+                        },
+                        error => {
+                            console.log(error.message)
+                        }
+                    );
+                }
+            }
+        }
+    }
+    //---------------------------------------------------
+    _self.handleAdditionalExpenseVisibility = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+
+        /**
+         * controllo visibilità campo "Codice IVA spesa accessoria"
+         * e controllo visibilità campo "Importo spesa accessoria"
+         */
+        if (additionalExpenseAttribute) {
+            const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+            if (additionalExpenseValue) {
+                if (vatNumberAttribute) {
+                    vatNumberAttribute.setRequiredLevel("required");
+                } else {
+                    vatNumberAttribute.setRequiredLevel("none");
+                }
+
+                /**
+                 */
+                if (freightAmountControl) {
+                    freightAmountControl.setDisabled(false);
+                } else {
+                    freightAmountControl.setDisabled(true);
+                }
+            }
+        }
+    }
+    //---------------------------------------------------
+    _self.handleShipToPostalCode = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
+        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+
+        /**
+        * controllo obbligatorietà del campo CAP spedizione
+        */
+        if (shipToPostalCodeControl) {
+            if (shipToLine1Control.getAttribute().getValue()) {
+                shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
+            }
+        }
+    }
+    //---------------------------------------------------
+    _self.handleShipToCityField = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+
+        if (shipToPostalCodeControl) {
+            if (!shipToPostalCodeControl.getAttribute().getValue()) return;
+            shipToCityControl.setDisabled(false);
+        }
     }
     //---------------------------------------------------
     /* 
@@ -637,19 +677,23 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        formContext.getAttribute("res_paymenttermid").addOnChange(_self.handleFieldsProperties);
-        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
-        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityRelatedFields)
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityRelatedFields);
+        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.handleBankVisibility);
+        formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.handleShipToPostalCode);
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityField);
 
         //Init function
-        _self.handleWillCallRelatedFields(executionContext);
-        _self.handleShipToCityRelatedFields(executionContext);
-
         _self.fillDateField(formContext);
         _self.fillPriceLevelField(executionContext);
-        _self.handleFieldsProperties(executionContext);
         _self.setContextCapIframe(executionContext);
+
+        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleShipToCityRelatedFields(executionContext);
+        _self.handleBankVisibility(executionContext);
+        _self.handleShipToPostalCode(executionContext);
+        _self.handleShipToCityField(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
