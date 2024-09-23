@@ -681,7 +681,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.handleBankVisibility);
         formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.handleShipToPostalCode);
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
-        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityField);
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.handleShipToCityField);
 
         //Init function
         _self.fillDateField(formContext);
