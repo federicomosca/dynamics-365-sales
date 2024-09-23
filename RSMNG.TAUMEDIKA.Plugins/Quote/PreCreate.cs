@@ -48,6 +48,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             //    target[DataModel.quote.freightamount] = amount;
             //}
             #endregion
+
+            #region Valorizzo il campo Nazione (testo)
+            PluginRegion = "Valorizzo il campo Nazione (testo)";
+            target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
+            string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
+
+            target[DataModel.contact.address1_country] = countryName;
+            #endregion
         }
     }
 }

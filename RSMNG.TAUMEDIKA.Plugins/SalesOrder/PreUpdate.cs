@@ -26,7 +26,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-
+            Entity postImage = target.GetPostImage(preImage);
+            #region calcoli
             if (target.Contains(salesorder.totallineitemamount) ||
                 target.Contains(salesorder.totaldiscountamount) ||
                 target.Contains(salesorder.totaltax) ||
@@ -115,6 +116,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                         );
                 }
             }
+            #endregion
+
+            #region Valorizzo il campo Nazione (testo)
+            PluginRegion = "Valorizzo il campo Nazione (testo)";
+            postImage.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
+            string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
+
+            target[DataModel.contact.address1_country] = countryName;
+            #endregion
         }
     }
 }

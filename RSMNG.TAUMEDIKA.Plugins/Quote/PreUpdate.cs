@@ -26,7 +26,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             crmServiceProvider.PluginContext.PreEntityImages.TryGetValue("PreImage", out Entity preImage);
             if (preImage == null) { return; }
+            Entity postImage = target.GetPostImage(preImage);
 
+            #region calcoli
             if (target.Contains(quote.totallineitemamount) ||
                 target.Contains(quote.totaldiscountamount) ||
                 target.Contains(quote.totaltax) ||
@@ -117,6 +119,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                         );
                 }
             }
+            #endregion
+
+            #region Valorizzo il campo Nazione (testo)
+            PluginRegion = "Valorizzo il campo Nazione (testo)";
+            postImage.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
+            string countryName = erCountry != null ? Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
+
+            target[DataModel.contact.address1_country] = countryName;
+            #endregion
         }
     }
 }
