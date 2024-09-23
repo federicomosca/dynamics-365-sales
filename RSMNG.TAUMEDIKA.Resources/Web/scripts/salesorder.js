@@ -509,6 +509,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_countryid).setVisible(true);
+            formContext.getControl("WebResource_postalcode").setVisible(true);
         } else {
             if (isEvent) {
                 formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
@@ -516,6 +518,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
 
                 formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("none");
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
@@ -526,6 +529,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(false);
+            formContext.getControl(_self.formModel.fields.res_countryid).setVisible(false);
+            formContext.getControl("WebResource_postalcode").setVisible(false);
+          
         }
     };
 
@@ -558,6 +564,18 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(shipToCity !== null ? false : true);
 
     };
+    //---------------------------------------------------
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                }
+            )
+        }
+    }
     //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
@@ -608,21 +626,15 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         var formContext = executionContext.getFormContext();
         //-----
+        _self.onChangeWillCall(executionContext, false);
         _self.onChangeShipToLine1(executionContext);
         _self.onChangeShipToPostalCode(executionContext);
         _self.onChangeShipToCity(executionContext);
-        _self.onChangeWillCall(executionContext, false);
         //-----
         let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
-        /*let willCall = formContext.getAttribute(_self.formModel.fields.willcall).getValue();*/
 
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel(additionlExpenseId !== null ? "required" : "none");
         formContext.getControl(_self.formModel.fields.freightamount).setDisabled(additionlExpenseId !== null ? false : true);
-
-        //formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(willCall == _self.formModel.fields.willcallValues.Indirizzo ? true : false);
-        //formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(willCall == _self.formModel.fields.willcallValues.Indirizzo ? true : false);
-        //formContext.getControl(_self.formModel.fields.shipto_city).setVisible(willCall == _self.formModel.fields.willcallValues.Indirizzo ? true : false);
-        //formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(willCall == _self.formModel.fields.willcallValues.Indirizzo ? true : false);
         //-----
 
         let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
@@ -674,6 +686,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeWillCall(executionContext, true); });
         //Init function
         _self.addPriceLevelCustomView(executionContext);
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:

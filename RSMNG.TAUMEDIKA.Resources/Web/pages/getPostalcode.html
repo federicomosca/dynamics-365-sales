@@ -33,7 +33,18 @@
             } else {
                 Xrm = parent._Xrm;
 
-                const CAP = Xrm.Page.getAttribute("address1_postalcode").getValue();
+                let capField;
+
+                switch (Xrm._page._entityName) {
+                    case "salesorder":
+                        capField = "shipto_postalcode";
+                        break;
+                    default:
+                        capField = "address1_postalcode";
+                        break;
+                }
+
+                const CAP = Xrm.Page.getAttribute(capField).getValue();
 
                 //Xrm.Utility.showProgressIndicator("Caricamento in corso...");
                 //form.disable();
