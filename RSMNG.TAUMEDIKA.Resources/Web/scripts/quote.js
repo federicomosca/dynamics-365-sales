@@ -503,7 +503,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         const willCallControlsRequirement = [
             _self.formModel.fields.shipto_line1,
-            _self.formModel.fields.shipto_city,
         ];
 
         const cityRelatedFields = [
@@ -655,7 +654,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
 
         if (shipToPostalCodeControl) {
-            if (!shipToPostalCodeControl.getAttribute().getValue()) return;
+            if (!shipToPostalCodeControl.getAttribute().getValue()) {
+                shipToPostalCodeControl.getAttribute().setRequiredLevel("none");
+                return
+            };
+            shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
             shipToCityControl.setDisabled(false);
         }
     }

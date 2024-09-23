@@ -504,7 +504,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         if (willCall == _self.formModel.fields.willcallValues.Indirizzo) {
 
-            formContext.getControl(_self.formModel.fields.shipto_postalcode).getAttribute().setRequiredLevel("required");
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
@@ -527,7 +526,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
             }
 
-            formContext.getControl(_self.formModel.fields.shipto_postalcode).getAttribute().setRequiredLevel("none");
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(false);
@@ -585,6 +583,19 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+        /**
+         * se Spedizione == Indirizzo, il campo Indirizzo è required
+         */
+        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
+        const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
+        if (willCallControl) {
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+                if (shipToLine1Control) {
+                    shipToLine1Control.getAttribute().setRequiredLevel("required");
+                }
+            }
+        }
 
         _self.setValueDate(executionContext);
 
