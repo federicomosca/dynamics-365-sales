@@ -80,8 +80,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
 
             salesorder[DataModel.salesorder.quoteid] = erQuote;
-            salesorder[DataModel.salesorder.statecode] = 0;
-            salesorder[DataModel.salesorder.statuscode] = 100005;
+            salesorder[DataModel.salesorder.statecode] = new OptionSetValue((int)DataModel.salesorder.statecodeValues.Attivo);
+            salesorder[DataModel.salesorder.statuscode] = new OptionSetValue((int)DataModel.salesorder.statuscodeValues.Approvato_StateAttivo);
 
             crmServiceProvider.Service.Create(salesorder);
             #endregion
