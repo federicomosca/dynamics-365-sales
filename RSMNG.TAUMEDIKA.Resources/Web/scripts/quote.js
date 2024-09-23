@@ -504,7 +504,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         const willCallControlsRequirement = [
             _self.formModel.fields.shipto_line1,
-            _self.formModel.fields.shipto_postalcode,
             _self.formModel.fields.shipto_city,
         ];
 
