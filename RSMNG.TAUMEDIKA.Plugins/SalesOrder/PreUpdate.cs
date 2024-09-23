@@ -123,7 +123,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             postImage.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
             string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
-            target[DataModel.contact.address1_country] = countryName;
+            target[DataModel.salesorder.shipto_country] = countryName;
             #endregion
         }
     }
