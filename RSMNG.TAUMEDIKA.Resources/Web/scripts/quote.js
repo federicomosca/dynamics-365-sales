@@ -498,7 +498,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             _self.formModel.fields.res_location,
             _self.formModel.fields.shipto_city,
             _self.formModel.fields.shipto_stateorprovince,
-            _self.formModel.fields.shipto_country,
             _self.formModel.fields.res_countryid,
         ];
 
@@ -510,7 +509,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const cityRelatedFields = [
             _self.formModel.fields.res_location,
             _self.formModel.fields.shipto_stateorprovince,
-            _self.formModel.fields.shipto_country,
+            _self.formModel.fields.res_countryid,
         ];
 
         willCallControlsVisibility.forEach(field => {
