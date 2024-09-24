@@ -41,12 +41,49 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         AGGIORNATA: 7
     }
 
+    _self.Agent = undefined;
+
+    _self.getAgent = function () {
+        return new Promise(function (resolve, reject) {
+            Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
+                function success(result) {
+                    console.log(result);
+                    // Columns
+                    resolve(result["res_isagente"]); // Boolean
+                },
+                function (error) {
+                    reject(null);
+                    console.log(error.message);
+                }
+            );
+        });
+    };
+
     //--------------------------------------------------
     _self.UPDATESTATUS = {
-        canExecute: async function (formContext) {
-            return true;
+        canExecute: async function (formContext, status) {
+            let currentStatus = formContext.getAttribute("statuscode").getValue();
+            let visible = false;
+            if (_self.Agent === undefined) {
+                _self.Agent = await _self.getAgent();
+            }
+            switch (status) {
+                case "APPROVAL":
+                    break;
+                case "APPROVED":
+                    break;
+                case "NOT_APPROVED":
+                    break;
+                case "CREATE_ORDER":
+                    break;
+                case "REVISE":
+                    break;
+                case "ACTIVATE_QUOTE":
+                    break;
+            }
+            return visible;
         },
-        execute: async function (formContext) {
+        execute: async function (formContext, status) {
 
             await import('../res_scripts/res_global.js');
 
@@ -56,8 +93,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
              * in base allo statuscode attuale (switch) effettuo un update 
              * dallo status attuale a quello successivo tramite cloud flow
              */
-            var quoteId = Xrm.Page.data.entity.getId();
-            var currentStatus = Xrm.Page.getAttribute("statuscode").getValue();
+            var quoteId = formContext.data.entity.getId();
+            var currentStatus = formContext.getAttribute("statuscode").getValue();
 
             console.log(`Statuscode attuale: ${currentStatus}`);
 
