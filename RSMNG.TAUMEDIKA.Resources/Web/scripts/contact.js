@@ -1027,10 +1027,19 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
+
+        var fields = {
+            cap: _self.formModel.fields.address1_postalcode,
+            city: _self.formModel.fields.address1_city,
+            province: _self.formModel.fields.address1_stateorprovince,
+            nation: _self.formModel.fields.address1_country,
+            country: _self.formModel.fields.res_countryid
+        }
+
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
                 }
             )
         }

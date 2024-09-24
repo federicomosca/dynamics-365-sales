@@ -485,7 +485,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
                 }
             )
         }

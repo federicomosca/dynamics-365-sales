@@ -134,14 +134,14 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
             cap: _self.formModel.fields.res_postalcode,
             city: _self.formModel.fields.res_city,
             province: _self.formModel.fields.res_province,
-            nation: _self.formModel.fields.res_countryid,
+            nation: null,
             country: _self.formModel.fields.res_countryid
         }
 
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext, _self, executionContext);
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
                 }
             )
         }

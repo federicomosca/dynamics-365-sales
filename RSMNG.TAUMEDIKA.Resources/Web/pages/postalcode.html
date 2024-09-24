@@ -91,18 +91,18 @@
                     position: 1,
                     title: 'Lista dei C.A.P.'
                 };
- 
+
                 window._Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
                     function success(result) {
                         if (result.returnValue != null) {
 
-                            
+
                             //Imposto in automatico i dati presi dal cap
                             let capJson = JSON.parse(result.returnValue);
                             window._formContext.getAttribute(window._fields.cap).setValue(capJson.code);
                             window._formContext.getAttribute(window._fields.city).setValue(capJson.city);
                             window._formContext.getAttribute(window._fields.province).setValue(capJson.province);
-                            window._formContext.getAttribute(window._fields.nation).setValue(capJson.country);
+                            if (window._fields.nation!=null) window._formContext.getAttribute(window._fields.nation).setValue(capJson.country);
                             window._formContext.getAttribute(window._fields.country).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
                         }
 
@@ -116,12 +116,12 @@
             });
             form.getItem("reset").events.on("click", function () {
 
-        
+
                 //Annullo i valori
                 window._formContext.getAttribute(window._fields.cap).setValue(null);
                 window._formContext.getAttribute(window._fields.city).setValue(null);
                 window._formContext.getAttribute(window._fields.province).setValue(null);
-                window._formContext.getAttribute(window._fields.nation).setValue(null);
+                if (window._fields.nation!=null) window._formContext.getAttribute(window._fields.nation).setValue(null);
                 window._formContext.getAttribute(window._fields.country).setValue(null);
 
                 //Aggiorno in automatico i campi dell'indirizzo
@@ -139,14 +139,9 @@
             window._formContext = _formContext;
             window._form = _form;
             window._context = _context;
-            parent._Xrm = _xrm;
-            parent._formContext = _formContext;
-            parent._form = _form;
-            parent._context = _context;
             window._fields = _fields;
-            
         }
-       
+
     </script>
 </head>
 <body onload="onLoad()">
