@@ -145,7 +145,12 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
                 }
             )
         }
-    }
+    };
+    _self.onChangeAddress = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        _self.hasPostalCode(formContext);
+        _self.hasCity(formContext);
+    };
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm

@@ -491,6 +491,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.onChangeAddress(executionContext)){
+        _self.handleWillCallRelatedFields(executionContext);
+    }
+    //---------------------------------------------------
     _self.handleWillCallRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
         const willCallControl = formContext.getControl(_self.formModel.fields.willcall);

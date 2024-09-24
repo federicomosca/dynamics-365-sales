@@ -136,10 +136,15 @@
         };
         setContext = function (_xrm, _formContext, _form, _context, _fields) {
             window._Xrm = _xrm;
+            parent._Xrm = _xrm;
             window._formContext = _formContext;
+            parent._formContext = _formContext;
             window._form = _form;
+            parent._form = _form;
             window._context = _context;
+            parent._context = _context;
             window._fields = _fields;
+            parent._fields = _fields;
         }
 
     </script>
