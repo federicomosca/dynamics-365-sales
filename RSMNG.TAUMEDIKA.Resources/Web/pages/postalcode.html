@@ -17,23 +17,23 @@
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
     <script>
         const DataModel = {
-            res_country : {
-	            ///Nazione constants.
-	            logicalName: "res_country",
-	            displayName: "Nazione",
-	            ///ID organizzazione
-	            organizationid: "organizationid",
-	            ///Nazione
-	            res_countryid: "res_countryid",
-	            ///Codice ISO (Apha3)
-	            res_isonumber: "res_isonumber",
-	            ///Nome
-	            res_name: "res_name",
+            res_country: {
+                ///Nazione constants.
+                logicalName: "res_country",
+                displayName: "Nazione",
+                ///ID organizzazione
+                organizationid: "organizationid",
+                ///Nazione
+                res_countryid: "res_countryid",
+                ///Codice ISO (Apha3)
+                res_isonumber: "res_isonumber",
+                ///Nome
+                res_name: "res_name",
             },
-            account : {
-	            ///Account constants.
-	            logicalName: "account",
-	            displayName: "Account",
+            account: {
+                ///Account constants.
+                logicalName: "account",
+                displayName: "Account",
                 ///Indirizzo
                 address1_line1: "address1_line1",
                 ///CAP
@@ -44,8 +44,8 @@
                 address1_stateorprovince: "address1_stateorprovince",
                 ///Nazione
                 res_countryid: "res_countryid",
-	            ///Nazione (Testo)
-	            address1_country: "address1_country",
+                ///Nazione (Testo)
+                address1_country: "address1_country",
             }
         };
         let form = null;
@@ -56,25 +56,25 @@
                 padding: 0,
                 rows: [
                     {
-                    padding: 0,
-                    cols: [
-                    {
-                        type: "button",
-                        name: "cap",
-                        text: "SELEZIONA",
-                        size: "medium",
-                        view: "flat",
-                        color: "primary"
-                    },
-                    {
-                        type: "button",
-                        name: "reset",
-                        text: "ANNULLA",
-                        size: "medium",
-                        view: "link",
-                        color: "primary"
-                    }
-                    ]
+                        padding: 0,
+                        cols: [
+                            {
+                                type: "button",
+                                name: "cap",
+                                text: "SELEZIONA",
+                                size: "medium",
+                                view: "flat",
+                                color: "primary"
+                            },
+                            {
+                                type: "button",
+                                name: "reset",
+                                text: "ANNULLA",
+                                size: "medium",
+                                view: "link",
+                                color: "primary"
+                            }
+                        ]
                     }
                 ]
             };
@@ -91,18 +91,19 @@
                     position: 1,
                     title: 'Lista dei C.A.P.'
                 };
+ 
                 window._Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
                     function success(result) {
                         if (result.returnValue != null) {
-                            var entity = getFieldNames(window._formContext._entityName);
-                            console.log(entity);
+
+                            
                             //Imposto in automatico i dati presi dal cap
                             let capJson = JSON.parse(result.returnValue);
-                            window._formContext.getAttribute(entity.cap).setValue(capJson.code);
-                            window._formContext.getAttribute(entity.city).setValue(capJson.city);
-                            window._formContext.getAttribute(entity.province).setValue(capJson.province);
-                            window._formContext.getAttribute(entity.nation).setValue(capJson.country);
-                            window._formContext.getAttribute(entity.country).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
+                            window._formContext.getAttribute(window._fields.cap).setValue(capJson.code);
+                            window._formContext.getAttribute(window._fields.city).setValue(capJson.city);
+                            window._formContext.getAttribute(window._fields.province).setValue(capJson.province);
+                            window._formContext.getAttribute(window._fields.nation).setValue(capJson.country);
+                            window._formContext.getAttribute(window._fields.country).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
                         }
 
                         //Aggiorno in automatico i campi dell'indirizzo
@@ -115,14 +116,13 @@
             });
             form.getItem("reset").events.on("click", function () {
 
-                var entity = getFieldNames(window._formContext._entityName);
-                console.log(entity);
+        
                 //Annullo i valori
-                window._formContext.getAttribute(entity.cap).setValue(null);
-                window._formContext.getAttribute(entity.city).setValue(null);
-                window._formContext.getAttribute(entity.province).setValue(null);
-                window._formContext.getAttribute(entity.nation).setValue(null);
-                window._formContext.getAttribute(entity.country).setValue(null);
+                window._formContext.getAttribute(window._fields.cap).setValue(null);
+                window._formContext.getAttribute(window._fields.city).setValue(null);
+                window._formContext.getAttribute(window._fields.province).setValue(null);
+                window._formContext.getAttribute(window._fields.nation).setValue(null);
+                window._formContext.getAttribute(window._fields.country).setValue(null);
 
                 //Aggiorno in automatico i campi dell'indirizzo
                 window._form.onChangeAddress(window._context);
@@ -134,7 +134,7 @@
             }
 
         };
-        setContext = function (_xrm, _formContext, _form, _context) {
+        setContext = function (_xrm, _formContext, _form, _context, _fields) {
             window._Xrm = _xrm;
             window._formContext = _formContext;
             window._form = _form;
@@ -143,50 +143,10 @@
             parent._formContext = _formContext;
             parent._form = _form;
             parent._context = _context;
+            window._fields = _fields;
+            
         }
-        getFieldNames = function (entityName) {
-
-            var entityFields = {
-                cap: "",
-                city: "",
-                province: "",
-                nation: "",
-                country: ""
-            }
-
-            switch (entityName) {
-                case "res_address":
-                    entityFields.cap = "res_postalcode";
-                    entityFields.city = "res_city";
-                    entityFields.province = "res_province";
-                    entityFields.nation = "res_countryid";
-                    entityFields.country = "res_countryid";
-                    break;
-                case "quote":
-                    entityFields.cap = "shipto_postalcode";
-                    entityFields.city = "shipto_city";
-                    entityFields.province = "shipto_stateorprovince";
-                    entityFields.nation = "shipto_country";
-                    entityFields.country = "res_countryid";
-                    break;
-                case "salesorder":
-                    entityFields.cap = "shipto_postalcode";
-                    entityFields.city = "shipto_city";
-                    entityFields.province = "shipto_stateorprovince";
-                    entityFields.nation = "shipto_country";
-                    entityFields.country = "res_countryid";
-                    break;
-                default:
-                    entityFields.cap = "address1_postalcode";
-                    entityFields.city = "address1_city";
-                    entityFields.province = "address1_stateorprovince";
-                    entityFields.nation = "address1_country";
-                    entityFields.country = "res_countryid";
-                    break;
-
-            }
-            return entityFields;
-        }
+       
     </script>
 </head>
 <body onload="onLoad()">
