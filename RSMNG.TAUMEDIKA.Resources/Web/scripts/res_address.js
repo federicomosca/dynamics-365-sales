@@ -54,31 +54,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         }
     };
 
-    /*
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
-    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
-    */
-    _self.onSaveForm = function (executionContext) {
-        if (executionContext.getEventArgs().getSaveMode() == 70) {
-            executionContext.getEventArgs().preventDefault();
-            return;
-        }
-    };
-    //---------------------------------------------------
-    _self.onLoadCreateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadUpdateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
     //---------------------------------------------------
     _self.isCustomerAddress = formContext => {
 
@@ -152,11 +127,32 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         _self.hasCity(formContext);
     };
     //---------------------------------------------------
-    /* 
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
-    per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
-    Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi
+    /*
+    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
+    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
     */
+    _self.onSaveForm = function (executionContext) {
+        if (executionContext.getEventArgs().getSaveMode() == 70) {
+            executionContext.getEventArgs().preventDefault();
+            return;
+        }
+    };
+    //---------------------------------------------------
+    _self.onLoadCreateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadUpdateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadReadyOnlyForm = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
@@ -188,6 +184,6 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
                 _self.onLoadCreateForm(executionContext);
                 break;
         }
-    }
+    };
 }
 ).call(RSMNG.TAUMEDIKA.RES_ADDRESS);

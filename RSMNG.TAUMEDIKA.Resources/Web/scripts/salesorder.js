@@ -372,13 +372,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
     };
 
-
-    _self.onSaveForm = function (executionContext) {
-        if (executionContext.getEventArgs().getSaveMode() == 70) {
-            executionContext.getEventArgs().preventDefault();
-            return;
-        }
-    };
     //-----------Listino-prezzi-Custom-View--------------   
     _self.addPriceLevelCustomView = function (executionContext) {
 
@@ -534,7 +527,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_countryid).setVisible(false);
             formContext.getControl("WebResource_postalcode").setVisible(false);
-          
+
         }
     };
 
@@ -568,6 +561,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     };
     //---------------------------------------------------
+    _self.onChangeAddress = function (executionContext) {
+        _self.onChangeShipToPostalCode(executionContext);
+        _self.onChangeShipToCity(executionContext);
+    };
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
@@ -692,7 +689,13 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-
+    _self.onSaveForm = function (executionContext) {
+        if (executionContext.getEventArgs().getSaveMode() == 70) {
+            executionContext.getEventArgs().preventDefault();
+            return;
+        }
+    };
+    //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {
 
         //init lib

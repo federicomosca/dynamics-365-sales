@@ -377,7 +377,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 dateAttribute.setValue(date);
             }
         }
-    }
+    };
     //---------------------------------------------------
     _self.fillPriceLevelField = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -427,7 +427,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
             );
         }
-    }
+    };
     //---------------------------------------------------
     _self.onChangeAdditionalExpenseId = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -468,7 +468,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 freightAmountAttribute.setValue(null);
             }
         }
-    }
+    };
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
@@ -489,11 +489,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
             )
         }
-    }
+    };
     //---------------------------------------------------
     _self.onChangeAddress(executionContext)){
         _self.handleWillCallRelatedFields(executionContext);
-    }
+    };
     //---------------------------------------------------
     _self.handleWillCallRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -563,7 +563,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             if (!shipToCityControl.getAttribute().getValue()) { control.setDisabled(true); }
         });
-    }
+    };
     //---------------------------------------------------
     _self.handleShipToCityRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -587,7 +587,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             control.setDisabled(false);
         });
 
-    }
+    };
     //---------------------------------------------------
     _self.handleBankVisibility = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -614,7 +614,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
             }
         }
-    }
+    };
     //---------------------------------------------------
     _self.handleAdditionalExpenseVisibility = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -644,7 +644,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 }
             }
         }
-    }
+    };
     //---------------------------------------------------
     _self.handleShipToPostalCode = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -659,7 +659,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
             }
         }
-    }
+    };
     //---------------------------------------------------
     _self.handleShipToCityField = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -674,7 +674,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
             shipToCityControl.setDisabled(false);
         }
-    }
+    };
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
@@ -723,6 +723,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 _self.onLoadCreateForm(executionContext);
                 break;
         }
-    }
+    };
 }
 ).call(RSMNG.TAUMEDIKA.QUOTE);

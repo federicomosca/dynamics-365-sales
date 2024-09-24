@@ -879,31 +879,6 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         }
     };
 
-    /*
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
-    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
-    */
-    _self.onSaveForm = function (executionContext) {
-        if (executionContext.getEventArgs().getSaveMode() == 70) {
-            executionContext.getEventArgs().preventDefault();
-            return;
-        }
-    };
-    //---------------------------------------------------
-    _self.onLoadCreateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadUpdateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
     //---------------------------------------------------
     /**
      * @param {any} formContext
@@ -922,7 +897,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             if (cityHasValue || postalCodeHasValue) { addressAttribute.setRequiredLevel("required") }
             else { addressAttribute.setRequiredLevel("none") }
         }
-    }
+    };
     //---------------------------------------------------
     /**
      * @param {any} formContext
@@ -939,7 +914,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             if (addressHasValue) { cityAttribute.setRequiredLevel("required") }
             else { cityAttribute.setRequiredLevel("none") }
         }
-    }
+    };
     //---------------------------------------------------
     /**
      * @param {any} formContext
@@ -956,7 +931,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             if (cityHasValue) { locationControl.setDisabled(false) }
             else { locationControl.setDisabled(true) }
         }
-    }
+    };
     //---------------------------------------------------
     /**
      * @param {any} formContext
@@ -973,7 +948,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             if (cityHasValue) { stateOrProvinceControl.setDisabled(false) }
             else { stateOrProvinceControl.setDisabled(true) }
         }
-    }
+    };
     //---------------------------------------------------
     /**
      * @param {any} formContext
@@ -990,7 +965,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             if (cityHasValue) { countryControl.setDisabled(false) }
             else { countryControl.setDisabled(true) }
         }
-    }
+    };
     //---------------------------------------------------
     /**
      * @param {any} executionContext
@@ -1022,7 +997,16 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
                 }
             );
         }
-    }
+    };
+    //---------------------------------------------------
+    _self.onChangeAddress = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        _self.setRequiredAddress(formContext);
+        _self.setRequiredCity(formContext);
+        _self.setEditableLocation(formContext);
+        _self.setEditableStateOrProvince(formContext);
+        _self.setEditableCountry(formContext);
+    };
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
@@ -1044,6 +1028,32 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
             )
         }
     }
+    /*
+    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
+    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
+    */
+    //---------------------------------------------------
+    _self.onSaveForm = function (executionContext) {
+        if (executionContext.getEventArgs().getSaveMode() == 70) {
+            executionContext.getEventArgs().preventDefault();
+            return;
+        }
+    };
+    //---------------------------------------------------
+    _self.onLoadCreateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadUpdateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadReadyOnlyForm = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
     //---------------------------------------------------
     /* 
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
@@ -1084,6 +1094,6 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
                 _self.onLoadCreateForm(executionContext);
                 break;
         }
-    }
+    };
 }
 ).call(RSMNG.TAUMEDIKA.CONTACT);
