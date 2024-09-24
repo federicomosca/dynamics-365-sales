@@ -473,6 +473,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
+
+        var fields = {
+            cap: _self.formModel.fields.shipto_postalcode,
+            city: _self.formModel.fields.shipto_city,
+            province: _self.formModel.fields.shipto_stateorprovince,
+            nation: _self.formModel.fields.shipto_country,
+            country: _self.formModel.fields.res_countryid
+        }
+
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {

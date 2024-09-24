@@ -129,6 +129,15 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
+
+        var fields = {
+            cap: _self.formModel.fields.res_postalcode,
+            city: _self.formModel.fields.res_city,
+            province: _self.formModel.fields.res_province,
+            nation: _self.formModel.fields.res_countryid,
+            country: _self.formModel.fields.res_countryid
+        }
+
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
