@@ -68,17 +68,50 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 _self.Agent = await _self.getAgent();
             }
             switch (status) {
+                //in approvazione
                 case "APPROVAL":
+                    if (currentStatus === _self.STATUS.BOZZA) {
+                        if (_self.Agent === 1) { visible = true; }
+                    }
                     break;
+                //approvata
                 case "APPROVED":
+                    if (currentStatus === _self.STATUS.BOZZA ||
+                        (currentStatus === _self.STATUS.IN_APPROVAZIONE && _self.Agent === 0)) {
+                        visible = true;
+                    }
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE) {
+                        visible = true;
+                    }
                     break;
+                //non approvata
                 case "NOT_APPROVED":
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && _self.Agent === 0) {
+                        visible = true;
+                    }
                     break;
+                //chiudi offerta (persa)
+                case "CLOSE_QUOTE":
+                    if (currentStatus === _self.STATUS.APPROVATA) {
+                        visible = true;
+                    }
+                    break;
+                //acquisisci offerta (acquisita)
                 case "CREATE_ORDER":
+                    if (currentStatus === _self.STATUS.APPROVATA) {
+                        visible = true;
+                    }
                     break;
+                //aggiorna
                 case "REVISE":
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE ||
+                        currentStatus === _self.STATUS.APPROVATA) {
+                        visible = true;
+                    }
                     break;
+                //
                 case "ACTIVATE_QUOTE":
+
                     break;
             }
             return visible;
@@ -117,55 +150,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         }
     };
 }).call(RSMNG.TAUMEDIKA.QUOTE.RIBBON.FORM);
-
-(function () {
-
-    var _self = this;
-
-    //--------------------------------------------------
-    _self.UPDATESTATUS = {
-        canExecute: async function (formContext) {
-
-            // abilito bottone solo se è selezionato un record
-
-            return true;
-        },
-        execute: async function (formContext, SelectedControlSelectedItemIds) {
-
-            await import('../res_scripts/res_global.js');
-
-            /**
-             * recupero l'id del record su cui sto operando il cambio di stato
-             * recupero l'attributo statuscode
-             * in base allo statuscode attuale (switch) effettuo un update 
-             * dallo status attuale a quello successivo tramite cloud flow
-             */
-            var quoteId = Xrm.Page.data.entity.getId();
-            var currentStatus = Xrm.Page.getAttribute("statuscode").getValue();
-
-            console.log(`Statuscode attuale: ${currentStatus}`);
-
-            switch (currentStatus) {
-                case _self.STATUS.BOZZA:
-                    break;
-                case _self.STATUS.IN_APPROVAZIONE:
-                    break;
-                case _self.STATUS.APPROVATA:
-                    break;
-                case _self.STATUS.ACQUISITA:
-                    break;
-                case _self.STATUS.NON_APPROVATA:
-                    break;
-                case _self.STATUS.PERSA:
-                    break;
-                case _self.STATUS.AGGIORNATA:
-                    break;
-            }
-        }
-    };
-}).call(RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME);
-
-
 
 /*
 Alla call puoi aggiungere i namespace se hai necessità di estendere le funzionalità
