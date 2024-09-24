@@ -31,6 +31,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
     var _self = this;
 
+    _self.STATUS = {
+        BOZZA: 1,
+        IN_APPROVAZIONE: 2,
+        APPROVATA: 3,
+        ACQUISITA: 4,
+        NON_APPROVATA: 5,
+        PERSA: 6,
+        AGGIORNATA: 7
+    }
+
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext) {
@@ -52,15 +62,19 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             console.log(`Statuscode attuale: ${currentStatus}`);
 
             switch (currentStatus) {
-                case 0:
+                case _self.STATUS.BOZZA:
                     break;
-                case 0:
+                case _self.STATUS.IN_APPROVAZIONE:
                     break;
-                case 0:
+                case _self.STATUS.APPROVATA:
                     break;
-                case 0:
+                case _self.STATUS.ACQUISITA:
                     break;
-                case 0:
+                case _self.STATUS.NON_APPROVATA:
+                    break;
+                case _self.STATUS.PERSA:
+                    break;
+                case _self.STATUS.AGGIORNATA:
                     break;
             }
         }
@@ -82,7 +96,34 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         execute: async function (formContext, SelectedControlSelectedItemIds) {
 
             await import('../res_scripts/res_global.js');
-            let selectedScope = [];
+
+            /**
+             * recupero l'id del record su cui sto operando il cambio di stato
+             * recupero l'attributo statuscode
+             * in base allo statuscode attuale (switch) effettuo un update 
+             * dallo status attuale a quello successivo tramite cloud flow
+             */
+            var quoteId = Xrm.Page.data.entity.getId();
+            var currentStatus = Xrm.Page.getAttribute("statuscode").getValue();
+
+            console.log(`Statuscode attuale: ${currentStatus}`);
+
+            switch (currentStatus) {
+                case _self.STATUS.BOZZA:
+                    break;
+                case _self.STATUS.IN_APPROVAZIONE:
+                    break;
+                case _self.STATUS.APPROVATA:
+                    break;
+                case _self.STATUS.ACQUISITA:
+                    break;
+                case _self.STATUS.NON_APPROVATA:
+                    break;
+                case _self.STATUS.PERSA:
+                    break;
+                case _self.STATUS.AGGIORNATA:
+                    break;
+            }
         }
     };
 }).call(RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME);
