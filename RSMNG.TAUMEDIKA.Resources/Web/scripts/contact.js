@@ -916,6 +916,10 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         }
     };
     //---------------------------------------------------
+    _self.setRequiredPostalCode = executionContext => {
+
+    };
+    //---------------------------------------------------
     /**
      * @param {any} formContext
      * se il campo Città è valorizzato, il campo Località diventa editable
@@ -1027,7 +1031,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
                 }
             )
         }
-    }
+    };
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -1071,6 +1075,10 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
+        formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.setRequiredAddress);
+        formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.setRequiredAddress);
+        formContext.getAttribute(_self.formModel.fields.address1_addressid).addOnChange(_self.setRequiredPostalCode);
+
 
         //Init function
         _self.setRequiredAddress(formContext);
