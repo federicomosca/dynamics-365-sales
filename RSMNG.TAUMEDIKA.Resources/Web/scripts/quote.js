@@ -367,7 +367,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-    _self.fillDateField = formContext => {
+    _self.setDate = formContext => {
 
         const dateAttribute = formContext.getAttribute(_self.formModel.fields.res_date);
 
@@ -379,12 +379,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.fillPriceLevelField = executionContext => {
+    _self.setPriceLevelLookup = executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const priceLevelAttribute = formContext.getAttribute(_self.formModel.fields.pricelevelid);
+        const priceLevelControl = formContext.getControl(_self.formModel.fields.pricelevelid);
 
-        if (priceLevelAttribute) {
+        if (priceLevelControl) {
+            priceLevelControl.getAttribute().setRequiredLevel("required");
 
             var fetchData = {
                 "res_isdefaultforagents": "1",
@@ -420,7 +421,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                         entityType: "pricelevel"
                     }];
 
-                    priceLevelAttribute.setValue(priceLevelLookUp);
+                    priceLevelControl.getAttribute().setValue(priceLevelLookUp);
                 },
                 error => {
                     console.log(error.message);
@@ -429,18 +430,17 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.onChangeAdditionalExpenseId = executionContext => {
+    _self.setVatNumberRequirement = (executionContext, flag) => {
         const formContext = executionContext.getFormContext();
 
-        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
+        const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
 
-        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
 
-        if (vatNumberAttribute) {
-            vatNumberAttribute.setValue(null);
-            if (additionalExpenseAttribute) {
-                const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+        if (vatNumberControl) {
+            if (additionalExpenseControl) {
+                const additionalExpenseValue = additionalExpenseControl.getAttribute().getValue() ?? null;
                 if (additionalExpenseValue) {
                     Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
                         additionalExpense => {
@@ -450,9 +450,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             console.error(error.message);
                         }
                     );
-                    vatNumberAttribute.setRequiredLevel("required");
+                    vatNumberControl.getAttribute().setRequiredLevel("required");
+                    if (flag) { vatNumberControl.getAttribute().setValue(null); }
                 } else {
-                    vatNumberAttribute.setRequiredLevel("none");
+                    vatNumberControl.getAttribute().setRequiredLevel("none");
+                    vatNumberControl.getAttribute().setValue(null);
                 }
             } else {
                 throw new Error("additional expense attribute is missing")
@@ -463,12 +465,24 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
          * se il campo Spesa accessoria viene svuotato, 
          * svuoto anche il campo Importo spesa accessoria
          */
-        if (vatNumberAttribute.getValue() == null) {
-            if (freightAmountAttribute) {
-                freightAmountAttribute.setValue(null);
+        if (vatNumberControl.getAttribute().getValue() == null) {
+            if (freightAmountControl) {
+                freightAmountControl.getAttribute().setValue(null);
             }
         }
     };
+    //---------------------------------------------------
+    _self.setFreightAmountEditability = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
+
+        if (freightAmountControl) {
+            const additionalExpenseValue = additionalExpenseControl ? additionalExpenseControl.getAttribute().getValue() ?? null : null;
+            if (additionalExpenseValue) { freightAmountControl.setDisabled(false); } else { freightAmountControl.setDisabled(true); }
+        }
+    }
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
@@ -491,7 +505,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.onChangeAddress(executionContext)){
+    _self.onChangeAddress = executionContext => {
         _self.handleWillCallRelatedFields(executionContext);
     };
     //---------------------------------------------------
@@ -597,9 +611,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
          * controllo visibilità campo Banca
          */
         if (bankControl) {
-            const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
-            if (paymentTermAttribute) {
-                const paymentTermId = paymentTermAttribute.getValue() ? paymentTermAttribute.getValue()[0].id : null;
+            const paymentTermControl = formContext.getControl("res_paymenttermid");
+            if (paymentTermControl) {
+                const paymentTermId = paymentTermControl.getAttribute().getValue() ? paymentTermControl.getAttribute().getValue()[0].id : null;
                 if (paymentTermId) {
                     const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
                     Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
@@ -611,6 +625,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             console.log(error.message)
                         }
                     );
+                } else {
+                    bankControl.setVisible(false);
                 }
             }
         }
@@ -695,14 +711,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityRelatedFields);
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.handleBankVisibility);
         formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.handleShipToPostalCode);
-        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(() => { _self.setVatNumberRequirement(executionContext, true) });
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.setFreightAmountEditability);
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.handleShipToCityField);
 
         //Init function
-        _self.fillDateField(formContext);
-        _self.fillPriceLevelField(executionContext);
+        _self.setDate(formContext);
+        _self.setPriceLevelLookup(executionContext);
         _self.setContextCapIframe(executionContext);
-
+        _self.setFreightAmountEditability(executionContext);
+        _self.setVatNumberRequirement(executionContext, false);
         _self.handleWillCallRelatedFields(executionContext);
         _self.handleShipToCityRelatedFields(executionContext);
         _self.handleBankVisibility(executionContext);
