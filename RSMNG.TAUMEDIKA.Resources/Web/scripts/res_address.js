@@ -73,7 +73,7 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.hasPostalCode = executionContext => {
+    _self.setCityEditability = executionContext => {
         const formContext = executionContext.getFormContext();
 
         const postalCodeControl = formContext.getControl(_self.formModel.fields.res_postalcode);
@@ -84,7 +84,7 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         if (cityControl) { cityControl.setDisabled(!hasPostalCode); }
     };
     //---------------------------------------------------
-    _self.hasCity = executionContext => {
+    _self.setCityRelatedFieldsEditability = executionContext => {
         const formContext = executionContext.getFormContext();
 
         const cityControl = formContext.getControl(_self.formModel.fields.res_city);
@@ -127,8 +127,8 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     //---------------------------------------------------
     _self.onChangeAddress = function (executionContext) {
         let formContext = executionContext.getFormContext();
-        _self.hasPostalCode(executionContext);
-        _self.hasCity(executionContext);
+        _self.setCityEditability(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
     };
     //---------------------------------------------------
     /*
@@ -167,12 +167,12 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-        formContext.getAttribute(_self.formModel.fields.res_postalcode).addOnChange(_self.hasPostalCode);
-        formContext.getAttribute(_self.formModel.fields.res_city).addOnChange(_self.hasCity);
+        formContext.getAttribute(_self.formModel.fields.res_postalcode).addOnChange(_self.setCityEditability);
+        formContext.getAttribute(_self.formModel.fields.res_city).addOnChange(_self.setCityRelatedFieldsEditability);
 
         //Init function
-        _self.hasPostalCode(executionContext);
-        _self.hasCity(executionContext);
+        _self.setCityEditability(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
         _self.isCustomerAddress(executionContext);
         _self.setContextCapIframe(executionContext);
 

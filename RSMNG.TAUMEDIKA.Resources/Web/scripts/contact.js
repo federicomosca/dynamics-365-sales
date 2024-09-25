@@ -881,108 +881,85 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
 
     //---------------------------------------------------
     /**
-     * @param {any} formContext
      * se i campi Città o CAP sono valorizzati, il campo Indirizzo diventa required
      */
-    _self.setRequiredAddress = formContext => {
+    _self.setAddressRequirement = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
-        const postalCodeAttribute = formContext.getAttribute(_self.formModel.fields.address1_postalcode) ?? null;
-        const addressAttribute = formContext.getAttribute(_self.formModel.fields.address1_name) ?? null;
+        const cityControl = formContext.getControl(_self.formModel.fields.address1_city) ?? null;
+        const postalCodeControl = formContext.getControl(_self.formModel.fields.address1_postalcode) ?? null;
+        const addressControl = formContext.getControl(_self.formModel.fields.address1_name) ?? null;
 
-        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
-        const postalCodeHasValue = postalCodeAttribute ? postalCodeAttribute.getValue() ?? null : null;
+        const cityHasValue = cityControl ? cityControl.getAttribute().getValue() ?? null : null;
+        const postalCodeHasValue = postalCodeControl ? postalCodeControl.getAttribute().getValue() ?? null : null;
 
-        if (addressAttribute) {
-            if (cityHasValue || postalCodeHasValue) { addressAttribute.setRequiredLevel("required") }
-            else { addressAttribute.setRequiredLevel("none") }
+        if (addressControl) {
+            if (cityHasValue || postalCodeHasValue) { addressControl.getAttribute().setRequiredLevel("required") }
+            else { addressControl.getAttribute().setRequiredLevel("none") }
         }
     };
     //---------------------------------------------------
     /**
-     * @param {any} formContext
      * se il campo Indirizzo è valorizzato, il campo Città diventa required
      */
-    _self.setRequiredCity = formContext => {
+    _self.setCityRequirement = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        const addressAttribute = formContext.getAttribute(_self.formModel.fields.address1_name) ?? null;
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
+        const addressControl = formContext.getControl(_self.formModel.fields.address1_name) ?? null;
+        const cityControl = formContext.getControl(_self.formModel.fields.address1_city) ?? null;
 
-        const addressHasValue = addressAttribute ? addressAttribute.getValue() ?? null : null;
+        const addressHasValue = addressControl ? addressControl.getAttribute().getValue() ?? null : null;
 
-        if (cityAttribute) {
-            if (addressHasValue) { cityAttribute.setRequiredLevel("required") }
-            else { cityAttribute.setRequiredLevel("none") }
+        if (cityControl) {
+            if (addressHasValue) { cityControl.getAttribute().setRequiredLevel("required") }
+            else { cityControl.getAttribute().setRequiredLevel("none") }
         }
     };
     //---------------------------------------------------
-    _self.setRequiredPostalCode = executionContext => {
+    _self.setPostalCodeRequirement = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-    };
-    //---------------------------------------------------
-    /**
-     * @param {any} formContext
-     * se il campo Città è valorizzato, il campo Località diventa editable
-     */
-    _self.setEditableLocation = formContext => {
+        const addressControl = formContext.getControl(_self.formModel.fields.address1_name) ?? null;
+        const postalCodeControl = formContext.getControl(_self.formModel.fields.address1_postalcode) ?? null;
 
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
-        const locationControl = formContext.getControl(_self.formModel.fields.res_location) ?? null;
+        const addressHasValue = addressControl ? addressControl.getAttribute().getValue() ?? null : null;
 
-        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
-
-        if (locationControl) {
-            if (cityHasValue) { locationControl.setDisabled(false) }
-            else { locationControl.setDisabled(true) }
+        if (postalCodeControl) {
+            if (addressHasValue) { postalCodeControl.getAttribute().setRequiredLevel("required") }
+            else { postalCodeControl.getAttribute().setRequiredLevel("none") }
         }
     };
     //---------------------------------------------------
-    /**
-     * @param {any} formContext
-     * se il campo Città è valorizzato, il campo Provincia diventa editable
-     */
-    _self.setEditableStateOrProvince = formContext => {
+    _self.setCityRelatedFieldsEditability = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
-        const stateOrProvinceControl = formContext.getControl(_self.formModel.fields.address1_stateorprovince) ?? null;
+        const cityControl = formContext.getControl(_self.formModel.fields.address1_city);
+        const cityHasValue = cityControl ? cityControl.getAttribute().getValue() ?? null : null;
 
-        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
+        const fieldsToEnable = [
+            _self.formModel.fields.res_location,
+            _self.formModel.fields.address1_stateorprovince,
+            _self.formModel.fields.res_countryid
+        ];
 
-        if (stateOrProvinceControl) {
-            if (cityHasValue) { stateOrProvinceControl.setDisabled(false) }
-            else { stateOrProvinceControl.setDisabled(true) }
-        }
+        fieldsToEnable.forEach(field => {
+            const control = formContext.getControl(field);
+            if (control) {
+                if (cityHasValue) { control.setDisabled(false); } else { control.setDisabled(true); }
+            }
+        });
     };
     //---------------------------------------------------
     /**
-     * @param {any} formContext
-     * se il campo Città è valorizzato, il campo Nazione diventa editable
-     */
-    _self.setEditableCountry = formContext => {
-
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.address1_city) ?? null;
-        const countryControl = formContext.getControl(_self.formModel.fields.res_countryid) ?? null;
-
-        const cityHasValue = cityAttribute ? cityAttribute.getValue() ?? null : null;
-
-        if (countryControl) {
-            if (cityHasValue) { countryControl.setDisabled(false) }
-            else { countryControl.setDisabled(true) }
-        }
-    };
-    //---------------------------------------------------
-    /**
-     * @param {any} executionContext
      * al cambio della selezione nel campo lookup Nazione, viene valorizzato il campo Nazione (testo)
      */
     _self.onChangeCountry = executionContext => {
-
         const formContext = executionContext.getFormContext();
 
-        const countryStringAttribute = formContext.getAttribute(_self.formModel.fields.address1_country);
-        const countryLookUpAttribute = formContext.getAttribute(_self.formModel.fields.res_countryid);
+        const countryStringControl = formContext.getControl(_self.formModel.fields.address1_country);
+        const countryLookupControl = formContext.getControl(_self.formModel.fields.res_countryid);
 
-        const countryLookUpValue = countryLookUpAttribute ? countryLookUpAttribute.getValue() ?? null : null;
+        const countryLookUpValue = countryLookupControl ? countryLookupControl.getAttribute().getValue() ?? null : null;
 
         if (countryLookUpValue) {
 
@@ -993,7 +970,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
 
                     const countryName = country.res_name;
                     if (countryName) {
-                        if (countryStringAttribute) { countryStringAttribute.setValue(countryName) }
+                        if (countryStringControl) { countryStringControl.getAttribute().setValue(countryName) }
                     }
                 },
                 error => {
@@ -1005,11 +982,9 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
     //---------------------------------------------------
     _self.onChangeAddress = function (executionContext) {
         let formContext = executionContext.getFormContext();
-        _self.setRequiredAddress(formContext);
-        _self.setRequiredCity(formContext);
-        _self.setEditableLocation(formContext);
-        _self.setEditableStateOrProvince(formContext);
-        _self.setEditableCountry(formContext);
+        _self.setAddressRequirement(executionContext);
+        _self.setCityRequirement(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
     };
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
@@ -1075,18 +1050,18 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
-        formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.setRequiredAddress);
-        formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.setRequiredAddress);
-        formContext.getAttribute(_self.formModel.fields.address1_addressid).addOnChange(_self.setRequiredPostalCode);
-
+        formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.setAddressRequirement);
+        formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.setCityRelatedFieldsEditability);
+        formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.setAddressRequirement);
+        formContext.getAttribute(_self.formModel.fields.address1_name).addOnChange(_self.setPostalCodeRequirement);
+        formContext.getAttribute(_self.formModel.fields.address1_name).addOnChange(_self.setCityRequirement);
 
         //Init function
-        _self.setRequiredAddress(formContext);
-        _self.setRequiredCity(formContext);
-        _self.setEditableLocation(formContext);
-        _self.setEditableStateOrProvince(formContext);
-        _self.setEditableCountry(formContext);
+        _self.setAddressRequirement(executionContext);
+        _self.setPostalCodeRequirement(executionContext);
+        _self.setCityRequirement(executionContext);
         _self.setContextCapIframe(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
