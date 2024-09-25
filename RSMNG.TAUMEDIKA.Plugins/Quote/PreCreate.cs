@@ -56,6 +56,67 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
             target[DataModel.contact.address1_country] = countryName;
             #endregion
+
+            #region Controllo anagrafica del potenziale cliente
+            PluginRegion = "Controllo anagrafica del potenziale cliente";
+
+            target.TryGetAttributeValue<EntityReference>(DataModel.quote.customerid, out EntityReference erCustomer);
+
+            if (erCustomer != null)
+            {
+                //recupero l'entità cliente e verifico anagrafica
+                if (erCustomer.LogicalName == DataModel.contact.logicalName)
+                {
+                    return;
+                }
+                if (erCustomer.LogicalName == DataModel.account.logicalName)
+                {
+                    ColumnSet accountColumnSet = new ColumnSet(
+                        DataModel.account.res_accountnaturecode,
+                        DataModel.account.res_taxcode, //codice fiscale
+                        DataModel.account.res_vatnumber, //partita iva
+                        DataModel.account.res_sdi,
+                        DataModel.account.emailaddress3, //pec
+                        DataModel.account.address1_line1,
+                        DataModel.account.address1_city,
+                        DataModel.account.address1_postalcode
+                        );
+                    Entity account = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, accountColumnSet);
+                    if (account != null)
+                    {
+                        //determino la natura giuridica del cliente e verifico che sia valorizzato il codice fiscale o la partita iva
+                        account.TryGetAttributeValue<OptionSetValue>(DataModel.account.res_accountnaturecode, out OptionSetValue accountNature);
+                        if (accountNature != null)
+                        {
+                            if (accountNature.Value == (int)DataModel.account.res_accountnaturecodeValues.Personafisica)
+                            {
+                                account.TryGetAttributeValue<string>(DataModel.account.res_taxcode, out string taxCode);
+                                if (taxCode == null) { throw new Exception("Il codice fiscale del potenziale cliente non è valorizzato"); }
+                            }
+
+                            if (accountNature.Value == (int)DataModel.account.res_accountnaturecodeValues.Personagiuridica)
+                            {
+                                account.TryGetAttributeValue<string>(DataModel.account.res_vatnumber, out string vatNumber);
+                                if (vatNumber == null) { throw new Exception("La partita IVA del potenziale cliente non è valorizzata"); }
+                            }
+                        }
+
+                        //verifico che o SDI o PEC siano valorizzati
+                        account.TryGetAttributeValue<string>(DataModel.account.res_sdi, out string SDI);
+                        account.TryGetAttributeValue<string>(DataModel.account.emailaddress3, out string PEC);
+
+                        if (SDI == null && PEC == null) { throw new Exception("SDI e PEC del potenziale cliente non sono valorizzati"); }
+
+                        //verifico che i dati legati all'indirizzo (sede legale) del cliente siano valorizzati
+                        account.TryGetAttributeValue<string>(DataModel.account.address1_line1, out string address);
+                        account.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
+                        account.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string CAP);
+
+                        if (address == null || city == null || CAP == null) { throw new Exception("Un dato relativo all'indirizzo del cliente non è valorizzato"); }
+                    }
+                }
+            }
+            #endregion
         }
     }
 }

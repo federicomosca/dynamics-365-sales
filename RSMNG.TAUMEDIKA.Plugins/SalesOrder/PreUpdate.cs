@@ -27,7 +27,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
-            #region calcoli
+            #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale
+            PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             if (target.Contains(salesorder.totallineitemamount) ||
                 target.Contains(salesorder.totaldiscountamount) ||
                 target.Contains(salesorder.totaltax) ||

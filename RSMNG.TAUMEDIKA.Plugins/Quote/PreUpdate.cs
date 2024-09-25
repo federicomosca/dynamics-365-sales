@@ -28,7 +28,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             if (preImage == null) { return; }
             Entity postImage = target.GetPostImage(preImage);
 
-            #region calcoli
+            #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale
+            PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             if (target.Contains(quote.totallineitemamount) ||
                 target.Contains(quote.totaldiscountamount) ||
                 target.Contains(quote.totaltax) ||
