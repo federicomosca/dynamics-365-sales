@@ -190,4 +190,36 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             }
         }
     }
+
+    //-----------------------------------------------------------------------
+    _self.activateEntity = (entityName, entityId, command) => {
+        return new Promise(function (resolve, reject) {
+            var req = new XMLHttpRequest();
+            var url = `${Xrm.Utility.getGlobalContext().getClientUrl()}/api/data/v9.0/${entityName}(${entityId})/${command}`;
+
+            req.open("POST", url, true);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Prefer", "return=representation");
+
+            req.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200 || this.status === 204) {
+                        console.log("Attivata con successo.");
+                        resolve("OK");
+                    } else {
+                        var error = JSON.parse(this.response).error;
+                        console.log("Errore nell'attivazione del preventivo: " + error.message);
+                        reject(error.message);
+                    }
+                }
+            };
+
+            req.send();
+        }
+        );
+    }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

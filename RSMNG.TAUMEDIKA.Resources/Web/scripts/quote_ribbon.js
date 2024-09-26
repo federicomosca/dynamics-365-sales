@@ -70,7 +70,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             switch (status) {
 
                 case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent === 1) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent !== 0) { visible = true; } break;
 
                 case "APPROVED": //approvata
                     if (currentStatus === _self.STATUS.BOZZA && _self.Agent === 0 || _self.Agent == null) { visible = true; }
@@ -90,7 +90,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
 
                 case "ACTIVATE_QUOTE": // attiva
-                    if (currentStatus === _self.STATUS.BOZZA) { visible = true; } break;
+                    //if (currentStatus === _self.STATUS.BOZZA) { visible = true; } break;
             }
             return visible;
         },
@@ -105,24 +105,25 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
              * dallo status attuale a quello successivo tramite cloud flow
              */
             var quoteId = formContext.data.entity.getId();
-            var currentStatus = formContext.getAttribute("statuscode").getValue();
 
-            console.log(`Statuscode attuale: ${currentStatus}`);
+            switch (status) {
+                case "APPROVAL":
+                    let result = await RSMNG.TAUMEDIKA.GLOBAL.activateEntity("quote", quoteId, "Microsoft.Dynamics.CRM.ActivateQuote");
 
-            switch (currentStatus) {
-                case _self.STATUS.BOZZA:
+                    if (result != "OK") {
+                        formContext.ui.setFormNotification(result, "ERROR", "01");
+                    } else {
+                        formContext.data.refresh(false).then(() => {
+                            formContext.ui.refreshRibbon(true);
+                        }, (error) => {
+                            formContext.ui.setFormNotification(error.message, "ERROR", "01");
+                        });
+                    }
+
                     break;
-                case _self.STATUS.IN_APPROVAZIONE:
+                case "APPROVED":
                     break;
-                case _self.STATUS.APPROVATA:
-                    break;
-                case _self.STATUS.ACQUISITA:
-                    break;
-                case _self.STATUS.NON_APPROVATA:
-                    break;
-                case _self.STATUS.PERSA:
-                    break;
-                case _self.STATUS.AGGIORNATA:
+                case "NOT_APPROVED":
                     break;
             }
         }
