@@ -29,55 +29,51 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Aggiorno i campi Totale IVA e Sconto totale sull'Offerta correlata
             PluginRegion = "Aggiorno i campi Totale IVA e Sconto totale sull'Offerta correlata";
 
-            target.TryGetAttributeValue<Money>(quotedetail.tax, out Money tax); //totale IVA
-            target.TryGetAttributeValue<Money>(quotedetail.manualdiscountamount, out Money manualDiscountAmount); //sconto totale
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
+            string condition = string.Empty;
 
-            if (tax != null || manualDiscountAmount != null)
-            {
-                /**
-                 * fetch aggregate per recuperare la somma di tutte le righe offerta correlate all'offerta
-                 * in particolare i campi Totale sconto e Totale IVA, per operare poi un aggiornamento
-                 * con i relativi dati della presente riga offerta (esclusa dalla fetch)
-                 */
-                string fetchQuoteDetailsSum = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            string quoteDetailRemoved = $@"<condition attribute=""quotedetailid"" operator=""ne"" value=""{postImage.Id}"" />";
+
+            target.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference targetQuote);
+            preImage.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference preImageQuote);
+
+            if (targetQuote != null) { condition = quoteDetailRemoved; }
+
+            /**
+             * fetch aggregate per recuperare la somma di tutte le righe offerta correlate all'offerta
+             * in particolare i campi Totale sconto e Totale IVA, per operare poi un aggiornamento
+             * con i relativi dati della presente riga offerta (esclusa dalla fetch)
+             */
+            string fetchQuoteDetailsSum = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                             <fetch aggregate=""true"">
                                               <entity name=""quotedetail"">
                                                 <attribute name=""manualdiscountamount"" alias=""totaleSconto"" aggregate=""sum"" />
                                                 <attribute name=""tax"" alias=""totaleIVA"" aggregate=""sum"" />
                                                 <filter>
-                                                  <condition attribute=""quotedetailid"" operator=""ne"" value=""{postImage.Id}"" />
-                                                  <condition attribute=""quoteid"" operator=""eq"" value=""{erQuote.Id}"" />
+                                                  {condition}
+                                                  <condition attribute=""quoteid"" operator=""eq"" value=""{preImageQuote.Id}"" />
                                                 </filter>
                                               </entity>
                                             </fetch>";
 
-                EntityCollection quoteDetails = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuoteDetailsSum));
-                if (quoteDetails.Entities.Count > 0)
-                {
-                    Entity sum = quoteDetails.Entities[0];
+            EntityCollection quoteDetails = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuoteDetailsSum));
+            if (quoteDetails.Entities.Count > 0)
+            {
+                Entity sum = quoteDetails.Entities[0];
 
-                    AliasedValue aliasTotaleSconto = (AliasedValue)sum.GetAttributeValue<AliasedValue>("totaleSconto");
-                    AliasedValue aliasTotaleIVA = (AliasedValue)sum.GetAttributeValue<AliasedValue>("totaleIVA");
+                AliasedValue aliasTotaleSconto = (AliasedValue)sum.GetAttributeValue<AliasedValue>("totaleSconto");
+                AliasedValue aliasTotaleIVA = (AliasedValue)sum.GetAttributeValue<AliasedValue>("totaleIVA");
 
-                    Money totaleSconto = (Money)aliasTotaleSconto.Value;
-                    Money totaleIVA = (Money)aliasTotaleIVA.Value;
+                Money totaleSconto = (Money)aliasTotaleSconto.Value;
+                Money totaleIVA = (Money)aliasTotaleIVA.Value;
 
-                    Entity quote = crmServiceProvider.Service.Retrieve(DataModel.quote.logicalName, erQuote.Id, new ColumnSet(
-                        DataModel.quote.totaldiscountamount,
-                        DataModel.quote.totaltax));
+                Entity quote = crmServiceProvider.Service.Retrieve(DataModel.quote.logicalName, preImageQuote.Id, new ColumnSet(
+                    DataModel.quote.totaldiscountamount,
+                    DataModel.quote.totaltax));
 
-                    quote.TryGetAttributeValue<Money>(DataModel.quote.totaldiscountamount, out Money totalDiscountAmount);
-                    quote.TryGetAttributeValue<Money>(DataModel.quote.totaltax, out Money totalTax);
+                quote[DataModel.quote.totaldiscountamount] = totaleSconto;
+                quote[DataModel.quote.totaltax] = totaleIVA;
 
-                    if (totalDiscountAmount != null || totalTax != null)
-                    {
-                        quote[DataModel.quote.totaldiscountamount] = (decimal)totalDiscountAmount.Value + (decimal)totaleSconto.Value;
-                        quote[DataModel.quote.totaltax] = (decimal)totalTax.Value + (decimal)totaleIVA.Value;
-
-                        crmServiceProvider.Service.Update(quote);
-                    }
-                }
+                crmServiceProvider.Service.Update(quote);
             }
             #endregion
         }
