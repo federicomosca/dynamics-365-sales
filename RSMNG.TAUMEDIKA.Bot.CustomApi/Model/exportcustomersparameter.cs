@@ -13,7 +13,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportCustomers
     public class Customer
     {
         [DataMember(Name = "Cod.")]
-        public int? Cod { get; set; }
+        public string Cod { get; set; }
 
         [DataMember(Name = "Codice fiscale")]
         public string CodiceFiscale { get; set; }

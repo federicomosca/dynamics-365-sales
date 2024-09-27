@@ -13,7 +13,22 @@ namespace RSMNG.TAUMEDIKA
 {
     public class Helper
     {
-        public static string UploadFile(ITracingService tracingService, IOrganizationService service,string fieldName, string entityName, string jsonDataInput)
+        public static void SetStateCode(IOrganizationService service, string entityName, Guid entityID, int stateIn, int statusIn)
+        {
+            try
+            {
+                SetStateRequest updateStatus = new SetStateRequest();
+                updateStatus.EntityMoniker = new EntityReference(entityName, entityID);
+                updateStatus.State = new OptionSetValue(stateIn);
+                updateStatus.Status = new OptionSetValue(statusIn);
+                service.Execute(updateStatus);
+            }
+            catch (ApplicationException ex)
+            {
+                throw ex;
+            }
+        }
+        public static string UploadFile(ITracingService tracingService, IOrganizationService service, string fieldName, string entityName, string jsonDataInput)
         {
             Model.UploadFile_Output output = new Model.UploadFile_Output();
             string jsonDataOutput = string.Empty;
@@ -112,14 +127,37 @@ namespace RSMNG.TAUMEDIKA
             }
             return jsonDataOutput;
         }
+        public static string RemoveSpecialCharacters(string input)
+        {
+            StringBuilder result = new StringBuilder();
 
+            char[] caratteriAccentati = new char[] { 'à', 'è', 'é', 'ù', 'ì', 'ò', 'â', 'ê', 'î', 'ô', 'û', 'Ä', 'Ö', 'Ü', 'Ç', 'ç', 'À', 'È', 'Ì', 'Ò', 'Ù', 'É', 'Ê', 'Ô', 'Â', 'Î' };
+
+            // Sostituisci i caratteri accentati con i loro valori Unicode
+            foreach (char c in input)
+            {
+                // Controlla se il carattere è accentato
+                if (Array.Exists(caratteriAccentati, element => element == c))
+                {
+                    // Aggiungi il codice Unicode in esadecimale
+                    result.AppendFormat("\\u{0:X4}", (int)c);
+                }
+                else
+                {
+                    // Altrimenti, aggiungi il carattere originale
+                    result.Append(c);
+                }
+            }
+            return result.ToString();
+        }
     }
     public class Model
     {
+        [DataContract]
         public class BasicOutput
         {
-            public int result { get; set; }
-            public string message { get; set; }
+            [DataMember] public int result { get; set; }
+            [DataMember] public string message { get; set; }
         }
         [DataContract]
         public class UploadFile_Input
@@ -131,7 +169,7 @@ namespace RSMNG.TAUMEDIKA
             [DataMember] public string Id { get; set; }
         }
         [DataContract]
-        public class UploadFile_Output:BasicOutput
+        public class UploadFile_Output : BasicOutput
         {
             public UploadFile_Output()
             {
@@ -140,7 +178,7 @@ namespace RSMNG.TAUMEDIKA
             }
         }
         [DataContract]
-        public class DownloadFile_Output:BasicOutput
+        public class DownloadFile_Output : BasicOutput
         {
             [DataMember] public string Data { get; set; }
             public DownloadFile_Output()
