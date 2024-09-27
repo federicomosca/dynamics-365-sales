@@ -87,6 +87,14 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
+            //deserializzo il json
+            
+            //in base allo status della quote effettuo il passaggio allo stato "approvato"
+
+            //tramite il quoteId faccio la retrieve dell'offerta che voglio aggiornare
+            //recupero lo statuscode, lo modifico e faccio update
+
+            //restituisco true/false tramite jsonDataOutput
             return "";
         }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
