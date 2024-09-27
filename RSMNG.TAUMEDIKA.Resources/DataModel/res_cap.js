@@ -6,6 +6,8 @@ RSMNG.TAUMEDIKA.DataModel.res_cap = {
 	displayName: "CAP",
 	///ID organizzazione
 	organizationid: "organizationid",
+	///Codice Catastale
+	res_belfiorecode: "res_belfiorecode",
 	///CAP
 	res_capid: "res_capid",
 	///Comune
@@ -14,10 +16,16 @@ RSMNG.TAUMEDIKA.DataModel.res_cap = {
 	res_code: "res_code",
 	///Nazione
 	res_countryid: "res_countryid",
+	///Codice ISTAT
+	res_istatcode: "res_istatcode",
 	///Nome
 	res_name: "res_name",
 	///Provincia
 	res_province: "res_province",
+	///Provincia estesa
+	res_provincename: "res_provincename",
+	///Regione
+	res_region: "res_region",
 
 	/// Values for field Stato
 	statecodeValues: {

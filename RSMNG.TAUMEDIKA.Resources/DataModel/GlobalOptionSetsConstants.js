@@ -856,23 +856,6 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Offline: 192360004
 		},
 
-		/// BgJobStatus constants.
-		msdyn_bgjobstatusValues: {
-			cancelled: 100000004,
-			failed: 100000003,
-			failedandacknowledged: 100000006,
-			inprogress: 100000001,
-			notstarted: 100000000,
-			succeeded: 100000002,
-			succeededandacknowledged: 100000005
-		},
-
-		/// BgJobWorkItemType constants.
-		msdyn_bgjobworkitemtypeValues: {
-			Agentstream: 100000001,
-			Workstream: 100000000
-		},
-
 		/// Tipo di risorsa prenotabile constants.
 		msdyn_bookableresourcetypeValues: {
 			Account: 5,
@@ -1191,15 +1174,6 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 		/// Tipo di configurazione caricamento dati constants.
 		msdyn_importconfigtypeValues: {
 			Conversazione: 617690000
-		},
-
-		/// IntentSources constants.
-		msdyn_intentsourcesValues: {
-			AgentAssist: 100000004,
-			AnswerAssist: 100000002,
-			EmailAssist: 100000001,
-			PVA: 100000000,
-			UR: 100000003
 		},
 
 		/// Aggregazione IoT constants.
@@ -2246,7 +2220,7 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			_10: 0
 		},
 
-		/// opportunity_salesstage constants.
+		/// Fase di vendita opportunità constants.
 		opportunity_salesstageValues: {
 			Chiudi: 3,
 			Proponi: 2,
@@ -2564,6 +2538,21 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 		res_opt_documenttypeValues: {
 			Fattura: 100000000,
 			RicevutaFiscale: 100000001
+		},
+
+		/// OPT_IntegrationAction constants.
+		res_opt_integrationactionValues: {
+			Articoli: 100000002,
+			Clienti: 100000000,
+			Documenti: 100000003,
+			Ordini: 100000001,
+			Pagamenti: 100000004
+		},
+
+		/// OPT_IntegrationType constants.
+		res_opt_integrationtypeValues: {
+			Export: 100000001,
+			Import: 100000000
 		},
 
 		/// OPT_Origin constants.

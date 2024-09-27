@@ -25,6 +25,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string organizationid => "organizationid";
 
 		/// <summary>
+		/// Display Name: Descrizione,
+		/// Type: Memo,
+		/// Description: 
+		/// </summary>
+		public static string res_description => "res_description";
+
+		/// <summary>
 		/// Display Name: Nome,
 		/// Type: String,
 		/// Description: 

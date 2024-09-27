@@ -108,6 +108,8 @@ RSMNG.TAUMEDIKA.DataModel.quote = {
 	res_isinvoicerequested: "res_isinvoicerequested",
 	///Località
 	res_location: "res_location",
+	///Condizione di pagamento
+	res_paymenttermid: "res_paymenttermid",
 	///Riferimento spedizione
 	res_shippingreference: "res_shippingreference",
 	///Codice IVA spesa accessoria

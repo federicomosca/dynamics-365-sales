@@ -53,6 +53,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_amount_base => "res_amount_base";
 
 		/// <summary>
+		/// Display Name: Descrizione,
+		/// Type: Memo,
+		/// Description: 
+		/// </summary>
+		public static string res_description => "res_description";
+
+		/// <summary>
 		/// Display Name: Nome,
 		/// Type: String,
 		/// Description: 

@@ -17,6 +17,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string displayName => "Indirizzo";
 
 		/// <summary>
+		/// Display Name: ID processo,
+		/// Type: Uniqueidentifier,
+		/// Description: Contiene l'ID del processo associato all'entità.
+		/// </summary>
+		public static string processid => "processid";
+
+		/// <summary>
 		/// Display Name: Indirizzo,
 		/// Type: String,
 		/// Description: 

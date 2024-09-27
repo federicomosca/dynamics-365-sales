@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Account\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Address\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BankDetails\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contact\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Country\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\account.cs" />
@@ -32,6 +33,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_cap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_commission.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_country.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_dataintegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_dataintegrationdetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_document.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_paymentmethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\res_paymentschedule.cs" />
@@ -43,7 +46,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uom.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uomschedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PaymentTerm\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Quote\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SalesOrder\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SystemUser\Utility.cs" />
   </ItemGroup>
 </Project>

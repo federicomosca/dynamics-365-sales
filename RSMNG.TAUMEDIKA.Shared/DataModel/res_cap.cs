@@ -25,6 +25,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string organizationid => "organizationid";
 
 		/// <summary>
+		/// Display Name: Codice Catastale,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_belfiorecode => "res_belfiorecode";
+
+		/// <summary>
 		/// Display Name: CAP,
 		/// Type: Uniqueidentifier,
 		/// Description: Identificatore univoco delle istanze di entità
@@ -54,6 +61,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_countryid => "res_countryid";
 
 		/// <summary>
+		/// Display Name: Codice ISTAT,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_istatcode => "res_istatcode";
+
+		/// <summary>
 		/// Display Name: Nome,
 		/// Type: String,
 		/// Description: 
@@ -66,6 +80,20 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// Description: 
 		/// </summary>
 		public static string res_province => "res_province";
+
+		/// <summary>
+		/// Display Name: Provincia estesa,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_provincename => "res_provincename";
+
+		/// <summary>
+		/// Display Name: Regione,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_region => "res_region";
 
 
 		/// <summary>

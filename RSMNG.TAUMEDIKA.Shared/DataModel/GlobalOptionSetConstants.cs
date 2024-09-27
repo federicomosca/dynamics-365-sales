@@ -1056,29 +1056,6 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
-		/// BgJobStatus constants.
-		/// </summary>
-		public enum msdyn_bgjobstatusValues
-		{
-			cancelled = 100000004,
-			failed = 100000003,
-			failedandacknowledged = 100000006,
-			inprogress = 100000001,
-			notstarted = 100000000,
-			succeeded = 100000002,
-			succeededandacknowledged = 100000005
-		}
-
-		/// <summary>
-		/// BgJobWorkItemType constants.
-		/// </summary>
-		public enum msdyn_bgjobworkitemtypeValues
-		{
-			Agentstream = 100000001,
-			Workstream = 100000000
-		}
-
-		/// <summary>
 		/// Tipo di risorsa prenotabile constants.
 		/// </summary>
 		public enum msdyn_bookableresourcetypeValues
@@ -1501,18 +1478,6 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public enum msdyn_importconfigtypeValues
 		{
 			Conversazione = 617690000
-		}
-
-		/// <summary>
-		/// IntentSources constants.
-		/// </summary>
-		public enum msdyn_intentsourcesValues
-		{
-			AgentAssist = 100000004,
-			AnswerAssist = 100000002,
-			EmailAssist = 100000001,
-			PVA = 100000000,
-			UR = 100000003
 		}
 
 		/// <summary>
@@ -2863,7 +2828,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
-		/// opportunity_salesstage constants.
+		/// Fase di vendita opportunità constants.
 		/// </summary>
 		public enum opportunity_salesstageValues
 		{
@@ -3258,6 +3223,27 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Fattura = 100000000,
 			RicevutaFiscale = 100000001
+		}
+
+		/// <summary>
+		/// OPT_IntegrationAction constants.
+		/// </summary>
+		public enum res_opt_integrationactionValues
+		{
+			Articoli = 100000002,
+			Clienti = 100000000,
+			Documenti = 100000003,
+			Ordini = 100000001,
+			Pagamenti = 100000004
+		}
+
+		/// <summary>
+		/// OPT_IntegrationType constants.
+		/// </summary>
+		public enum res_opt_integrationtypeValues
+		{
+			Export = 100000001,
+			Import = 100000000
 		}
 
 		/// <summary>

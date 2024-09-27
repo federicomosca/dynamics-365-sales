@@ -6,6 +6,8 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentmethod = {
 	displayName: "Modalità di pagamento",
 	///ID organizzazione
 	organizationid: "organizationid",
+	///Descrizione
+	res_description: "res_description",
 	///Nome
 	res_nome: "res_nome",
 	///Modalità di pagamento

@@ -14,6 +14,8 @@ RSMNG.TAUMEDIKA.DataModel.res_additionalexpense = {
 	res_amount: "res_amount",
 	///Importo (base)
 	res_amount_base: "res_amount_base",
+	///Descrizione
+	res_description: "res_description",
 	///Nome
 	res_name: "res_name",
 	///Valuta

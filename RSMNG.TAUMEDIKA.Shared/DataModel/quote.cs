@@ -455,6 +455,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_location => "res_location";
 
 		/// <summary>
+		/// Display Name: Condizione di pagamento,
+		/// Type: Lookup,
+		/// Related entities: res_paymentterm,
+		/// Description: 
+		/// </summary>
+		public static string res_paymenttermid => "res_paymenttermid";
+
+		/// <summary>
 		/// Display Name: Riferimento spedizione,
 		/// Type: String,
 		/// Description: 

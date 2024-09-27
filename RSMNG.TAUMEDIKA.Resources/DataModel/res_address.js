@@ -4,6 +4,8 @@ RSMNG.TAUMEDIKA.DataModel.res_address = {
 	///Indirizzo constants.
 	logicalName: "res_address",
 	displayName: "Indirizzo",
+	///ID processo
+	processid: "processid",
 	///Indirizzo
 	res_address: "res_address",
 	///Indirizzo
