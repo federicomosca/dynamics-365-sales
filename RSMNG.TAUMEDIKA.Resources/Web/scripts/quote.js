@@ -341,50 +341,27 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
 
-    /*
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
-    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
-    */
-    _self.onSaveForm = function (executionContext) {
-        if (executionContext.getEventArgs().getSaveMode() == 70) {
-            executionContext.getEventArgs().preventDefault();
-            return;
-        }
-    };
     //---------------------------------------------------
-    _self.onLoadCreateForm = async function (executionContext) {
+    _self.setDate = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadUpdateForm = async function (executionContext) {
+        const dateControl = formContext.getControl(_self.formModel.fields.res_date);
 
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
-    //---------------------------------------------------
-    _self.fillDateField = formContext => {
-
-        const dateAttribute = formContext.getAttribute(_self.formModel.fields.res_date);
-
-        if (dateAttribute) {
+        if (dateControl) {
             const date = new Date();
-            if (dateAttribute.getValue() == null) {
-                dateAttribute.setValue(date);
+            if (dateControl.getAttribute().getValue() == null) {
+                dateControl.getAttribute().setValue(date);
             }
         }
     };
     //---------------------------------------------------
-    _self.fillPriceLevelField = executionContext => {
+    _self.setPriceLevelLookup = executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const priceLevelAttribute = formContext.getAttribute(_self.formModel.fields.pricelevelid);
+        const priceLevelControl = formContext.getControl(_self.formModel.fields.pricelevelid);
 
-        if (priceLevelAttribute) {
+        if (priceLevelControl) {
+            priceLevelControl.getAttribute().setRequiredLevel("required");
 
             var fetchData = {
                 "res_isdefaultforagents": "1",
@@ -420,7 +397,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                         entityType: "pricelevel"
                     }];
 
-                    priceLevelAttribute.setValue(priceLevelLookUp);
+                    priceLevelControl.getAttribute().setValue(priceLevelLookUp);
                 },
                 error => {
                     console.log(error.message);
@@ -429,18 +406,17 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.onChangeAdditionalExpenseId = executionContext => {
+    _self.handleVatNumberField = (executionContext, flag) => {
         const formContext = executionContext.getFormContext();
 
-        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-        const freightAmountAttribute = formContext.getAttribute(_self.formModel.fields.freightamount);
+        const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
 
-        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
 
-        if (vatNumberAttribute) {
-            vatNumberAttribute.setValue(null);
-            if (additionalExpenseAttribute) {
-                const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
+        if (vatNumberControl) {
+            if (additionalExpenseControl) {
+                const additionalExpenseValue = additionalExpenseControl.getAttribute().getValue() ?? null;
                 if (additionalExpenseValue) {
                     Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseValue[0].id, "?$select=res_amount").then(
                         additionalExpense => {
@@ -450,9 +426,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             console.error(error.message);
                         }
                     );
-                    vatNumberAttribute.setRequiredLevel("required");
+                    vatNumberControl.getAttribute().setRequiredLevel("required");
+                    vatNumberControl.setDisabled(false);
+                    if (flag) { vatNumberControl.getAttribute().setValue(null); }
                 } else {
-                    vatNumberAttribute.setRequiredLevel("none");
+                    vatNumberControl.getAttribute().setRequiredLevel("none");
+                    vatNumberControl.setDisabled(true);
+                    vatNumberControl.getAttribute().setValue(null);
                 }
             } else {
                 throw new Error("additional expense attribute is missing")
@@ -463,47 +443,51 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
          * se il campo Spesa accessoria viene svuotato, 
          * svuoto anche il campo Importo spesa accessoria
          */
-        if (vatNumberAttribute.getValue() == null) {
-            if (freightAmountAttribute) {
-                freightAmountAttribute.setValue(null);
+        if (vatNumberControl.getAttribute().getValue() == null) {
+            if (freightAmountControl) {
+                freightAmountControl.getAttribute().setValue(null);
             }
         }
     };
     //---------------------------------------------------
-    _self.setContextCapIframe = function (executionContext) {
-        let formContext = executionContext.getFormContext();
-        var wrControl = formContext.getControl("WebResource_postalcode");
+    _self.setFreightAmountEditability = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        var fields = {
-            cap: _self.formModel.fields.shipto_postalcode,
-            city: _self.formModel.fields.shipto_city,
-            province: _self.formModel.fields.shipto_stateorprovince,
-            nation: _self.formModel.fields.shipto_country,
-            country: _self.formModel.fields.res_countryid
-        }
+        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
 
-        if (wrControl) {
-            wrControl.getContentWindow().then(
-                function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
-                }
-            )
+        if (freightAmountControl) {
+            const additionalExpenseValue = additionalExpenseControl ? additionalExpenseControl.getAttribute().getValue() ?? null : null;
+            if (additionalExpenseValue) { freightAmountControl.setDisabled(false); } else { freightAmountControl.setDisabled(true); }
         }
-    };
+    }
     //---------------------------------------------------
-    _self.onChangeAddress(executionContext)){
-        _self.handleWillCallRelatedFields(executionContext);
+    _self.setPostalCodeRelatedFieldsRequirement = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const postalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+        const cityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+
+        if (postalCodeControl) {
+            if (!postalCodeControl.getAttribute().getValue()) {
+                cityControl.getAttribute().setRequiredLevel("none");
+                cityControl.setDisabled(true);
+            } else {
+                cityControl.getAttribute().setRequiredLevel("required");
+                cityControl.setDisabled(false);
+            }
+        }
     };
     //---------------------------------------------------
     _self.handleWillCallRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
+
         const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
 
         /**
          * mostro/nascondo tutti i campi relativi al campo Spedizione
          * e gestisco obbligatorietà e read-only
          */
-
         const willCallControlsVisibility = [
             _self.formModel.fields.res_shippingreference,
             _self.formModel.fields.shipto_line1,
@@ -516,12 +500,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         const willCallControlsRequirement = [
             _self.formModel.fields.shipto_line1,
-        ];
-
-        const cityRelatedFields = [
-            _self.formModel.fields.res_location,
-            _self.formModel.fields.shipto_stateorprovince,
-            _self.formModel.fields.res_countryid,
+            _self.formModel.fields.shipto_postalcode,
+            _self.formModel.fields.shipto_city,
         ];
 
         willCallControlsVisibility.forEach(field => {
@@ -555,19 +535,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         });
 
-        cityRelatedFields.forEach(field => {
-            const control = formContext.getControl(field);
-            const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
-
-            if (!control) throw new Error(`${field} field is missing`);
-
-            if (!shipToCityControl.getAttribute().getValue()) { control.setDisabled(true); }
-        });
+        this.setCityRelatedFieldsEditability(executionContext);
     };
     //---------------------------------------------------
-    _self.handleShipToCityRelatedFields = executionContext => {
+    _self.setCityRelatedFieldsEditability = executionContext => {
         const formContext = executionContext.getFormContext();
+
         const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+        const shipToCityValue = shipToCityControl ? shipToCityControl.getAttribute().getValue() ?? null : null;
 
         /**
          * se Città spedizione è valorizzato, i campi correlati (Località, Provincia, Nazione spedizione) sono editabili
@@ -580,16 +555,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         shipToCityRelatedFields.forEach(field => {
             const control = formContext.getControl(field);
-            if (!control) throw new Error(`${field} field is missing`);
+            if (!control) { throw new Error(`${field} field is missing`); }
 
-            if (!shipToCityControl.getAttribute().getValue()) return;
-
-            control.setDisabled(false);
+            if (shipToCityValue) { control.setDisabled(false); } else { control.setDisabled(true); }
         });
 
     };
     //---------------------------------------------------
-    _self.handleBankVisibility = executionContext => {
+    _self.setBankVisibility = executionContext => {
         const formContext = executionContext.getFormContext();
         const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
 
@@ -597,9 +570,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
          * controllo visibilità campo Banca
          */
         if (bankControl) {
-            const paymentTermAttribute = formContext.getAttribute("res_paymenttermid");
-            if (paymentTermAttribute) {
-                const paymentTermId = paymentTermAttribute.getValue() ? paymentTermAttribute.getValue()[0].id : null;
+            const paymentTermControl = formContext.getControl("res_paymenttermid");
+            if (paymentTermControl) {
+                const paymentTermId = paymentTermControl.getAttribute().getValue() ? paymentTermControl.getAttribute().getValue()[0].id : null;
                 if (paymentTermId) {
                     const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
                     Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
@@ -611,74 +584,64 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             console.log(error.message)
                         }
                     );
-                }
-            }
-        }
-    };
-    //---------------------------------------------------
-    _self.handleAdditionalExpenseVisibility = executionContext => {
-        const formContext = executionContext.getFormContext();
-        const additionalExpenseAttribute = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid);
-        const vatNumberAttribute = formContext.getAttribute(_self.formModel.fields.res_vatnumberid);
-        const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);
-
-        /**
-         * controllo visibilità campo "Codice IVA spesa accessoria"
-         * e controllo visibilità campo "Importo spesa accessoria"
-         */
-        if (additionalExpenseAttribute) {
-            const additionalExpenseValue = additionalExpenseAttribute.getValue() ?? null;
-            if (additionalExpenseValue) {
-                if (vatNumberAttribute) {
-                    vatNumberAttribute.setRequiredLevel("required");
                 } else {
-                    vatNumberAttribute.setRequiredLevel("none");
-                }
-
-                /**
-                 */
-                if (freightAmountControl) {
-                    freightAmountControl.setDisabled(false);
-                } else {
-                    freightAmountControl.setDisabled(true);
+                    bankControl.setVisible(false);
                 }
             }
         }
     };
     //---------------------------------------------------
-    _self.handleShipToPostalCode = executionContext => {
-        const formContext = executionContext.getFormContext();
-        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
-        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
+    _self.setContextCapIframe = function (executionContext) {
+        let formContext = executionContext.getFormContext();
+        var wrControl = formContext.getControl("WebResource_postalcode");
 
-        /**
-        * controllo obbligatorietà del campo CAP spedizione
-        */
-        if (shipToPostalCodeControl) {
-            if (shipToLine1Control.getAttribute().getValue()) {
-                shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
-            }
+        var fields = {
+            cap: _self.formModel.fields.shipto_postalcode,
+            city: _self.formModel.fields.shipto_city,
+            province: _self.formModel.fields.shipto_stateorprovince,
+            nation: _self.formModel.fields.shipto_country,
+            country: _self.formModel.fields.res_countryid
+        }
+
+        if (wrControl) {
+            wrControl.getContentWindow().then(
+                function (contentWindow) {
+                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
+                }
+            )
         }
     };
     //---------------------------------------------------
-    _self.handleShipToCityField = executionContext => {
-        const formContext = executionContext.getFormContext();
-        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
-        const shipToPostalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
-
-        if (shipToPostalCodeControl) {
-            if (!shipToPostalCodeControl.getAttribute().getValue()) {
-                shipToPostalCodeControl.getAttribute().setRequiredLevel("none");
-                return
-            };
-            shipToPostalCodeControl.getAttribute().setRequiredLevel("required");
-            shipToCityControl.setDisabled(false);
+    _self.onChangeAddress = executionContext => {
+        _self.handleWillCallRelatedFields(executionContext);
+    };
+    //---------------------------------------------------
+    /*
+    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
+    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
+    */
+    _self.onSaveForm = function (executionContext) {
+        if (executionContext.getEventArgs().getSaveMode() == 70) {
+            executionContext.getEventArgs().preventDefault();
+            return;
         }
     };
     //---------------------------------------------------
+    _self.onLoadCreateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadUpdateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onLoadReadyOnlyForm = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
     /* 
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione l'onLoadForm
-    per rendere l'onload asincrono asincrono (da attivare sull'app dynamics!)
     Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
     */
     _self.onLoadForm = async function (executionContext) {
@@ -691,23 +654,25 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(() => { _self.handleVatNumberField(executionContext, true) });
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.setFreightAmountEditability);
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.setPostalCodeRelatedFieldsRequirement);
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
-        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.handleShipToCityRelatedFields);
-        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.handleBankVisibility);
-        formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.handleShipToPostalCode);
-        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
-        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.handleShipToCityField);
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
+        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.setBankVisibility);
 
         //Init function
-        _self.fillDateField(formContext);
-        _self.fillPriceLevelField(executionContext);
-        _self.setContextCapIframe(executionContext);
+        _self.setDate(executionContext);
+        _self.setPriceLevelLookup(executionContext);
 
+        _self.handleVatNumberField(executionContext, false);
+        _self.setFreightAmountEditability(executionContext);
+        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
         _self.handleWillCallRelatedFields(executionContext);
-        _self.handleShipToCityRelatedFields(executionContext);
-        _self.handleBankVisibility(executionContext);
-        _self.handleShipToPostalCode(executionContext);
-        _self.handleShipToCityField(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
+        _self.setBankVisibility(executionContext);
+
+        _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:

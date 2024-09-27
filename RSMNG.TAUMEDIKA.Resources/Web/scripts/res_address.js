@@ -55,7 +55,8 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     };
 
     //---------------------------------------------------
-    _self.isCustomerAddress = formContext => {
+    _self.isCustomerAddress = executionContext => {
+        const formContext = executionContext.getFormContext();
 
         const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
         const isCustomerAddress = isCustomerAddressAttribute ? isCustomerAddressAttribute.getValue() : null;
@@ -72,20 +73,22 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.hasPostalCode = formContext => {
+    _self.setCityEditability = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        const postalCodeAttribute = formContext.getAttribute(_self.formModel.fields.res_postalcode);
-        const hasPostalCode = postalCodeAttribute ? postalCodeAttribute.getValue() : null;
+        const postalCodeControl = formContext.getControl(_self.formModel.fields.res_postalcode);
+        const hasPostalCode = postalCodeControl ? postalCodeControl.getAttribute().getValue() ?? null : null;
 
         const cityControl = formContext.getControl(_self.formModel.fields.res_city);
 
         if (cityControl) { cityControl.setDisabled(!hasPostalCode); }
     };
     //---------------------------------------------------
-    _self.hasCity = formContext => {
+    _self.setCityRelatedFieldsEditability = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        const cityAttribute = formContext.getAttribute(_self.formModel.fields.res_city);
-        const city = cityAttribute ? cityAttribute.getValue() : null;
+        const cityControl = formContext.getControl(_self.formModel.fields.res_city);
+        const city = cityControl ? cityControl.getAttribute().getValue() ?? null : null;
 
         const fieldsToEnable = [
             _self.formModel.fields.res_location,
@@ -121,10 +124,11 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
             )
         }
     };
+    //---------------------------------------------------
     _self.onChangeAddress = function (executionContext) {
         let formContext = executionContext.getFormContext();
-        _self.hasPostalCode(formContext);
-        _self.hasCity(formContext);
+        _self.setCityEditability(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
     };
     //---------------------------------------------------
     /*
@@ -163,11 +167,13 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
+        formContext.getAttribute(_self.formModel.fields.res_postalcode).addOnChange(_self.setCityEditability);
+        formContext.getAttribute(_self.formModel.fields.res_city).addOnChange(_self.setCityRelatedFieldsEditability);
 
         //Init function
-        _self.hasPostalCode(formContext);
-        _self.hasCity(formContext);
-        _self.isCustomerAddress(formContext);
+        _self.setCityEditability(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
+        _self.isCustomerAddress(executionContext);
         _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
