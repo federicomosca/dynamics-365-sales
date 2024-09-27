@@ -17,3 +17,7 @@
 /RSMNG.TAUMEDIKA.Resources/packages/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1
 /RSMNG.TAUMEDIKA.Shared/.vs
 /RSMNG.TAUMEDIKA.Resources/.vs
+/RSMNG.TAUMEDIKA.Bot.CustomApi/.vs
+/RSMNG.TAUMEDIKA.Bot.CustomApi/bin/Debug
+/RSMNG.TAUMEDIKA.Bot.CustomApi/obj/Debug
+/RSMNG.TAUMEDIKA.Bot.CustomApi/packages
