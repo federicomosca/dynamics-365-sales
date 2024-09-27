@@ -194,8 +194,9 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     //-----------------------------------------------------------------------
     _self.activateEntity = (entityName, entityId, command) => {
         return new Promise(function (resolve, reject) {
+            console.log("I'm in the activateEntity fun");
             var req = new XMLHttpRequest();
-            var url = `${Xrm.Utility.getGlobalContext().getClientUrl()}/api/data/v9.0/${entityName}(${entityId})/${command}`;
+            var url = `${Xrm.Utility.getGlobalContext().getClientUrl()}/api/data/v9.2/${entityName}(${entityId})/${command}`;
 
             req.open("POST", url, true);
             req.setRequestHeader("OData-MaxVersion", "4.0");

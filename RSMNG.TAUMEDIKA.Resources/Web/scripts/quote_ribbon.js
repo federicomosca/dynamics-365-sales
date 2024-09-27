@@ -63,6 +63,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
             let currentStatus = formContext.getAttribute("statuscode").getValue();
+            console.log(`Current Status: ${currentStatus}`);
             let visible = false;
             if (_self.Agent === undefined) {
                 _self.Agent = await _self.getAgent();
@@ -70,14 +71,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             switch (status) {
 
                 case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent !== 0) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent === true) { visible = true; } break;
 
                 case "APPROVED": //approvata
-                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent === 0 || _self.Agent == null) { visible = true; }
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && _self.Agente === 0 || _self.Agent == null) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && (_self.Agent === false || _self.Agent === null)) { visible = true; }
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
 
                 case "NOT_APPROVED": //non approvata
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && _self.Agent === 0 || _self.Agent == null) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
 
                 case "CREATE_ORDER": //acquisisci offerta (acquisita)
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
@@ -90,7 +91,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
 
                 case "ACTIVATE_QUOTE": // attiva
-                    //if (currentStatus === _self.STATUS.BOZZA) { visible = true; } break;
+                //if (currentStatus === _self.STATUS.BOZZA) { visible = true; } break;
             }
             return visible;
         },
@@ -104,26 +105,60 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
              * in base allo statuscode attuale (switch) effettuo un update 
              * dallo status attuale a quello successivo tramite cloud flow
              */
-            var quoteId = formContext.data.entity.getId();
+            const quoteId = formContext.data.entity.getId().replace(/[{}]/g, "");
+            const quoteStatus = formContext.getAttribute("statuscode").getValue();
 
             switch (status) {
                 case "APPROVAL":
-                    let result = await RSMNG.TAUMEDIKA.GLOBAL.activateEntity("quote", quoteId, "Microsoft.Dynamics.CRM.ActivateQuote");
+                    console.log(`case: ${status}`)
+                    console.log(`statuscode: ${quoteStatus}`);
 
-                    if (result != "OK") {
-                        formContext.ui.setFormNotification(result, "ERROR", "01");
-                    } else {
-                        formContext.data.refresh(false).then(() => {
-                            formContext.ui.refreshRibbon(true);
-                        }, (error) => {
-                            formContext.ui.setFormNotification(error.message, "ERROR", "01");
-                        });
-                    }
+                    await Xrm.WebApi.online.execute({
+                        entityType: "quote",
+                        entityId: quoteId,
+                        action: "Microsoft.Dynamics.CRM.ActivateQuote",
+                        getMetadata: function () {
+                            return {
+                                boundParameter: "entity",
+                                operationType: 0,
+                                operationName: "ActivateQuote",
+                                parameterTypes: {}
+                            };
+                        }
+                    });
+
+                    console.log("Offerta attivata con successo");
+
+                    await formContext.data.refresh(false);
+                    formContext.ui.refreshRibbon(true);
+                    //if (result != "OK") {
+                    //    formContext.ui.setFormNotification(result, "ERROR", "01");
+                    //} else {
+                    //    formContext.data.refresh(false).then(() => {
+                    //        formContext.ui.refreshRibbon(true);
+                    //    }, (error) => {
+                    //        formContext.ui.setFormNotification(error.message, "ERROR", "01");
+                    //    });
+                    //}
 
                     break;
+
                 case "APPROVED":
+                    console.log(`case: ${status}`)
+                    if (quoteStatus === _self.STATUS.BOZZA) {
+                        console.log(`statuscode: ${quoteStatus}`);
+                    }
+                    if (quoteStatus === _self.STATUS.IN_APPROVAZIONE) {
+                        console.log(`statuscode: ${quoteStatus}`);
+
+                    }
                     break;
+
                 case "NOT_APPROVED":
+                    console.log(`case: ${status}`)
+                    if (quoteStatus === _self.STATUS.IN_APPROVAZIONE) {
+                        console.log(`statuscode: ${quoteStatus}`);
+                    }
                     break;
             }
         }
