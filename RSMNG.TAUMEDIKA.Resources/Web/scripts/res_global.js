@@ -127,7 +127,6 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
         }
         return guid;
     };
-    
     //-------------------------------------------------------------------------------------
     _self.retrieveAllRecords = async function (entityName, topCount, queryOptions = "") {
         let allRecords = [];
@@ -189,8 +188,7 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
                 }
             }
         }
-    }
-
+    };
     //-----------------------------------------------------------------------
     _self.activateEntity = (entityName, entityId, command) => {
         return new Promise(function (resolve, reject) {
@@ -222,5 +220,42 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             req.send();
         }
         );
+    }
+    //-----------------------------------------------------------------------
+    _self.invokeClientAction = (entityId, entityStatus, action) => {
+
+        const json = json = {
+            EntityId: entityId,
+            EntityStatus: entityStatus
+        }
+
+        var request = {
+            //parameters
+            actionName: action,
+            jsonDataInput: JSON.stringify(json),
+
+            getMetadata: function () {
+                return {
+                    boundParameter: null,
+                    parameterTypes: {
+                        actionName: { typeName: "Edm.String", structuralProperty: 1 },
+                        jsonDataInput: { typeName: "Edm.String", structuralProperty: 1 }
+                    },
+                    operationType: 0, operationName: "res_ClientAction"
+                };
+            }
+        };
+
+        Xrm.WebApi.execute(request).then(
+            function success(response) {
+                if (response.ok) { return response.json(); }
+            }
+        ).then(function (responseBody) {
+            var result = responseBody;
+            console.log(result);
+            var jsondataoutput = result["jsonDataOutput"];
+        }).catch(function (error) {
+            console.error(error.message);
+        });
     }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

@@ -60,6 +60,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     };
 
     //--------------------------------------------------
+    /**
+     * sviluppare qui la retrieve per recuperare i dati del potenziale cliente
+     * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del button
+     * @returns
+     */
+    _self.getCustomer = () => {
+
+        const accountId = null;
+
+        return new Promise((resolve, reject) => {
+            Xrm.WebApi.retrieveRecord("account", accountId, "?$select=attributes").then(
+                result => { }, error => { }
+            )
+        })
+    }
+    //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
             let currentStatus = formContext.getAttribute("statuscode").getValue();
@@ -81,6 +97,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
 
                 case "CREATE_ORDER": //acquisisci offerta (acquisita)
+                    //da qui invocare il metodo getCustomer() per effettuare verifica sui dati
+                    //e determinare la visiblità del button
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
 
                 case "CLOSE_QUOTE": //chiudi offerta (persa)
@@ -111,18 +129,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
                     Sales.QuoteRibbonActions.Instance.activateQuote();
 
-                    //await formContext.data.refresh(false);
-                    //formContext.ui.refreshRibbon(true);
                     break;
 
                 case "APPROVED":
                     console.log(`case: ${status}`)
-                    if (quoteStatus === _self.STATUS.BOZZA) {
-                        console.log(`statuscode: ${quoteStatus}`);
-                    }
-                    if (quoteStatus === _self.STATUS.IN_APPROVAZIONE) {
-                        console.log(`statuscode: ${quoteStatus}`);
+                    console.log(`statuscode: ${quoteStatus}`);
+                    const actionName = "APPROVE_QUOTE";
 
+                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, quoteStatus, actionName);
+                    if (!success) {
+
+                        //formNotification
+                        formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
                     }
                     break;
 
