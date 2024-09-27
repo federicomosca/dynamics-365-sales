@@ -55,6 +55,23 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         #endregion
 
                         break;
+                    case "APPROVE_QUOTE":
+
+                        #region Aggiornamento stato da "Bozza"/"In Approvazione" ad "Approvato"
+                        PluginRegion = "Aggiornamento stato da \"Bozza\"/\"In Approvazione\" ad \"Approvato\"";
+                        basicOutput.result = 0; basicOutput.message = "Operazione effettuata.";
+                        try
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            basicOutput.result = -1;
+                            basicOutput.message = ex.Message;
+                        }
+                        jsonDataOutput = updateQuoteStatusCode(serviceAdmin, tracingService, jsonDataInput);
+                        #endregion
+
+                        break;
                     case "COPYPRICELEVEL":
                         jsonDataOutput = CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
                         break;
@@ -68,6 +85,10 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             }
         }
 
+        public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
+        {
+            return "";
+        }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             string result = string.Empty;
@@ -91,7 +112,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 DateTime? endDate = null;
                 if (pl.begindate != null) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
                 if (pl.enddate != null) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
-                
+
                 enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
                 enPriceLevel.Attributes.Add(pricelevel.begindate, beginnerDate);
                 enPriceLevel.Attributes.Add(pricelevel.enddate, endDate);
@@ -105,8 +126,8 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             }
             catch (Exception ex)
             {
-                basicOutput.result= - 1;
-                basicOutput.message= ex.Message;
+                basicOutput.result = -1;
+                basicOutput.message = ex.Message;
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
             finally
