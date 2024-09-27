@@ -99,13 +99,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
-            /**
-             * recupero l'id del record su cui sto operando il cambio di stato
-             * recupero l'attributo statuscode
-             * in base allo statuscode attuale (switch) effettuo un update 
-             * dallo status attuale a quello successivo tramite cloud flow
-             */
             const quoteId = formContext.data.entity.getId().replace(/[{}]/g, "");
+            console.log(`Quote ID: ${quoteId}`);
             const quoteStatus = formContext.getAttribute("statuscode").getValue();
 
             switch (status) {
