@@ -637,9 +637,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
+    _self.onLoadReadyOnlyForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+
     };
     /* 
     Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
@@ -682,6 +684,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 _self.onLoadUpdateForm(executionContext);
                 break;
             case RSMNG.Global.CRM_FORM_TYPE_READONLY:
+            case RSMNG.Global.CRM_FORM_TYPE_DISABLED:
                 _self.onLoadReadyOnlyForm(executionContext);
                 break;
             case RSMNG.Global.CRM_FORM_TYPE_QUICKCREATE:

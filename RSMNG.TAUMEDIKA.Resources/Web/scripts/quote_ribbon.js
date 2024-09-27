@@ -105,37 +105,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             switch (status) {
                 case "APPROVAL":
+                    debugger;
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    await Xrm.WebApi.online.execute({
-                        entityType: "quote",
-                        entityId: quoteId,
-                        action: "Microsoft.Dynamics.CRM.ActivateQuote",
-                        getMetadata: function () {
-                            return {
-                                boundParameter: "entity",
-                                operationType: 0,
-                                operationName: "ActivateQuote",
-                                parameterTypes: {}
-                            };
-                        }
-                    });
+                    Sales.QuoteRibbonActions.Instance.activateQuote();
 
-                    console.log("Offerta attivata con successo");
-
-                    await formContext.data.refresh(false);
-                    formContext.ui.refreshRibbon(true);
-                    //if (result != "OK") {
-                    //    formContext.ui.setFormNotification(result, "ERROR", "01");
-                    //} else {
-                    //    formContext.data.refresh(false).then(() => {
-                    //        formContext.ui.refreshRibbon(true);
-                    //    }, (error) => {
-                    //        formContext.ui.setFormNotification(error.message, "ERROR", "01");
-                    //    });
-                    //}
-
+                    //await formContext.data.refresh(false);
+                    //formContext.ui.refreshRibbon(true);
                     break;
 
                 case "APPROVED":
