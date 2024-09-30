@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Net;
 using Microsoft.Crm.Sdk.Messages;
 using System.Runtime.Serialization;
-using RSMNG.TAUMEDIKA.DataModel;
 
 namespace RSMNG.TAUMEDIKA.Shared.Quote
 {
@@ -25,10 +24,13 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
                 DataModel.quote.transactioncurrencyid,
             };
     }
-
-    public class Model
+    namespace Model
     {
-        public string QuoteId { get; set; }
-        public string QuoteStatus { get; set; }
+        [DataContract]
+        public class QuoteStatusRequest:RSMNG.TAUMEDIKA.Model.BasicOutput
+        {
+            public string QuoteId { get; set; }
+            public string QuoteStatus { get; set; }
+        }
     }
 }

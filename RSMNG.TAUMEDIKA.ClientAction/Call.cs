@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using RSMNG.Plugins;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
@@ -51,7 +52,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                             basicOutput.result = -1;
                             basicOutput.message = ex.Message;
                         }
-                        jsonDataOutput = Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
+                        jsonDataOutput = Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
                         #endregion
 
                         break;
@@ -88,14 +89,23 @@ namespace RSMNG.TAUMEDIKA.ClientAction
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             //deserializzo il json
-            
-            //in base allo status della quote effettuo il passaggio allo stato "approvato"
+            Shared.Quote.Model.QuoteStatusRequest quote = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
+
+            var quoteStatus = quote.QuoteStatus;
 
             //tramite il quoteId faccio la retrieve dell'offerta che voglio aggiornare
-            //recupero lo statuscode, lo modifico e faccio update
+            Guid quoteId = new Guid(quote.QuoteId ?? null);
 
-            //restituisco true/false tramite jsonDataOutput
-            return "";
+            Entity enQuote = service.Retrieve(DataModel.quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(DataModel.quote.statuscode));
+
+            //recupero lo statuscode, lo modifico e faccio update
+            OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
+
+            enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Approvata_StateAttiva;
+
+            service.Update(enQuote);
+
+            return "Quote Approved.";
         }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
@@ -176,7 +186,5 @@ namespace RSMNG.TAUMEDIKA.ClientAction
         [System.Runtime.Serialization.DataMember]
         public object description { get; set; }
     }
-
-
 
 }
