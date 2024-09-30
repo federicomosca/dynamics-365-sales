@@ -30,7 +30,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
         public class QuoteStatusRequest:RSMNG.TAUMEDIKA.Model.BasicOutput
         {
             public string QuoteId { get; set; }
-            public string QuoteStatus { get; set; }
+            public string Trigger { get; set; }
         }
     }
 }

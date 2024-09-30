@@ -56,10 +56,10 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         #endregion
 
                         break;
-                    case "APPROVE_QUOTE":
+                    case "UPDATE_QUOTE_STATUS":
 
-                        #region Aggiornamento stato da "Bozza"/"In Approvazione" ad "Approvato"
-                        PluginRegion = "Aggiornamento stato da \"Bozza\"/\"In Approvazione\" ad \"Approvato\"";
+                        #region Aggiornamento status dell'offerta
+                        PluginRegion = "Aggiornamento status dell'offerta";
                         basicOutput.result = 0; basicOutput.message = "Operazione effettuata.";
                         try
                         {
@@ -91,7 +91,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             //deserializzo il json
             Shared.Quote.Model.QuoteStatusRequest quote = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
 
-            var quoteStatus = quote.QuoteStatus;
+            string trigger = quote.Trigger;
 
             //tramite il quoteId faccio la retrieve dell'offerta che voglio aggiornare
             Guid quoteId = new Guid(quote.QuoteId ?? null);
@@ -101,7 +101,17 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             //recupero lo statuscode, lo modifico e faccio update
             OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
 
-            enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Approvata_StateAttiva;
+            switch (trigger)
+            {
+                case "APPROVED":
+
+                    enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Approvata_StateAttiva;
+                    break;
+
+                case "NOT_APPROVED":
+                    enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Nonapprovata_StateChiusa;
+                    break;
+            }
 
             service.Update(enQuote);
 
