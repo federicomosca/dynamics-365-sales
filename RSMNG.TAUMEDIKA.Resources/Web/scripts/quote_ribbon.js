@@ -63,16 +63,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
      * sviluppare qui la retrieve per recuperare i dati del potenziale cliente
      * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del 
      */
-    _self.getCustomer = () => {
+    //_self.getCustomer = () => {
 
-        const accountId = null;
+    //    const accountId = null;
 
-        return new Promise((resolve, reject) => {
-            Xrm.WebApi.retrieveRecord("account", accountId, "?$select=attributes").then(
-                result => { }, error => { }
-            );
-        });
-    };
+    //    return new Promise((resolve, reject) => {
+    //        Xrm.WebApi.retrieveRecord("account", accountId, "?$select=attributes").then(
+    //            result => { }, error => { }
+    //        );
+    //    });
+    //};
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
@@ -148,14 +148,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    const actionName = "UPDATE_QUOTE_STATUS";
+                    //const actionName = "UPDATE_QUOTE_STATUS";
 
-                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
-                    if (!success) {
+                    //const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
+                    //if (!success) {
 
                         //formNotification
                         //formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
-                    }
+                    //}
                     break;
             }
         }

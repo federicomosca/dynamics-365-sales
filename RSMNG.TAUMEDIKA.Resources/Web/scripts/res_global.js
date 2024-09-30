@@ -224,15 +224,15 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     //-----------------------------------------------------------------------
     _self.invokeClientAction = (entityId, trigger, action) => {
 
-        const json = json = {
+        const json = {
             EntityId: entityId,
             Trigger: trigger
         }
 
-        var request = {
-            //parameters
-            actionName: action,
-            jsonDataInput: JSON.stringify(json),
+        var execute_res_ClientAction_Request = {
+            // Parameters
+            actionName: action, // Edm.String
+            jsonDataInput: json, // Edm.String
 
             getMetadata: function () {
                 return {
@@ -246,16 +246,18 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             }
         };
 
-        Xrm.WebApi.execute(request).then(
+        Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
             function success(response) {
                 if (response.ok) { return response.json(); }
             }
         ).then(function (responseBody) {
             var result = responseBody;
             console.log(result);
-            var jsondataoutput = result["jsonDataOutput"];
+            // Return Type: mscrm.res_ClientActionResponse
+            // Output Parameters
+            var jsondataoutput = result["jsonDataOutput"]; // Edm.String
         }).catch(function (error) {
-            console.error(error.message);
+            console.log(error.message);
         });
     }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);
