@@ -58,12 +58,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             );
         });
     };
-
     //--------------------------------------------------
     /**
      * sviluppare qui la retrieve per recuperare i dati del potenziale cliente
-     * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del button
-     * @returns
+     * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del 
      */
     _self.getCustomer = () => {
 
@@ -74,13 +72,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 result => { }, error => { }
             )
         })
-    }
+    };
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
             let currentStatus = formContext.getAttribute("statuscode").getValue();
+
             console.log(`Current Status: ${currentStatus}`);
+
             let visible = false;
+
             if (_self.Agent === undefined) {
                 _self.Agent = await _self.getAgent();
             }
@@ -107,9 +108,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "REVISE": //aggiorna
                     if (currentStatus === _self.STATUS.IN_APPROVAZIONE) { visible = true; }
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
-
-                case "ACTIVATE_QUOTE": // attiva
-                //if (currentStatus === _self.STATUS.BOZZA) { visible = true; } break;
             }
             return visible;
         },
@@ -136,13 +134,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    const actionName = "UPDATE_QUOTE";
+                    const actionName = "UPDATE_QUOTE_STATUS";
 
                     const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
                     if (!success) {
 
                         //formNotification
-                        formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
+                        //formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
                     }
                     break;
 
@@ -150,13 +148,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    const actionName = "UPDATE_QUOTE";
+                    const actionName = "UPDATE_QUOTE_STATUS";
 
                     const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
                     if (!success) {
 
                         //formNotification
-                        formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
+                        //formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
                     }
                     break;
             }
