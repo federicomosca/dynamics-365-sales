@@ -223,11 +223,10 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     }
     //-----------------------------------------------------------------------
     _self.invokeClientAction = (entityId, trigger, action) => {
-
-        const json = {
+        const json = JSON.stringify({
             EntityId: entityId,
             Trigger: trigger
-        }
+        });
 
         var execute_res_ClientAction_Request = {
             // Parameters
@@ -246,9 +245,12 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             }
         };
 
-        Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
+        return Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
             function success(response) {
-                if (response.ok) { return response.json(); }
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error("Response was not OK");
             }
         ).then(function (responseBody) {
             var result = responseBody;
@@ -256,8 +258,10 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             // Return Type: mscrm.res_ClientActionResponse
             // Output Parameters
             var jsondataoutput = result["jsonDataOutput"]; // Edm.String
+            return jsondataoutput;
         }).catch(function (error) {
-            console.log(error.message);
+            console.error("Error in invokeClientAction:", error.message);
+            throw error;
         });
     }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);
