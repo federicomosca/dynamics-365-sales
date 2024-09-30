@@ -222,11 +222,11 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
         );
     }
     //-----------------------------------------------------------------------
-    _self.invokeClientAction = (entityId, entityStatus, action) => {
+    _self.invokeClientAction = (entityId, trigger, action) => {
 
         const json = json = {
             EntityId: entityId,
-            EntityStatus: entityStatus
+            Trigger: trigger
         }
 
         var request = {

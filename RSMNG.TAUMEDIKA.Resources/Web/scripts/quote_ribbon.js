@@ -119,6 +119,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             const quoteId = formContext.data.entity.getId().replace(/[{}]/g, "");
             console.log(`Quote ID: ${quoteId}`);
+
             const quoteStatus = formContext.getAttribute("statuscode").getValue();
 
             switch (status) {
@@ -134,9 +135,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "APPROVED":
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
-                    const actionName = "APPROVE_QUOTE";
 
-                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, quoteStatus, actionName);
+                    const actionName = "UPDATE_QUOTE";
+
+                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
                     if (!success) {
 
                         //formNotification
@@ -146,8 +148,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
                 case "NOT_APPROVED":
                     console.log(`case: ${status}`)
-                    if (quoteStatus === _self.STATUS.IN_APPROVAZIONE) {
-                        console.log(`statuscode: ${quoteStatus}`);
+                    console.log(`statuscode: ${quoteStatus}`);
+
+                    const actionName = "UPDATE_QUOTE";
+
+                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
+                    if (!success) {
+
+                        //formNotification
+                        formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
                     }
                     break;
             }
