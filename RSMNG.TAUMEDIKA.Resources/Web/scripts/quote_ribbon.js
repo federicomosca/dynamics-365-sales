@@ -70,8 +70,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         return new Promise((resolve, reject) => {
             Xrm.WebApi.retrieveRecord("account", accountId, "?$select=attributes").then(
                 result => { }, error => { }
-            )
-        })
+            );
+        });
     };
     //--------------------------------------------------
     _self.UPDATESTATUS = {

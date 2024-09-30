@@ -626,14 +626,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                             if (accountNature == 100000001) { //se è persona giuridica
                                 if (!vatNumber) { missingData.push("Partita IVA"); }
                             }
+                        } else {
+                            missingData.push("Natura giuridica");
                         }
 
                         if (!SDI && !PEC) {
                             missingData.push("SDI o PEC");
-                        } else if (!SDI) {
-                            missingData.push("SDI");
-                        } else if (!PEC) {
-                            missingData.push("PEC");
                         }
 
                         const addressFields = [
