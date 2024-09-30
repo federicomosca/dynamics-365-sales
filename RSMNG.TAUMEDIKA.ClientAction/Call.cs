@@ -88,6 +88,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
+            trace.Trace("Sono nell'updateQuoteStatusCode");
             //deserializzo il json
             Shared.Quote.Model.QuoteStatusRequest quote = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
 
