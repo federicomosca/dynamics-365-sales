@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using static RSMNG.TAUMEDIKA.Model;
 
 namespace RSMNG.TAUMEDIKA.ClientAction
 {
@@ -89,6 +90,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             trace.Trace("Sono nell'updateQuoteStatusCode");
+            Model.BasicOutput basicOutput = new Model.BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
             //deserializzo il json
             Shared.Quote.Model.QuoteStatusRequest quote = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
 
@@ -113,10 +115,9 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                     enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Nonapprovata_StateChiusa;
                     break;
             }
-
             service.Update(enQuote);
 
-            return "Quote Approved.";
+            return RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
         }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
