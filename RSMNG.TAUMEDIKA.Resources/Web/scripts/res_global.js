@@ -228,40 +228,34 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             Trigger: trigger
         });
 
-        var execute_res_ClientAction_Request = {
-            // Parameters
-            actionName: action, // Edm.String
-            jsonDataInput: json, // Edm.String
+        // Parameters
+        var parameters = {};
+        parameters.actionName = action; // Edm.String
+        parameters.jsonDataInput = json; // Edm.String
 
-            getMetadata: function () {
-                return {
-                    boundParameter: null,
-                    parameterTypes: {
-                        actionName: { typeName: "Edm.String", structuralProperty: 1 },
-                        jsonDataInput: { typeName: "Edm.String", structuralProperty: 1 }
-                    },
-                    operationType: 0, operationName: "res_ClientAction"
-                };
-            }
-        };
-
-        return Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
+        fetch(Xrm.Utility.getGlobalContext().getClientUrl() + "/api/data/v9.2/res_ClientAction", {
+            method: "POST",
+            headers: {
+                "OData-MaxVersion": "4.0",
+                "OData-Version": "4.0",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(parameters)
+        }).then(
             function success(response) {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error("Response was not OK");
+                return response.json().then((json) => { if (response.ok) { return [response, json]; } else { throw json.error; } });
             }
-        ).then(function (responseBody) {
+        ).then(function (responseObjects) {
+            var response = responseObjects[0];
+            var responseBody = responseObjects[1];
             var result = responseBody;
             console.log(result);
             // Return Type: mscrm.res_ClientActionResponse
             // Output Parameters
             var jsondataoutput = result["jsonDataOutput"]; // Edm.String
-            return jsondataoutput;
         }).catch(function (error) {
-            console.error("Error in invokeClientAction:", error.message);
-            throw error;
+            console.log(error.message);
         });
     }
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

@@ -138,13 +138,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
                         .then(result => {
-                            console.log("Action executed successfully:", result);
+                            console.log("Action executed successfully");
                             // Qui puoi gestire il successo dell'azione, ad esempio aggiornando l'UI
                         })
                         .catch(error => {
-                            console.error("Error executing action:", error);
+                            console.error("Error executing action");
                             // Qui puoi gestire l'errore, ad esempio mostrando una notifica all'utente
-                            formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
                         });
                     break;
 
