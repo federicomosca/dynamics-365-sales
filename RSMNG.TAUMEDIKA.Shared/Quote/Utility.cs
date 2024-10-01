@@ -29,7 +29,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
         [DataContract]
         public class QuoteStatusRequest:RSMNG.TAUMEDIKA.Model.BasicOutput
         {
-            public string QuoteId { get; set; }
+            public string EntityId { get; set; }
             public string Trigger { get; set; }
         }
     }

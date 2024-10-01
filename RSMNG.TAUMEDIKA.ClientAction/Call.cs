@@ -58,18 +58,8 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
                         break;
                     case "UPDATE_QUOTE_STATUS":
-
                         #region Aggiornamento status dell'offerta
                         PluginRegion = "Aggiornamento status dell'offerta";
-                        basicOutput.result = 0; basicOutput.message = "Operazione effettuata.";
-                        try
-                        {
-                        }
-                        catch (Exception ex)
-                        {
-                            basicOutput.result = -1;
-                            basicOutput.message = ex.Message;
-                        }
                         jsonDataOutput = updateQuoteStatusCode(serviceAdmin, tracingService, jsonDataInput);
                         #endregion
 
@@ -89,35 +79,55 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
-            trace.Trace("Sono nell'updateQuoteStatusCode");
-            Model.BasicOutput basicOutput = new Model.BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
-            //deserializzo il json
-            Shared.Quote.Model.QuoteStatusRequest quote = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
+            string result = string.Empty;
+            BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
 
-            string trigger = quote.Trigger;
-
-            //tramite il quoteId faccio la retrieve dell'offerta che voglio aggiornare
-            Guid quoteId = new Guid(quote.QuoteId ?? null);
-
-            Entity enQuote = service.Retrieve(DataModel.quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(DataModel.quote.statuscode));
-
-            //recupero lo statuscode, lo modifico e faccio update
-            OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
-
-            switch (trigger)
+            try
             {
-                case "APPROVED":
+                Shared.Quote.Model.QuoteStatusRequest quoteRequest = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
 
-                    enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Approvata_StateAttiva;
-                    break;
+                string trigger = quoteRequest.Trigger ?? string.Empty;
+                string entityId = quoteRequest.EntityId ?? string.Empty;
 
-                case "NOT_APPROVED":
-                    enQuote[DataModel.quote.statuscode] = DataModel.quote.statuscodeValues.Nonapprovata_StateChiusa;
-                    break;
+                if (trigger == string.Empty || entityId == string.Empty) { throw new Exception("Trigger or EntityId not found."); }
+
+                Guid quoteId = new Guid(entityId);
+
+                trace.Trace($"Quote ID: {quoteId}");
+
+                Entity enQuote = service.Retrieve(DataModel.quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(DataModel.quote.statuscode));
+                trace.Trace("retrieve della quote effettuato");
+
+                //recupero lo statuscode, lo modifico e faccio update
+                OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
+
+                switch (trigger)
+                {
+                    case "APPROVED":
+                        trace.Trace("Sono nel case APPROVED");
+                        enQuote[DataModel.quote.statuscode] = new OptionSetValue((int)DataModel.quote.statuscodeValues.Approvata_StateAttiva);
+                        break;
+
+                    case "NOT_APPROVED":
+                        enQuote[DataModel.quote.statuscode] = new OptionSetValue((int)DataModel.quote.statuscodeValues.Nonapprovata_StateChiusa);
+                        break;
+                }
+                service.Update(enQuote);
+
             }
-            service.Update(enQuote);
+            catch (Exception ex)
+            {
+                basicOutput.result = -1;
+                basicOutput.message = ex.Message;
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+            finally
+            {
+                result = RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
+            }
 
-            return RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
+            return result;
+
         }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
