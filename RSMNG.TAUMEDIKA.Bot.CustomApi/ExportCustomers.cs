@@ -259,6 +259,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                 crmServiceProvider.PluginContext.OutputParameters[ParametersOut.error] = response.ErrorResponseEntity;
                 crmServiceProvider.PluginContext.OutputParameters[ParametersOut.file] = outFile;
             }
+            crmServiceProvider.TracingService.Trace("Fine");
         }
     }
 }
