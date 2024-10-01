@@ -12,6 +12,8 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using static RSMNG.TAUMEDIKA.Model;
+using System.Text.Json.Serialization;
+using RSMNG.TAUMEDIKA.Shared.Quote.Model;
 
 namespace RSMNG.TAUMEDIKA.ClientAction
 {
@@ -79,12 +81,15 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
+            trace.Trace($"Input nel metodo updateQuoteStatusCode: {jsonDataInput}");
+
             string result = string.Empty;
             BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
 
             try
             {
-                Shared.Quote.Model.QuoteStatusRequest quoteRequest = Controller.Deserialize<Shared.Quote.Model.QuoteStatusRequest>(jsonDataInput);
+                QuoteStatusRequest quoteRequest = Controller.Deserialize<QuoteStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(QuoteStatusRequest));
+                trace.Trace($"Trigger: {quoteRequest.Trigger}, EntityId: {quoteRequest.EntityId}");
 
                 string trigger = quoteRequest.Trigger ?? string.Empty;
                 string entityId = quoteRequest.EntityId ?? string.Empty;
@@ -98,7 +103,6 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 Entity enQuote = service.Retrieve(DataModel.quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(DataModel.quote.statuscode));
                 trace.Trace("retrieve della quote effettuato");
 
-                //recupero lo statuscode, lo modifico e faccio update
                 OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
 
                 switch (trigger)
