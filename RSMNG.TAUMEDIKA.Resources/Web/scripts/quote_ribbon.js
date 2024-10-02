@@ -119,6 +119,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             console.log(`Quote ID: ${quoteId}`);
 
             const quoteStatus = formContext.getAttribute("statuscode").getValue();
+            const actionName = "UPDATE_QUOTE_STATUS";
 
             switch (status) {
                 case "APPROVAL":
@@ -134,8 +135,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    const actionName = "UPDATE_QUOTE_STATUS";
-
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
                         .then(result => {
                             console.log("Action executed successfully");
@@ -149,9 +148,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
-                    const actionName = "UPDATE_QUOTE_STATUS";
-
-                    const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
+                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
                         .then(result => {
                             console.log("Action executed successfully");
                         })
