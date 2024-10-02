@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using static RSMNG.TAUMEDIKA.Model;
 using System.Text.Json.Serialization;
 using RSMNG.TAUMEDIKA.Shared.Quote.Model;
+using Microsoft.Xrm.Sdk.Query;
+using System.Security.Cryptography.Xml;
 
 namespace RSMNG.TAUMEDIKA.ClientAction
 {
@@ -89,20 +91,21 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             try
             {
                 QuoteStatusRequest quoteRequest = Controller.Deserialize<QuoteStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(QuoteStatusRequest));
-                trace.Trace($"Button: {quoteRequest.Button}, EntityId: {quoteRequest.EntityId}");
 
-                string trigger = quoteRequest.Button ?? string.Empty;
                 string entityId = quoteRequest.EntityId ?? string.Empty;
+                int statecode = quoteRequest.StateCode ?? null;
+                int statuscode = quoteRequest.StatusCode ?? null;
+                //devo passarmi statecode e statuscode dal client tramite il json. non serve più il button
 
-                if (trigger == string.Empty || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
+                if (button == string.Empty || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
 
                 Guid quoteId = new Guid(entityId);
 
-                Entity enQuote = service.Retrieve(quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(quote.statuscode));
+                Helper.updateEntityStatusCode(service, trace, quote.logicalName, quoteId, statecode, statuscode);
 
-                OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(quote.statuscode) ?? null;
+                Entity enQuote = new Entity(quote.logicalName, quoteId);
 
-                switch (trigger)
+                switch (button)
                 {
                     case "APPROVED":
                         trace.Trace("Sono nel case APPROVED");
