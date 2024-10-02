@@ -122,6 +122,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
             #endregion
 
+            #region Valorizzazione automatica del campo Motivo Stato Precedente
+            PluginRegion = "Valorizzazione automatica del campo Motivo Stato Precedente";
+
+            //recupero il motivo stato dalla preimage e lo salvo nel campo motivo stato precedente
+            preImage.TryGetAttributeValue<OptionSetValue>(quote.statuscode, out var previousStatusCode);
+            if (previousStatusCode != null)
+            {
+                target["res_oldstatuscode"] = previousStatusCode;
+            }
+            #endregion
+
             #region Valorizzo il campo Nazione (testo)
             PluginRegion = "Valorizzo il campo Nazione (testo)";
             postImage.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
