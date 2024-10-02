@@ -60,22 +60,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     };
     //--------------------------------------------------
     /**
-     * sviluppare qui la retrieve per recuperare i dati del potenziale cliente
      * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del 
      */
-    //_self.getCustomer = () => {
-
-    //    const accountId = null;
-
-    //    return new Promise((resolve, reject) => {
-    //        Xrm.WebApi.retrieveRecord("account", accountId, "?$select=attributes").then(
-    //            result => { }, error => { }
-    //        );
-    //    });
-    //};
+    _self.getPotentialCustomerId = formContext => {
+        let potentialCustomerId = null;
+        const potentialCustomerControl = formContext.getControl("customerid");
+        if (potentialCustomerControl) {
+            potentialCustomerId = potentialCustomerControl.getAttribute().getValue() ? potentialCustomerControl.getAttribute().getValue()[0].id : null;
+        }
+        return potentialCustomerId ?? null;
+    };
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
+
+            await import('../res_scripts/res_global.js');
+
             let currentStatus = formContext.getAttribute("statuscode").getValue();
 
             console.log(`Current Status: ${currentStatus}`);
@@ -97,10 +97,28 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "NOT_APPROVED": //non approvata
                     if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
 
-                case "CREATE_ORDER": //acquisisci offerta (acquisita)
-                    //da qui invocare il metodo getCustomer() per effettuare verifica sui dati
-                    //e determinare la visiblità del button
-                    if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
+                case "CREATE_ORDER": //crea ordine
+                    if (currentStatus === _self.STATUS.APPROVATA) {
+                        visible = true;
+                        try {
+                            //controllo se mancano dati nell'anagrafica del potenziale cliente
+                            let missingData = null;
+                            const potentialCustomerId = _self.getPotentialCustomerId(formContext);
+
+                            if (potentialCustomerId) {
+                                missingData = await RSMNG.TAUMEDIKA.GLOBAL.retrievePotentialCustomerMissingData(formContext, potentialCustomerId);
+
+                                if (missingData.length > 0) {
+                                    visible = false;    //se mancano dati nascondo il button
+                                    console.log("Missing customer data:", missingData);
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error checking customer data:", error);
+                            visible = false;
+                        }
+                    }
+                    break;
 
                 case "CLOSE_QUOTE": //chiudi offerta (persa)
                     if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;

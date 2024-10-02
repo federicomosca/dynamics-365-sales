@@ -282,4 +282,54 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             }
         );
     };
+    _self.retrievePotentialCustomerMissingData = (formContext, potentialCustomerId) => {
+        /**
+         * in caso di dati mancanti nell'anagrafica del potenziale cliente
+         * questi vengono ritornati in un array
+         */
+        return new Promise((resolve, reject) => {
+            Xrm.WebApi.retrieveRecord("account", potentialCustomerId.replace(/[{}]/g, ""),
+                "?$select=res_accountnaturecode, res_taxcode, res_vatnumber, res_sdi, emailaddress3, address1_line1, address1_city, address1_postalcode")
+                .then(potentialCustomer => {
+                    const missingData = [];
+                    const accountNature = potentialCustomer.res_accountnaturecode;
+                    const taxCode = potentialCustomer.res_taxcode;
+                    const vatNumber = potentialCustomer.res_vatnumber;
+                    const SDI = potentialCustomer.res_sdi;
+                    const PEC = potentialCustomer.emailaddress3;
+                    const address = potentialCustomer.address1_line1;
+                    const city = potentialCustomer.address1_city;
+                    const postalCode = potentialCustomer.address1_postalcode;
+
+                    if (accountNature) {
+                        if (accountNature == 100000000) { //se è persona fisica
+                            if (!taxCode) { missingData.push("Codice fiscale"); }
+                        }
+                        if (accountNature == 100000001) { //se è persona giuridica
+                            if (!vatNumber) { missingData.push("Partita IVA"); }
+                        }
+                    } else {
+                        missingData.push("Natura giuridica");
+                    }
+                    if (!SDI && !PEC) {
+                        missingData.push("SDI o PEC");
+                    }
+                    const addressFields = [
+                        { name: "Indirizzo", value: address },
+                        { name: "Città", value: city },
+                        { name: "CAP", value: postalCode }
+                    ];
+                    addressFields.forEach(field => {
+                        if (!field.value) {
+                            missingData.push(field.name);
+                        }
+                    });
+                    resolve(missingData);
+                })
+                .catch(error => {
+                    console.error(error.message);
+                    reject(error);
+                });
+        });
+    };
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

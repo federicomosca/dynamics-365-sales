@@ -591,74 +591,31 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.checkPotentialCustomerData = executionContext => {
+    _self.checkPotentialCustomerData = async executionContext => {
         const formContext = executionContext.getFormContext();
 
         const isInvoiceRequestedControl = formContext.getControl(_self.formModel.fields.res_isinvoicerequested);
-
         const isInvoiceRequested = isInvoiceRequestedControl ? isInvoiceRequestedControl.getAttribute().getValue() ?? null : null;
 
         if (isInvoiceRequested) {
-
             const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
             const potentialCustomerId = potentialCustomerControl ? potentialCustomerControl.getAttribute().getValue() ? potentialCustomerControl.getAttribute().getValue()[0].id : null : null;
 
             if (potentialCustomerId) {
-                Xrm.WebApi.retrieveRecord("account", potentialCustomerId.replace(/[{}]/g, ""), "?$select=res_accountnaturecode, res_taxcode, res_vatnumber, res_sdi, emailaddress3, address1_line1, address1_city, address1_postalcode").then(
-                    potentialCustomer => {
-
-                        let missingData = [];
-
-                        const accountNature = potentialCustomer.res_accountnaturecode;
-                        const taxCode = potentialCustomer.res_taxcode;
-                        const vatNumber = potentialCustomer.res_vatnumber;
-                        const SDI = potentialCustomer.res_sdi;
-                        const PEC = potentialCustomer.emailaddress3;
-                        const address = potentialCustomer.address1_line1;
-                        const city = potentialCustomer.address1_city;
-                        const postalCode = potentialCustomer.address1_postalcode;
-
-
-                        if (accountNature) {
-                            if (accountNature == 100000000) { //se è persona fisica
-                                if (!taxCode) { missingData.push("Codice fiscale"); }
-                            }
-                            if (accountNature == 100000001) { //se è persona giuridica
-                                if (!vatNumber) { missingData.push("Partita IVA"); }
-                            }
-                        } else {
-                            missingData.push("Natura giuridica");
-                        }
-
-                        if (!SDI && !PEC) {
-                            missingData.push("SDI o PEC");
-                        }
-
-                        const addressFields = [
-                            { name: "Indirizzo", value: address },
-                            { name: "Città", value: city },
-                            { name: "CAP", value: postalCode }
-                        ];
-
-                        addressFields.forEach(field => {
-                            if (!field.value) {
-                                missingData.push(field.name);
-                            }
-                        });
-
-                        if (missingData.length > 0) {
-
-                            const missingDataString = missingData.join(", ");
-                            const notification = "Per acquisire l'offerta è necessario compilare i seguenti campi del potenziale cliente: " + missingDataString;
-
-                            formContext.ui.setFormNotification(notification, "WARNING", "missingDataNotification");
-                        } else {
-                            formContext.ui.clearFormNotification("missingDataNotification");
-                        }
-
-                    },
-                    error => { console.error(error.message); }
-                );
+                try {
+                    const missingData = await RSMNG.TAUMEDIKA.GLOBAL.retrievePotentialCustomerMissingData(formContext, potentialCustomerId);
+                    //se mancano dei dati
+                    if (missingData.length > 0) {
+                        const missingDataString = missingData.join(", ");
+                        const notification = "Per acquisire l'offerta è necessario compilare i seguenti campi del potenziale cliente: " + missingDataString;
+                        formContext.ui.setFormNotification(notification, "WARNING", "missingDataNotification");
+                    } else {
+                        formContext.ui.clearFormNotification("missingDataNotification");
+                    }
+                } catch (error) {
+                    console.error("Error checking potential customer data:", error);
+                    formContext.ui.setFormNotification("Si è verificato un errore durante il controllo dei dati del cliente.", "ERROR", "errorNotification");
+                }
             }
         }
     };
@@ -746,7 +703,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleWillCallRelatedFields(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
         _self.setBankVisibility(executionContext);
-
+        _self.checkPotentialCustomerData(executionContext);
         _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
