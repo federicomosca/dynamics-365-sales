@@ -106,6 +106,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 {
                     case "APPROVED":
                         trace.Trace("Sono nel case APPROVED");
+                        enQuote[quote.statecode] = new OptionSetValue((int)quote.statecodeValues.Attiva);
                         enQuote[quote.statuscode] = new OptionSetValue((int)quote.statuscodeValues.Approvata_StateAttiva);
                         break;
 
