@@ -118,6 +118,7 @@
     <Content Include="Web\pages\getPostalcode.html" />
     <Content Include="Web\pages\postalcode.html" />
     <Content Include="Web\scripts\account.js" />
+    <Content Include="Web\scripts\salesorder_ribbon.js" />
     <Content Include="Web\scripts\quote_ribbon.js" />
     <Content Include="Web\scripts\quote.js" />
     <Content Include="Web\scripts\contact.js" />

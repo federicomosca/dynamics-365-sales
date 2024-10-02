@@ -699,7 +699,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
-        /*await import('../res_scripts/res_global.js');*/
+        await import('../res_scripts/res_global.js');
 
         //init formContext
         var formContext = executionContext.getFormContext();
