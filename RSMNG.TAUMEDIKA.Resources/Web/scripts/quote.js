@@ -645,6 +645,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleWillCallRelatedFields(executionContext);
     };
     //---------------------------------------------------
+    _self.filterPotentialCustomer = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
+        if (!potentialCustomerControl) { console.error(`Controllo ${potentialCustomerControl} non trovato`); return; }
+
+        //  filtro gli account
+        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
+        potentialCustomerControl.addCustomFilter(accountFilter, "account");
+        console.log("Filtro account applicato");
+
+        //  filtro i contatti
+        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
+        potentialCustomerControl.addCustomFilter(contactFilter, "contact");
+        console.log("Filtro contatti applicato");
+    };
+    //---------------------------------------------------
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -691,7 +707,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.setBankVisibility);
-        formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData)
+        formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
+        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
 
         //Init function
         _self.setDate(executionContext);
