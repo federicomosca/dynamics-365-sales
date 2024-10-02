@@ -223,7 +223,6 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     };
     //-----------------------------------------------------------------------
     _self.invokeClientAction = (entityId, trigger, action) => {
-
         const json = {
             EntityId: entityId,
             Trigger: trigger
@@ -248,13 +247,27 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
         };
 
         parent.Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
-            function success(response) {
+            response => {
                 if (response.ok) { return response.json(); }
             }
-        ).then(function (responseBody) {
-            var result = JSON.parse(responseBody.jsonDataOutput);
-            console.log(result);
-            console.log(result.message);
+        ).then(responseBody => {
+            const result = JSON.parse(responseBody.jsonDataOutput);
+            console.log("Raw result:", result);
+
+            if (result === 0) {
+                console.log("Client action executed successfully (returned 0)");
+            } else if (typeof result === 'object' && result !== null) {
+                console.log("Client action returned object:", result);
+                if (result.message) {
+                    console.log("Message:", result.message);
+                }
+            } else {
+                console.warn("Client action returned unexpected value:", result);
+            }
+
+            // Qui puoi aggiungere eventuale logica aggiuntiva basata sul risultato
+        }).catch(error => {
+            console.error("Error in invokeClientAction:", error);
         });
     };
     _self.refreshFormAndRibbon = () => {

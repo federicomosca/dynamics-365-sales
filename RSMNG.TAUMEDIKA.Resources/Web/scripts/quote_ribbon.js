@@ -131,31 +131,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     break;
 
                 case "APPROVED":
-                    console.log(`case: ${status}`)
-                    console.log(`statuscode: ${quoteStatus}`);
-
-                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
-                        .then(result => {
-                            console.log("Action executed successfully");
-                            RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
-                        })
-                        .catch(error => {
-                            console.error("Error executing action");
-                        });
-                    break;
-
                 case "NOT_APPROVED":
-                    console.log(`case: ${status}`)
+                    console.log(`case: ${status}`);
                     console.log(`statuscode: ${quoteStatus}`);
+                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
 
-                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
-                        .then(result => {
-                            console.log("Action executed successfully");
-                            RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
-                        })
-                        .catch(error => {
-                            console.error("Error executing action");
-                        });
+                    // Attendiamo un breve momento per dare il tempo a invokeClientAction di completare
+                    // e poi eseguiamo il refresh indipendentemente dal risultato
+                    setTimeout(() => {
+                        RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon()
+                            .then(() => {
+                                console.log("Form and ribbon refreshed successfully");
+                            })
+                            .catch(error => {
+                                console.error("Error refreshing form and ribbon:", error);
+                            });
+                    }, 1000);  // Attende 1 secondo prima di eseguire il refresh
                     break;
             }
         }
