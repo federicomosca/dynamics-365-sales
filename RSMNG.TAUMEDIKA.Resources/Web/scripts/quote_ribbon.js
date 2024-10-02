@@ -134,9 +134,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "NOT_APPROVED":
                     console.log(`case: ${status}`);
                     console.log(`statuscode: ${quoteStatus}`);
-                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
+                    RSMNG.TAUMEDIKA.GLOBAL.invokeClientActionFromButton(quoteId, status, actionName);
 
-                    // Attendiamo un breve momento per dare il tempo a invokeClientAction di completare
+                    // Attendiamo un breve momento per dare il tempo a invokeClientActionFromButton di completare
                     // e poi eseguiamo il refresh indipendentemente dal risultato
                     setTimeout(() => {
                         RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon()
