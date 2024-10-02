@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IdentityModel.Metadata;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -149,6 +151,18 @@ namespace RSMNG.TAUMEDIKA
                 }
             }
             return result.ToString();
+        }
+
+        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
+        {
+            Guid entityId = new Guid(entityIdString);
+
+            Entity entity = new Entity(quote.logicalName, entityId);
+
+            entity["statecode"] = new OptionSetValue(statecode);
+            entity["statuscode"] = new OptionSetValue(statuscode);
+
+            service.Update(entity);
         }
     }
     public class Model
