@@ -98,22 +98,20 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
                 Guid quoteId = new Guid(entityId);
 
-                trace.Trace($"Quote ID: {quoteId}");
+                Entity enQuote = service.Retrieve(quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(quote.statuscode));
 
-                Entity enQuote = service.Retrieve(DataModel.quote.logicalName, quoteId, new Microsoft.Xrm.Sdk.Query.ColumnSet(DataModel.quote.statuscode));
-                trace.Trace("retrieve della quote effettuato");
-
-                OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(DataModel.quote.statuscode) ?? null;
+                OptionSetValue statuscode = enQuote?.GetAttributeValue<OptionSetValue>(quote.statuscode) ?? null;
 
                 switch (trigger)
                 {
                     case "APPROVED":
                         trace.Trace("Sono nel case APPROVED");
-                        enQuote[DataModel.quote.statuscode] = new OptionSetValue((int)DataModel.quote.statuscodeValues.Approvata_StateAttiva);
+                        enQuote[quote.statuscode] = new OptionSetValue((int)quote.statuscodeValues.Approvata_StateAttiva);
                         break;
 
                     case "NOT_APPROVED":
-                        enQuote[DataModel.quote.statuscode] = new OptionSetValue((int)DataModel.quote.statuscodeValues.Nonapprovata_StateChiusa);
+                        enQuote[quote.statecode] = new OptionSetValue((int)quote.statecodeValues.Chiusa);
+                        enQuote[quote.statuscode] = new OptionSetValue((int)quote.statuscodeValues.Nonapprovata_StateChiusa);
                         break;
                 }
                 service.Update(enQuote);
