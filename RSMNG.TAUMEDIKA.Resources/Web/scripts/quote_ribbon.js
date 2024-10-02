@@ -123,7 +123,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             switch (status) {
                 case "APPROVAL":
-                    debugger;
                     console.log(`case: ${status}`)
                     console.log(`statuscode: ${quoteStatus}`);
 
@@ -138,6 +137,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
                         .then(result => {
                             console.log("Action executed successfully");
+                            RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
                         })
                         .catch(error => {
                             console.error("Error executing action");
@@ -151,6 +151,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
                         .then(result => {
                             console.log("Action executed successfully");
+                            RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
                         })
                         .catch(error => {
                             console.error("Error executing action");

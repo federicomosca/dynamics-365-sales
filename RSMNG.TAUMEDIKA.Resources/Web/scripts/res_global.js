@@ -220,7 +220,7 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             req.send();
         }
         );
-    }
+    };
     //-----------------------------------------------------------------------
     _self.invokeClientAction = (entityId, trigger, action) => {
 
@@ -256,5 +256,17 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             console.log(result);
             console.log(result.message);
         });
-    }
+    };
+    _self.refreshFormAndRibbon = () => {
+        Xrm.Page.data.refresh(false).then(
+            function () {
+                console.log("Form refreshed successfully");
+                Xrm.Page.ui.refreshRibbon();
+                console.log("Ribbon refreshed");
+            },
+            function (error) {
+                console.log("Error refreshing form: " + error.message);
+            }
+        );
+    };
 }).call(RSMNG.TAUMEDIKA.GLOBAL);
