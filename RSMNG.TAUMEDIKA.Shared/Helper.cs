@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -149,6 +150,64 @@ namespace RSMNG.TAUMEDIKA
                 }
             }
             return result.ToString();
+        }
+        public static string EscapeSpecialChars(string str)
+        {
+            // Mappa dei caratteri reali e i loro equivalenti HTML
+            var charMap = new Dictionary<string, string>
+        {
+            { "&", "&amp;" },
+            { "<", "&lt;" },
+            { ">", "&gt;" },
+            { "\"", "&quot;" },
+            { "'", "&#39;" },
+            { "/", "&#x2F;" },
+            { "\\", "&#x5C;" },
+            { " ", "&nbsp;" }
+        };
+
+            // Itera sui caratteri nella mappa e sostituisce quelli presenti nella stringa
+            foreach (var entry in charMap)
+            {
+                str = str.Replace(entry.Key, entry.Value);
+            }
+
+            return str;
+        }
+        public static string UnescapeSpecialChars(string str)
+        {
+            var charMap = new Dictionary<string, string>
+            {
+                { "&amp;", "&" },
+                { "&lt;", "<" },
+                { "&gt;", ">" },
+                { "&quot;", "\"" },
+                { "&#39;", "'" },
+                { "&#x2F;", "/" },
+                { "&#x5C;", "\\" },
+                { "&nbsp;", " " }
+            };
+
+            foreach (var entry in charMap)
+            {
+                str = str.Replace(entry.Key, entry.Value);
+            }
+
+            return str;
+        }
+    }
+    public class CustomStringWriter : StringWriter
+    {
+        private readonly Encoding encoding;
+
+        public CustomStringWriter(Encoding encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        public override Encoding Encoding
+        {
+            get { return encoding; }
         }
     }
     public class Model

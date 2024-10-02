@@ -8,6 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
+using System.Xml.Linq;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace RSMNG.TAUMEDIKA.Bot.CustomApi
@@ -113,6 +116,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         #endregion
 
                         #region Estraggo le spese accessorie
+                        PluginRegion = "Estraggo le spese accessorie";
                         var fetchXmlAE = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{res_additionalexpense.logicalName}"">
@@ -122,9 +126,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                           </entity>
                         </fetch>";
                         List<Entity> lAdditionalExpense = crmServiceProvider.Service.RetrieveAll(fetchXmlAE);
+                        if (lAdditionalExpense == null)
+                        {
+                            lAdditionalExpense = new List<Entity>();
+                        }
                         #endregion
 
                         #region Estraggo i codici Iva
+                        PluginRegion = "Estraggo i codici Iva";
                         var fetchXmlVN = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{res_vatnumber.logicalName}"">
@@ -136,9 +145,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                           </entity>
                         </fetch>";
                         List<Entity> lVatNumber = crmServiceProvider.Service.RetrieveAll(fetchXmlVN);
+                        if (lVatNumber == null)
+                        {
+                            lVatNumber = new List<Entity>();
+                        }
                         #endregion
 
                         #region Estraggo le codizioni di pagamento
+                        PluginRegion = "Estraggo le codizioni di pagamento";
                         var fetchXmlPT = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{res_paymentterm.logicalName}"">
@@ -148,9 +162,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                           </entity>
                         </fetch>";
                         List<Entity> lPaymentTerm = crmServiceProvider.Service.RetrieveAll(fetchXmlPT);
+                        if (lPaymentTerm == null)
+                        {
+                            lPaymentTerm = new List<Entity>();
+                        }
                         #endregion
 
                         #region Estraggo le banche
+                        PluginRegion = "Estraggo le banche";
                         var fetchXmlBD = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{res_bankdetails.logicalName}"">
@@ -161,6 +180,26 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                           </entity>
                         </fetch>";
                         List<Entity> lBankDetail = crmServiceProvider.Service.RetrieveAll(fetchXmlBD);
+                        if (lBankDetail == null)
+                        {
+                            lBankDetail = new List<Entity>();
+                        }
+                        #endregion
+
+                        #region Estraggo le unità di misura
+                        PluginRegion = "Estraggo le unità di misura";
+                        var fetchXmlU = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                        <fetch>
+                          <entity name=""{uom.logicalName}"">
+                            <attribute name=""{uom.uomid}"" />
+                            <attribute name=""{uom.name}"" />
+                          </entity>
+                        </fetch>";
+                        List<Entity> lUom = crmServiceProvider.Service.RetrieveAll(fetchXmlU);
+                        if (lUom == null)
+                        {
+                            lUom = new List<Entity>();
+                        }
                         #endregion
 
                         #region Estraggo gli ordini applicando i filtri indicati
@@ -239,68 +278,69 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                         #region Popolo la classe Document
                         PluginRegion = "Popolo la classe Document";
-                        List<Guid> salesOrdersId = lSaleOrders.Select(e => e.Id).Distinct().ToList();
-                        foreach (Guid salesOrderId in salesOrdersId)
+                        List<Guid> lSalesOrdersId = lSaleOrders.Select(e => e.Id).Distinct().ToList();
+                        crmServiceProvider.TracingService.Trace($"lSalesOrdersId:{lSalesOrdersId.Count}");
+                        foreach (Guid salesOrderId in lSalesOrdersId)
                         {
                             //prelevo ogni singolo ordine
                             Entity eSalesOrder = lSaleOrders.FirstOrDefault(f => f.Id.Equals(salesOrderId));
                             if (eSalesOrder != null)
                             {
                                 //Prelevo il dettaglio dell'account legato al salesorder
-                                Entity eAccount = lSaleOrders.FirstOrDefault(f => f.Id.Equals(salesOrderId) && f.ContainsAttributeNotNull(account.accountnumber));
+                                Entity eAccount = lSaleOrders.FirstOrDefault(f => f.Id.Equals(salesOrderId) && f.ContainsAttributeNotNull(salesorder.customerid));
+
+                                if (eAccount == null)
+                                {
+                                    eAccount = new Entity(salesorder.logicalName);
+                                }
 
                                 //Prelevo i dettaglio prima di aggiungere il document alla collection documents
-                                List<Entity> lSalesOrderDetails = lSaleOrders.Where(w => w.Id.Equals(salesOrderId) && w.ContainsAttributeNotNull(salesorderdetail.salesorderdetailid)).ToList();
+                                List<Entity> lSalesOrderDetails = lSaleOrders.Where(w => w.Id.Equals(salesOrderId) && w.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.salesorderdetailid}")).ToList();
+                                crmServiceProvider.TracingService.Trace($"lSalesOrderDetails:{lSalesOrderDetails?.Count}");
 
                                 PluginRegion = "Popolo l'ordine";
                                 Document document = new Document
                                 {
-                                    CustomerCode = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.accountnumber}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.accountnumber}") : "" ?? "",
+                                    CustomerCode = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.accountnumber}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.accountnumber}") : "",
                                     CustomerWebLogin = "",
-                                    CustomerName = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.name}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.name}") : "" ?? "",
-                                    CustomerAddress = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_line1}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_line1}") : "" ?? "",
-                                    CustomerPostcode = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_postalcode}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_postalcode}") : "" ?? "",
-                                    CustomerCity = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_city}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_city}") : "" ?? "",
-                                    CustomerProvince = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_stateorprovince}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_stateorprovince}") : "" ?? "",
-                                    CustomerCountry = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_country}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_country}") : "" ?? "",
-                                    CustomerFiscalCode = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.res_taxcode}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.res_taxcode}") : "" ?? "",
-                                    CustomerReference = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.primarycontactid}") ? Shared.Contact.Utility.GetName(crmServiceProvider.Service, (Guid)eAccount?.GetAliasedValue<EntityReference>($"{account.logicalName}.{account.primarycontactid}").Id) : "" ?? "",
-                                    CustomerTel = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.telephone1}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.telephone1}") : "" ?? "",
-                                    CustomerCellPhone = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.res_mobilenumber}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.res_mobilenumber}") : "" ?? "",
-                                    CustomerFax = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.fax}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.fax}") : "" ?? "",
-                                    CustomerEmail = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.emailaddress1}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.emailaddress1}") : "" ?? "",
-                                    CustomerPec = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.emailaddress3}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.emailaddress3}") : "" ?? "",
-                                    CustomerEInvoiceDestCode = (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.res_sdi}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.res_sdi}") : "" ?? "",
-                                    DeliveryName = eSalesOrder.ContainsAttributeNotNull(salesorder.res_shippingreference) ? eSalesOrder.GetAttributeValue<string>(salesorder.res_shippingreference) : eSalesOrder.ContainsAliasNotNull(salesorder.customerid) ? Shared.Account.Utility.GetName(crmServiceProvider.Service, eSalesOrder.GetAttributeValue<EntityReference>(salesorder.customerid).Id) : "" ?? "",
-                                    DeliveryAddress = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_composite) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_composite) : (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_line1}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_line1}") : "" ?? "",
-                                    DeliveryPostcode = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_postalcode) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_postalcode) : (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_postalcode}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_postalcode}") : "" ?? "",
-                                    DeliveryCity = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_city) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_city) : (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_city}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_city}") : "" ?? "",
-                                    DeliveryProvince = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_stateorprovince) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_stateorprovince) : (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_stateorprovince}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_stateorprovince}") : "" ?? "",
-                                    DeliveryCountry = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_country) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_country) : (bool)eAccount?.ContainsAliasNotNull($"{account.logicalName}.{account.address1_country}") ? eAccount?.GetAliasedValue<string>($"{account.logicalName}.{account.address1_country}") : "" ?? "",
+                                    CustomerName = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.name}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.name}") : "",
+                                    CustomerAddress = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_line1}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_line1}").Replace(Environment.NewLine, " ") : "",
+                                    CustomerPostcode = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_postalcode}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_postalcode}") : "",
+                                    CustomerCity = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_city}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_city}") : "",
+                                    CustomerProvince = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_stateorprovince}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_stateorprovince}") : "",
+                                    CustomerCountry = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_country}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_country}") : "",
+                                    CustomerFiscalCode = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.res_taxcode}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.res_taxcode}") : "",
+                                    CustomerReference = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.primarycontactid}") ? Shared.Contact.Utility.GetName(crmServiceProvider.Service, eAccount.GetAliasedValue<EntityReference>($"{account.logicalName}.{account.primarycontactid}").Id) : "",
+                                    CustomerTel = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.telephone1}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.telephone1}") : "",
+                                    CustomerCellPhone = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.res_mobilenumber}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.res_mobilenumber}") : "",
+                                    CustomerFax = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.fax}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.fax}") : "",
+                                    CustomerEmail = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.emailaddress1}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.emailaddress1}") : "",
+                                    CustomerPec = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.emailaddress3}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.emailaddress3}") : "",
+                                    CustomerEInvoiceDestCode = eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.res_sdi}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.res_sdi}") : "",
+                                    DeliveryName = eSalesOrder.ContainsAttributeNotNull(salesorder.res_shippingreference) ? eSalesOrder.GetAttributeValue<string>(salesorder.res_shippingreference) : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) ? Shared.Account.Utility.GetName(crmServiceProvider.Service, eSalesOrder.GetAttributeValue<EntityReference>(salesorder.customerid).Id) : "",
+                                    DeliveryAddress = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_composite) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_composite).Replace(Environment.NewLine, " ") : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) && eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_line1}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_line1}").Replace(Environment.NewLine, " ") : "",
+                                    DeliveryPostcode = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_postalcode) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_postalcode) : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) && eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_postalcode}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_postalcode}") : "",
+                                    DeliveryCity = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_city) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_city) : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) && eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_city}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_city}") : "",
+                                    DeliveryProvince = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_stateorprovince) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_stateorprovince) : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) && eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_stateorprovince}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_stateorprovince}") : "",
+                                    DeliveryCountry = eSalesOrder.ContainsAttributeNotNull(salesorder.shipto_country) ? eSalesOrder.GetAttributeValue<string>(salesorder.shipto_country) : eSalesOrder.ContainsAttributeNotNull(salesorder.customerid) && eAccount.ContainsAliasNotNull($"{account.logicalName}.{account.address1_country}") ? eAccount.GetAliasedValue<string>($"{account.logicalName}.{account.address1_country}") : "",
                                     DocumentType = "C",
                                     Date = eSalesOrder.ContainsAttributeNotNull(salesorder.res_date) ? eSalesOrder.GetAttributeValue<DateTime>(salesorder.res_date).ToString("yyyy-MM-dd") : "",
                                     Number = eSalesOrder.ContainsAttributeNotNull(salesorder.ordernumber) ? eSalesOrder.GetAttributeValue<string>(salesorder.ordernumber) : "",
                                     Numbering = "",
                                     CostDescription = "",
-                                    CostVatCode = new CostVatCode
-                                    {
-                                        Value = "",
-                                        Class = "",
-                                        Perc = "",
-                                        Description = ""
-                                    },
-                                    CostAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ? eSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value.ToString("{0:C}") : "",
+                                    CostVatCode = new CostVatCode { Text = "", Class = "", Perc = "", Description = "" },
+                                    CostAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ? eSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value.ToString("F2") : "",
                                     ContribDescription = "",
                                     ContribPerc = "",
                                     ContribSubjectToWithholdingTax = "",
                                     ContribAmount = "",
                                     ContribVatCode = "",
-                                    TotalWithoutTax = eSalesOrder.ContainsAttributeNotNull(salesorder.totalamountlessfreight) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totalamountlessfreight).Value.ToString("{0:C}") : "",
-                                    VatAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.totaltax) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totaltax).Value.ToString("{0:C}") : "",
+                                    TotalWithoutTax = eSalesOrder.ContainsAttributeNotNull(salesorder.totalamountlessfreight) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totalamountlessfreight).Value.ToString("F2") : "",
+                                    VatAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.totaltax) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totaltax).Value.ToString("F2") : "",
                                     WithholdingTaxAmount = "",
                                     WithholdingTaxAmountB = "",
                                     WithholdingTaxNameB = "",
-                                    Total = eSalesOrder.ContainsAttributeNotNull(salesorder.totalamount) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totalamount).Value.ToString("{0:C}") : "",
+                                    Total = eSalesOrder.ContainsAttributeNotNull(salesorder.totalamount) ? eSalesOrder.GetAttributeValue<Money>(salesorder.totalamount).Value.ToString("F2") : "",
                                     PriceList = "Listino1",
                                     PricesIncludeVat = "false",
                                     TotalSubjectToWithholdingTax = "",
@@ -308,7 +348,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     WithholdingTaxPerc2 = "",
                                     PaymentName = "",
                                     PaymentBank = "",
-                                    PaymentAdvanceAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.res_deposit) ? eSalesOrder.GetAttributeValue<Money>(salesorder.res_deposit).Value.ToString("{0:C}") : "",
+                                    PaymentAdvanceAmount = eSalesOrder.ContainsAttributeNotNull(salesorder.res_deposit) ? eSalesOrder.GetAttributeValue<Money>(salesorder.res_deposit).Value.ToString("F2") : "",
                                     Carrier = "",
                                     TransportReason = "",
                                     GoodsAppearance = "",
@@ -324,8 +364,8 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     CustomField4 = "",
                                     FootNotes = "",
                                     ExpectedConclusionDate = "",
-                                    SalesAgent = eSalesOrder.ContainsAttributeNotNull(salesorder.ownerid) && eSalesOrder.GetAttributeValue<EntityReference>(salesorder.ownerid).LogicalName == systemuser.logicalName ? Shared.SystemUser.Utility.GetAgentNumber(crmServiceProvider.Service, eSalesOrder.GetAttributeValue<EntityReference>(salesorder.ownerid).Id) : ""
-                                    Rows = new Rows
+                                    SalesAgent = eSalesOrder.ContainsAttributeNotNull(salesorder.ownerid) && eSalesOrder.GetAttributeValue<EntityReference>(salesorder.ownerid).LogicalName == systemuser.logicalName ? Shared.SystemUser.Utility.GetAgentNumber(crmServiceProvider.Service, eSalesOrder.GetAttributeValue<EntityReference>(salesorder.ownerid).Id) : "",
+                                    Rows = new Rows()
                                     {
                                         Row = new System.Collections.Generic.List<Row>()
                                     }
@@ -334,11 +374,11 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 PluginRegion = "Popolo il Codice IVA";
                                 if (eSalesOrder.ContainsAttributeNotNull(salesorder.res_vatnumberid))
                                 {
-                                    Entity res_vatnumberid = lVatNumber.FirstOrDefault(vn => vn.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid)));
+                                    Entity res_vatnumberid = lVatNumber.FirstOrDefault(vn => vn.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid).Id));
                                     if (res_vatnumberid != null)
                                     {
-                                        document.CostVatCode.Value = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_code) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_code) : "";
-                                        document.CostVatCode.Perc = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_rate) ? res_vatnumberid.GetAttributeValue<int>(res_vatnumber.res_rate).ToString() : "";
+                                        document.CostVatCode.Text = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_code) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_code) : "";
+                                        document.CostVatCode.Perc = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_rate) ? res_vatnumberid.GetAttributeValue<decimal>(res_vatnumber.res_rate).ToString("F2") : "";
                                         document.CostVatCode.Class = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_vattype) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_vattype).ToString() : "";
                                         document.CostVatCode.Description = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_description) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_description).ToString() : "";
                                     }
@@ -347,7 +387,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 PluginRegion = "Popolo le spese accessorie";
                                 if (eSalesOrder.ContainsAttributeNotNull(salesorder.res_additionalexpenseid))
                                 {
-                                    Entity res_additionalexpenseid = lAdditionalExpense.FirstOrDefault(ae => ae.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_additionalexpenseid)));
+                                    Entity res_additionalexpenseid = lAdditionalExpense.FirstOrDefault(ae => ae.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_additionalexpenseid).Id));
                                     if (res_additionalexpenseid != null)
                                     {
                                         document.CostDescription = res_additionalexpenseid.ContainsAttributeNotNull(res_additionalexpense.res_name) ? res_additionalexpenseid.GetAttributeValue<string>(res_additionalexpense.res_name) : "";
@@ -357,7 +397,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 PluginRegion = "Popolo la codizione di pagamento";
                                 if (eSalesOrder.ContainsAttributeNotNull(salesorder.res_paymenttermid))
                                 {
-                                    Entity res_paymenttermid = lPaymentTerm.FirstOrDefault(pt => pt.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_paymenttermid)));
+                                    Entity res_paymenttermid = lPaymentTerm.FirstOrDefault(pt => pt.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_paymenttermid).Id));
                                     if (res_paymenttermid != null)
                                     {
                                         document.PaymentName = res_paymenttermid.ContainsAttributeNotNull(res_paymentterm.res_name) ? res_paymenttermid.GetAttributeValue<string>(res_paymentterm.res_name) : "";
@@ -367,35 +407,185 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 PluginRegion = "Popolo la coordinata bancaria";
                                 if (eSalesOrder.ContainsAttributeNotNull(salesorder.res_bankdetailsid))
                                 {
-                                    Entity res_bankdetailsid = lBankDetail.FirstOrDefault(bd => bd.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_bankdetailsid)));
+                                    Entity res_bankdetailsid = lBankDetail.FirstOrDefault(bd => bd.Id.Equals(eSalesOrder.GetAttributeValue<EntityReference>(salesorder.res_bankdetailsid).Id));
                                     if (res_bankdetailsid != null)
                                     {
                                         document.PaymentBank = res_bankdetailsid.ContainsAttributeNotNull(res_bankdetails.res_name) ? res_bankdetailsid.GetAttributeValue<string>(res_bankdetails.res_name) : "";
                                     }
                                 }
 
+                                PluginRegion = "Ciclo i Prodotti Ordine";
                                 if (lSalesOrderDetails?.Count() > 0)
                                 {
                                     //Aggiungo i dettagli all'ordine
                                     foreach (Entity eSalesOrderDetail in lSalesOrderDetails)
                                     {
-                                        document.Rows.Row.Add(
-                                        new Row
+                                        PluginRegion = "Prelevo l'unità di misura corretta";
+                                        Entity uomid = lUom.FirstOrDefault(u => u.Id.Equals(eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.uomid}") ? eSalesOrderDetail.GetAliasedValue<EntityReference>($"{salesorderdetail.logicalName}.{salesorderdetail.uomid}").Id : Guid.Empty));
+
+                                        PluginRegion = "Popolo la riga dell'ordine";
+                                        Row row = new Row
                                         {
-                                            Code = eSalesOrderDetail.ContainsAttributeNotNull(salesorderdetail.res_itemcode) ? eSalesOrderDetail.GetAttributeValue<string>(salesorderdetail.res_itemcode) : "",
-                                            Description = eSalesOrderDetail.ContainsAttributeNotNull(salesorderdetail.description) ? eSalesOrderDetail.GetAttributeValue<string>(salesorderdetail.description) : "",
-                                            Qty = eSalesOrderDetail.ContainsAttributeNotNull(salesorderdetail.quantity) ? eSalesOrderDetail.GetAttributeValue<int>(salesorderdetail.quantity).ToString() : "",
-                                            Price = "1220",
-                                            Total = "1043.1",
-                                            
+                                            Code = eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_itemcode}") ? eSalesOrderDetail.GetAliasedValue<string>($"{salesorderdetail.logicalName}.{salesorderdetail.res_itemcode}") : "",
+                                            Description = eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.productdescription}") ? eSalesOrderDetail.GetAliasedValue<string>($"{salesorderdetail.logicalName}.{salesorderdetail.productdescription}") : eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.productid}") ? Shared.Product.Utility.GetName(crmServiceProvider.Service, eSalesOrderDetail.GetAliasedValue<EntityReference>($"{salesorderdetail.logicalName}.{salesorderdetail.productid}").Id) : "",
+                                            Qty = eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.quantity}") ? eSalesOrderDetail.GetAliasedValue<decimal>($"{salesorderdetail.logicalName}.{salesorderdetail.quantity}").ToString("F2") : "",
+                                            Um = uomid != null ? uomid.ContainsAttributeNotNull(uom.name) ? uomid.GetAttributeValue<string>(uom.name) : "" : "",
+                                            Price = eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.priceperunit}") ? eSalesOrderDetail.GetAliasedValue<Money>($"{salesorderdetail.logicalName}.{salesorderdetail.priceperunit}").Value.ToString("F2") : "",
+                                            Discounts = "",
+                                            EcoFee = "",
+                                            VatCode = new VatCode { Text = "", Class = "", Perc = "", Description = "" },
+                                            Total = eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_taxableamount}") ? eSalesOrderDetail.GetAliasedValue<Money>($"{salesorderdetail.logicalName}.{salesorderdetail.res_taxableamount}").Value.ToString() : "",
+                                            Notes = "",
+                                            Stock = ""
+                                        };
+
+                                        PluginRegion = "Popolo lo sconto della riga dell'ordine";
+                                        string res_discountpercentage = string.Empty;
+                                        if (eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage1}"))
+                                        {
+                                            res_discountpercentage += eSalesOrderDetail.GetAliasedValue<decimal>($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage1}").ToString("F2");
                                         }
-                                        );
+                                        if (eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage2}"))
+                                        {
+                                            res_discountpercentage += (!string.IsNullOrEmpty(res_discountpercentage) ? "+" : "") + eSalesOrderDetail.GetAliasedValue<decimal>($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage2}").ToString("F2");
+                                        }
+                                        if (eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage3}"))
+                                        {
+                                            res_discountpercentage += (!string.IsNullOrEmpty(res_discountpercentage) ? "+" : "") + eSalesOrderDetail.GetAliasedValue<decimal>($"{salesorderdetail.logicalName}.{salesorderdetail.res_discountpercentage3}").ToString("F2");
+                                        }
+                                        if (!string.IsNullOrEmpty(res_discountpercentage))
+                                        {
+                                            row.Discounts = res_discountpercentage + "%";
+                                        }
+
+                                        PluginRegion = "Popolo il codice Iva della riga dell'ordine";
+                                        if (eSalesOrderDetail.ContainsAliasNotNull($"{salesorderdetail.logicalName}.{salesorderdetail.res_vatnumberid}"))
+                                        {
+                                            Entity res_vatnumberid = lVatNumber.FirstOrDefault(vn => vn.Id.Equals(eSalesOrderDetail.GetAliasedValue<EntityReference>($"{salesorderdetail.logicalName}.{salesorderdetail.res_vatnumberid}").Id));
+                                            if (res_vatnumberid != null)
+                                            {
+                                                row.VatCode.Text = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_code) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_code) : "";
+                                                row.VatCode.Perc = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_rate) ? res_vatnumberid.GetAttributeValue<decimal>(res_vatnumber.res_rate).ToString("F2") : "";
+                                                row.VatCode.Class = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_vattype) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_vattype).ToString() : "";
+                                                row.VatCode.Description = res_vatnumberid.ContainsAttributeNotNull(res_vatnumber.res_description) ? res_vatnumberid.GetAttributeValue<string>(res_vatnumber.res_description).ToString() : "";
+                                            }
+                                        }
+
+                                        document.Rows.Row.Add(row);
                                     }
-                                    easyfattDocuments.Documents.Document.Add(document);
                                 }
+                                easyfattDocuments.Documents.Document.Add(document);
                             }
                         }
                         #endregion
+
+                        #region Serializzo l'oggetto EasyFattDocuments
+                        PluginRegion = "Serializzo l'oggetto EasyFattDocuments";
+                        XmlSerializer serializer = null;
+                        try
+                        {
+                            serializer = new XmlSerializer(typeof(EasyfattDocuments));
+                            // serializzazione o deserializzazione
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            throw ex;
+                        }
+                        string xmlOutput = string.Empty;
+                        using (StringWriter stringWriter = new CustomStringWriter(Encoding.UTF8))
+                        {
+                            serializer = new XmlSerializer(typeof(EasyfattDocuments));
+
+                            // Crea le impostazioni per l'XmlWriter
+                            var settings = new XmlWriterSettings
+                            {
+                                Indent = true,
+                                OmitXmlDeclaration = false // Include la dichiarazione XML
+                            };
+
+                            using (var writer = XmlWriter.Create(stringWriter, settings))
+                            {
+                                // Serializza l'oggetto
+                                serializer.Serialize(writer, easyfattDocuments);
+                            }
+
+                            //serializer.Serialize(stringWriter, easyfattDocuments);
+                            xmlOutput = stringWriter.ToString();
+                            Console.WriteLine(xmlOutput);
+                        }
+                        #endregion
+
+                        #region Creo il file on memoria
+                        PluginRegion = "Creo il file on memoria";
+                        // Convertiamo la stringa del StringWriter in byte usando la codifica UTF-8
+                        byte[] xmlBytes = Encoding.UTF8.GetBytes(xmlOutput);
+
+                        // Convertiamo i byte in Base64
+                        string base64Xml = Convert.ToBase64String(xmlBytes);
+
+                        // Creiamo il Data URI per il file XML
+                        string dataUri = $"data:text/xml;base64,{base64Xml}";
+                        #endregion
+
+                        #region definisco la data corretta
+                        PluginRegion = "Definisco la data corretta";
+                        TimeZoneInfo europeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time");
+                        DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, europeTimeZone);
+                        #endregion
+
+                        #region Creo il log DataIntegration
+                        PluginRegion = "Creo il log DataIntegration";
+                        Entity enDataIntegration = new Entity(res_dataintegration.logicalName);
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationtype, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationtypeValues.Export));
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationaction, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini));
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_name, $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()} - {GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini.ToString()} - {localTime.ToString("dd/MM/yyyy HH:mm:ss")}");
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationdata, xmlOutput);
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, "Esportazione effettuata con successo");
+                        Guid enDataIntegrationId = crmServiceProvider.Service.Create(enDataIntegration);
+                        #endregion
+
+                        #region Salvo il file nel log DataIntegration
+                        PluginRegion = "Salvo il file nel log DataIntegration";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
+                        {
+                            MimeType = "text/xml",
+                            FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.defxml",
+                            Id = enDataIntegrationId.ToString(),
+                            FileSize = xmlBytes.Length,
+                            Content = base64Xml
+                        };
+
+                        string resultUpload = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_integrationfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
+                        #endregion
+
+                        #region Controllo l'esito del salvataggio del file
+                        PluginRegion = "Controllo l'esito del salvataggio del file";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Output uploadFile_Output = RSMNG.Plugins.Controller.Deserialize<RSMNG.TAUMEDIKA.Model.UploadFile_Output>(resultUpload);
+
+                        if (uploadFile_Output?.result != 0)
+                        {
+                            outResult = "KO";
+                            outErrorCode = "02";
+                            outMessage = $"{uploadFile_Output.message}";
+                        }
+                        #endregion
+
+                        if (outResult == "OK")
+                        {
+                            #region Cambio di stato al log DataIntegration
+                            PluginRegion = "Cambio di stato al log DataIntegration";
+                            Helper.SetStateCode(crmServiceProvider.Service, res_dataintegration.logicalName, enDataIntegrationId, (int)res_dataintegration.statecodeValues.Inattivo, (int)res_dataintegration.statuscodeValues.Distribuito_StateInattivo);
+                            #endregion
+
+                            #region Popolo il parametro di output file
+                            PluginRegion = "Popolo il parametro di output file";
+                            outFile.Attributes.Add("mimetype", uploadFile_Input.MimeType);
+                            outFile.Attributes.Add("name", uploadFile_Input.FileName);
+                            outFile.Attributes.Add("size", uploadFile_Input.FileSize);
+                            outFile.Attributes.Add("content", uploadFile_Input.Content);
+                            outFile.Attributes.Add("datauri", dataUri);
+                            #endregion
+                        }
 
                         //// Crea un'istanza della classe EasyfattDocuments e popola i campi
                         //EasyfattDocuments easyfattDocuments = new EasyfattDocuments
