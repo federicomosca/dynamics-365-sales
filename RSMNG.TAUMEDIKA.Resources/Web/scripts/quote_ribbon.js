@@ -41,22 +41,24 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         AGGIORNATA: 7
     }
 
-    _self.Agent = undefined;
+    let agentPromise = null;
 
     _self.getAgent = function () {
-        return new Promise(function (resolve, reject) {
-            Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
-                function success(result) {
-                    console.log(result);
-                    // Columns
-                    resolve(result["res_isagente"]); // Boolean
-                },
-                function (error) {
-                    reject(null);
-                    console.log(error.message);
-                }
-            );
-        });
+        if (agentPromise === null) {
+            agentPromise = new Promise(function (resolve, reject) {
+                Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
+                    result => {
+                        console.log(result);
+                        resolve(result["res_isagente"]);
+                    },
+                    error => {
+                        reject(null);
+                        console.log(error.message);
+                    }
+                );
+            });
+        }
+        return agentPromise;
     };
     //--------------------------------------------------
     /**
@@ -82,20 +84,20 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let visible = false;
 
-            if (_self.Agent === undefined) {
-                _self.Agent = await _self.getAgent();
-            }
+            const agent = await _self.getAgent();
+            console.log(`Agent status: ${agent}`);
+
             switch (status) {
 
                 case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.BOZZA && _self.Agent === true) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && agent === true) { visible = true; } break;
 
                 case "APPROVED": //approvata
-                    if (currentStatus === _self.STATUS.BOZZA && (_self.Agent === false || _self.Agent === null)) { visible = true; }
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && (agent === false || agent === null)) { visible = true; }
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null)) { visible = true; } break;
 
                 case "NOT_APPROVED": //non approvata
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null)) { visible = true; } break;
 
                 case "CREATE_ORDER": //crea ordine
                     if (currentStatus === _self.STATUS.APPROVATA) {
