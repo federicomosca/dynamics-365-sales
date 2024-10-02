@@ -27,12 +27,10 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
     namespace Model
     {
         [DataContract]
-        public class QuoteStatusRequest:RSMNG.TAUMEDIKA.Model.BasicOutput
+        public class QuoteStatusRequest : RSMNG.TAUMEDIKA.Model.BasicOutput
         {
-            [DataMember]
-            public string EntityId { get; set; }
-            [DataMember]
-            public string Trigger { get; set; }
+            [DataMember] public string EntityId { get; set; }
+            [DataMember] public string Button { get; set; }
         }
     }
 }

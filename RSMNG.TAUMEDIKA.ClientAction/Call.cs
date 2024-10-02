@@ -89,12 +89,12 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             try
             {
                 QuoteStatusRequest quoteRequest = Controller.Deserialize<QuoteStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(QuoteStatusRequest));
-                trace.Trace($"Trigger: {quoteRequest.Trigger}, EntityId: {quoteRequest.EntityId}");
+                trace.Trace($"Button: {quoteRequest.Button}, EntityId: {quoteRequest.EntityId}");
 
-                string trigger = quoteRequest.Trigger ?? string.Empty;
+                string trigger = quoteRequest.Button ?? string.Empty;
                 string entityId = quoteRequest.EntityId ?? string.Empty;
 
-                if (trigger == string.Empty || entityId == string.Empty) { throw new Exception("Trigger or EntityId not found."); }
+                if (trigger == string.Empty || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
 
                 Guid quoteId = new Guid(entityId);
 
