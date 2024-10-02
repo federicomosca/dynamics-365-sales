@@ -587,6 +587,22 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.filterPotentialCustomer = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
+        if (!potentialCustomerControl) { console.error(`Controllo ${potentialCustomerControl} non trovato`); return; }
+
+        //  filtro gli account
+        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
+        potentialCustomerControl.addCustomFilter(accountFilter, "account");
+        console.log("Filtro account applicato");
+
+        //  filtro i contatti
+        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
+        potentialCustomerControl.addCustomFilter(contactFilter, "contact");
+        console.log("Filtro contatti applicato");
+    };
+    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -713,6 +729,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeShipToPostalCode);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeShipToCity);
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeWillCall(executionContext, true); });
+        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
         //Init function
         _self.addPriceLevelCustomView(executionContext);
         _self.setContextCapIframe(executionContext);
