@@ -15,7 +15,6 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
     {
         public static List<string> mandatoryFields = new List<string> {
                 DataModel.quote.name,
-                DataModel.quote.res_vatnumberid,
                 DataModel.quote.revisionnumber,
                 DataModel.quote.pricelevelid,
                 DataModel.quote.quotenumber,

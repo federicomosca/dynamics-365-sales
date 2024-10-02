@@ -28,6 +28,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             if (preImage == null) { return; }
             Entity postImage = target.GetPostImage(preImage);
 
+            #region Controllo campi obbligatori
+            PluginRegion = "Controllo campi obbligatori";
+
+            VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.Quote.Utility.mandatoryFields);
+            target.TryGetAttributeValue<EntityReference>(quote.res_additionalexpenseid, out EntityReference additionalExpense);
+            if (additionalExpense != null)
+            {
+                target.TryGetAttributeValue<EntityReference>(quote.res_vatnumberid, out EntityReference vatNumber);
+                if (vatNumber == null) { throw new ApplicationException($"Il campo Codice IVA Spesa Accessoria è obbligatorio"); }
+            }
+            #endregion
+
             #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale
             PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             if (target.Contains(quote.totallineitemamount) ||

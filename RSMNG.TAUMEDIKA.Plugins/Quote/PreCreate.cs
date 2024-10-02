@@ -29,6 +29,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, Utility.mandatoryFields);
+            target.TryGetAttributeValue<EntityReference>(quote.res_additionalexpenseid, out EntityReference additionalExpense);
+            if (additionalExpense != null)
+            {
+                target.TryGetAttributeValue<EntityReference>(quote.res_vatnumberid, out EntityReference vatNumber);
+                if (vatNumber == null) { throw new ApplicationException($"Il campo Codice IVA Spesa Accessoria è obbligatorio"); }
+            }
             #endregion
 
             #region Valorizzazione automatica del campo Importo spesa accessoria [disabled]
