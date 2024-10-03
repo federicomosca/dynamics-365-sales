@@ -212,9 +212,26 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
     };
     //---------------------------------------------------
-    _self.getTax = function () {
+    _self.getTax = function (imponibile, aliquota) {
+        let i = imponibile;
+        let a = aliquota;
+        let tax = null;
 
+        if (i != null && a != null && i >= 0) {
+
+            tax = (i * a) / 100;
+        }
+
+        return tax;
     };
+    //---------------------------------------------------
+    _self.getTaxableAmount = function (importo, scontoTot) {
+
+        let i = importo;
+        let s = scontoTot != null ? scontoTot : 0;
+        
+        return i != null ? i - s : null; 
+    }
     //---------------------------------------------------
     _self.onChangeProduct = async function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -254,8 +271,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
             Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
                 function success(result) {
+                    let imponibile = formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
 
                     formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
+                    formContext.getAttribute(_self.formModel.fields.tax).setValue(_self.getTax(imponibile, result.res_rate));
                 },
                 function error(error) {
 
@@ -265,6 +284,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         }
         else {
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.tax).setValue(null);
         }
     };
     //---------------------------------------------------
