@@ -115,6 +115,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         var formContext = executionContext.getFormContext();
 
+        _self.onChangeProduct(executionContext);
+
+
+
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
@@ -164,7 +168,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
                         amount = results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
 
                         formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
-                        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(amount, quantity));
+                        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
                     },
                     error => {
                         console.log(error.message);
@@ -173,7 +177,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             }
             else {
                 formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
-                formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(amount, quantity));
+                formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
             }
         }
     }
@@ -185,7 +189,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
         let pricePerUnit = formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
 
-        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(pricePerUnit, quantity));
+        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(pricePerUnit, quantity));
     }
     //---------------------------------------------------
     _self.onChangePricePerUnit = function (executionContext) {
@@ -195,10 +199,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
         let pricePerUnit = formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
 
-        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(pricePerUnit, quantity));
+        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(pricePerUnit, quantity));
     }
     //---------------------------------------------------
-    _self.setBaseAmount = function (pricePerUnit, quantity) {
+    _self.getBaseAmount = function (pricePerUnit, quantity) {
 
         let q = quantity != null ? quantity : 0;
         let p = pricePerUnit != null ? pricePerUnit : 0;
@@ -206,7 +210,100 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         return result;
 
+    };
+    //---------------------------------------------------
+    _self.getTax = function () {
+
+    };
+    //---------------------------------------------------
+    _self.onChangeProduct = async function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let productLookup = formContext.getAttribute(_self.formModel.fields.productid).getValue();
+
+        if (productLookup != null) {
+
+            let product = await _self.getProductDetails(productLookup[0].id);
+
+            let codiceIva = [{
+                id: product["CodiceIva.res_vatnumberid"],
+                entityType: 'res_vatnumber',
+                name: product["CodiceIva.res_name"]
+            }];
+
+            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(product["CodiceIva.res_rate"]);
+        }
+        else {
+            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+        }
+
     }
+    //---------------------------------------------------
+    _self.onChangeVatNumber = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
+
+
+        if (vatNumberLookup != null) {
+            let queryOptions = "?$select=res_rate";
+
+            Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
+                function success(result) {
+
+                    formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
+                },
+                function error(error) {
+
+                    console.log(error);
+                }
+            );
+        }
+        else {
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+        }
+    };
+    //---------------------------------------------------
+    _self.getProductDetails = function (productId) {
+        return new Promise(function (resolve, reject) {
+
+            var fetchData = {
+                "productid": productId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='product'>",
+                "    <attribute name='productnumber'/>",
+                "    <filter>",
+                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+                "    </filter>",
+                "    <link-entity name='res_vatnumber' from='res_vatnumberid' to='res_vatnumberid' link-type='inner' alias='CodiceIva'>",
+                "      <attribute name='res_rate'/>",
+                "      <attribute name='res_name'/>",
+                "      <attribute name='res_vatnumberid'/>",
+                "    </link-entity>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
+                results => {
+                    if (results.entities.length > 0) {
+                        resolve(results.entities[0]);
+                    } else {
+                        reject(new Error("No product found"));
+                    }
+                },
+                error => {
+                    reject(error);
+                }
+            );
+        });
+    };
     //---------------------------------------------------
 
     _self.onLoadForm = async function (executionContext) {
@@ -222,6 +319,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.ispriceoverridden).addOnChange(_self.onChangeIsPriceOverridden);
         formContext.getAttribute(_self.formModel.fields.quantity).addOnChange(_self.onChangeQuantity);
         formContext.getAttribute(_self.formModel.fields.priceperunit).addOnChange(_self.onChangePricePerUnit);
+        formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProduct);
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
 
 
         //Init function
