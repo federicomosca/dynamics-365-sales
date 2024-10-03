@@ -168,7 +168,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
                         amount = results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
 
                         formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
-                        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(amount, quantity));
+                        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
                     },
                     error => {
                         console.log(error.message);
@@ -177,7 +177,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             }
             else {
                 formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
-                formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(amount, quantity));
+                formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
             }
         }
     }
@@ -189,7 +189,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
         let pricePerUnit = formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
 
-        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(pricePerUnit, quantity));
+        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(pricePerUnit, quantity));
     }
     //---------------------------------------------------
     _self.onChangePricePerUnit = function (executionContext) {
@@ -199,10 +199,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
         let pricePerUnit = formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
 
-        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.setBaseAmount(pricePerUnit, quantity));
+        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(pricePerUnit, quantity));
     }
     //---------------------------------------------------
-    _self.setBaseAmount = function (pricePerUnit, quantity) {
+    _self.getBaseAmount = function (pricePerUnit, quantity) {
 
         let q = quantity != null ? quantity : 0;
         let p = pricePerUnit != null ? pricePerUnit : 0;
@@ -210,7 +210,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         return result;
 
-    }
+    };
+    //---------------------------------------------------
+    _self.getTax = function () {
+
+    };
     //---------------------------------------------------
     _self.onChangeProduct = async function (executionContext) {
         var formContext = executionContext.getFormContext();
