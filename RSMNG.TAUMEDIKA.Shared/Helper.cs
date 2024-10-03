@@ -197,6 +197,16 @@ namespace RSMNG.TAUMEDIKA
 
             return str;
         }
+        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
+        {
+            Guid entityId = new Guid(entityIdString);
+            Entity entity = new Entity(entityLogicalName, entityId);
+
+            entity["statecode"] = new OptionSetValue(statecode);
+            entity["statuscode"] = new OptionSetValue(statuscode);
+
+            service.Update(entity);
+        }
     }
     public class CustomStringWriter : StringWriter
     {

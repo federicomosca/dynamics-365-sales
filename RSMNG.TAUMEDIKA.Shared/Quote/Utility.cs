@@ -29,7 +29,8 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
         public class QuoteStatusRequest : RSMNG.TAUMEDIKA.Model.BasicOutput
         {
             [DataMember] public string EntityId { get; set; }
-            [DataMember] public string Button { get; set; }
+            [DataMember] public int? StateCode { get; set; }
+            [DataMember] public int? StatusCode { get; set; }
         }
     }
 }

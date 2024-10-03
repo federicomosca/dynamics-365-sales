@@ -83,8 +83,6 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
-            trace.Trace($"Input nel metodo updateQuoteStatusCode: {jsonDataInput}");
-
             string result = string.Empty;
             BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
 
@@ -93,33 +91,12 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 QuoteStatusRequest quoteRequest = Controller.Deserialize<QuoteStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(QuoteStatusRequest));
 
                 string entityId = quoteRequest.EntityId ?? string.Empty;
-                int statecode = quoteRequest.StateCode ?? null;
-                int statuscode = quoteRequest.StatusCode ?? null;
-                //devo passarmi statecode e statuscode dal client tramite il json. non serve più il button
+                int? statecode = quoteRequest.StateCode ?? null;
+                int? statuscode = quoteRequest.StatusCode ?? null;
 
-                if (button == string.Empty || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
+                if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
 
-                Guid quoteId = new Guid(entityId);
-
-                Helper.updateEntityStatusCode(service, trace, quote.logicalName, quoteId, statecode, statuscode);
-
-                Entity enQuote = new Entity(quote.logicalName, quoteId);
-
-                switch (button)
-                {
-                    case "APPROVED":
-                        trace.Trace("Sono nel case APPROVED");
-                        enQuote[quote.statecode] = new OptionSetValue((int)quote.statecodeValues.Attiva);
-                        enQuote[quote.statuscode] = new OptionSetValue((int)quote.statuscodeValues.Approvata_StateAttiva);
-                        break;
-
-                    case "NOT_APPROVED":
-                        enQuote[quote.statecode] = new OptionSetValue((int)quote.statecodeValues.Chiusa);
-                        enQuote[quote.statuscode] = new OptionSetValue((int)quote.statuscodeValues.Nonapprovata_StateChiusa);
-                        break;
-                }
-                service.Update(enQuote);
-
+                Helper.updateEntityStatusCode(service, trace, quote.logicalName, entityId, (int)statecode, (int)statuscode);
             }
             catch (Exception ex)
             {
