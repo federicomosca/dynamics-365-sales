@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
+using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
@@ -12,6 +14,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
     [XmlRoot(ElementName = "Company")]
     public class Company
     {
+
         [XmlElement(ElementName = "Name")]
         public string Name { get; set; }
     }
@@ -19,6 +22,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
     [XmlRoot(ElementName = "CostVatCode")]
     public class CostVatCode
     {
+
         [XmlAttribute(AttributeName = "Perc")]
         public string Perc { get; set; }
 
@@ -29,12 +33,13 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
         public string Description { get; set; }
 
         [XmlText]
-        public string Value { get; set; }
+        public string Text { get; set; }
     }
 
     [XmlRoot(ElementName = "VatCode")]
     public class VatCode
     {
+
         [XmlAttribute(AttributeName = "Perc")]
         public string Perc { get; set; }
 
@@ -43,11 +48,15 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
 
         [XmlAttribute(AttributeName = "Description")]
         public string Description { get; set; }
+
+        [XmlText]
+        public string Text { get; set; }
     }
 
     [XmlRoot(ElementName = "Row")]
     public class Row
     {
+
         [XmlElement(ElementName = "Code")]
         public string Code { get; set; }
 
@@ -85,6 +94,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
     [XmlRoot(ElementName = "Rows")]
     public class Rows
     {
+
         [XmlElement(ElementName = "Row")]
         public List<Row> Row { get; set; }
     }
@@ -92,6 +102,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
     [XmlRoot(ElementName = "Document")]
     public class Document
     {
+
         [XmlElement(ElementName = "CustomerCode")]
         public string CustomerCode { get; set; }
 
@@ -125,9 +136,6 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
         [XmlElement(ElementName = "CustomerTel")]
         public string CustomerTel { get; set; }
 
-        [XmlElement(ElementName = "CustomerCellPhone")]
-        public string CustomerCellPhone { get; set; }
-
         [XmlElement(ElementName = "CustomerFax")]
         public string CustomerFax { get; set; }
 
@@ -139,6 +147,9 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
 
         [XmlElement(ElementName = "CustomerEInvoiceDestCode")]
         public string CustomerEInvoiceDestCode { get; set; }
+
+        [XmlElement(ElementName = "CustomerCellPhone")]
+        public string CustomerCellPhone { get; set; }
 
         [XmlElement(ElementName = "DeliveryName")]
         public string DeliveryName { get; set; }
@@ -291,13 +302,15 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
     [XmlRoot(ElementName = "Documents")]
     public class Documents
     {
+
         [XmlElement(ElementName = "Document")]
         public List<Document> Document { get; set; }
     }
 
-    [XmlRoot(ElementName = "EasyfattDocuments")]
+    [XmlRoot(ElementName = "EasyfattDocuments", Namespace = "")]
     public class EasyfattDocuments
     {
+
         [XmlElement(ElementName = "Company")]
         public Company Company { get; set; }
 
@@ -313,10 +326,10 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
         [XmlAttribute(AttributeName = "CreatorUrl")]
         public string CreatorUrl { get; set; }
 
-        [XmlAttribute(AttributeName = "xmlns:xsi")]
+        [XmlAttribute(AttributeName = "xmlns", Namespace = XmlSchema.InstanceNamespace)]
         public string XmlnsXsi { get; set; }
 
-        [XmlAttribute(AttributeName = "xsi:noNamespaceSchemaLocation")]
+        [XmlAttribute(AttributeName = "noNamespaceSchemaLocation", Namespace = XmlSchema.InstanceNamespace)]
         public string XsiNoNamespaceSchemaLocation { get; set; }
     }
 
@@ -345,7 +358,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ExportSalesOrders
         public static string appversion => "appversion";
         public static string creator => "creator";
         public static string creatorurl => "creatorurl";
-        public static string xmlnsxsi => "xmlns:xsi";
+        public static string xmlnsxsi => "xmlnsxsi";
         public static string xsinonamespaceschemalocation => "xsinonamespaceschemalocation";
         public static string companyname => "companyname";
     }

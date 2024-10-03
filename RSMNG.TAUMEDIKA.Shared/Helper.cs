@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Diagnostics;
 using System.IdentityModel.Metadata;
 using System.Linq;
@@ -152,17 +153,63 @@ namespace RSMNG.TAUMEDIKA
             }
             return result.ToString();
         }
-
-        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
+        public static string EscapeSpecialChars(string str)
         {
-            Guid entityId = new Guid(entityIdString);
+            // Mappa dei caratteri reali e i loro equivalenti HTML
+            var charMap = new Dictionary<string, string>
+        {
+            { "&", "&amp;" },
+            { "<", "&lt;" },
+            { ">", "&gt;" },
+            { "\"", "&quot;" },
+            { "'", "&#39;" },
+            { "/", "&#x2F;" },
+            { "\\", "&#x5C;" },
+            { " ", "&nbsp;" }
+        };
 
-            Entity entity = new Entity(quote.logicalName, entityId);
+            // Itera sui caratteri nella mappa e sostituisce quelli presenti nella stringa
+            foreach (var entry in charMap)
+            {
+                str = str.Replace(entry.Key, entry.Value);
+            }
 
-            entity["statecode"] = new OptionSetValue(statecode);
-            entity["statuscode"] = new OptionSetValue(statuscode);
+            return str;
+        }
+        public static string UnescapeSpecialChars(string str)
+        {
+            var charMap = new Dictionary<string, string>
+            {
+                { "&amp;", "&" },
+                { "&lt;", "<" },
+                { "&gt;", ">" },
+                { "&quot;", "\"" },
+                { "&#39;", "'" },
+                { "&#x2F;", "/" },
+                { "&#x5C;", "\\" },
+                { "&nbsp;", " " }
+            };
 
-            service.Update(entity);
+            foreach (var entry in charMap)
+            {
+                str = str.Replace(entry.Key, entry.Value);
+            }
+
+            return str;
+        }
+    }
+    public class CustomStringWriter : StringWriter
+    {
+        private readonly Encoding encoding;
+
+        public CustomStringWriter(Encoding encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        public override Encoding Encoding
+        {
+            get { return encoding; }
         }
     }
     public class Model
