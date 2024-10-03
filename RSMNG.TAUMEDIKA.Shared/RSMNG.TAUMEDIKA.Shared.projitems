@@ -48,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaymentTerm\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Product\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QuoteDetail\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Quote\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SalesOrder\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SystemUser\Utility.cs" />
