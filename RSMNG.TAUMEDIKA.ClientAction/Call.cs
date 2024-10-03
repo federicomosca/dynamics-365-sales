@@ -83,8 +83,6 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
         public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
-            trace.Trace($"Input nel metodo updateQuoteStatusCode: {jsonDataInput}");
-
             string result = string.Empty;
             BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
 

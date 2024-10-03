@@ -197,7 +197,7 @@ namespace RSMNG.TAUMEDIKA
 
             return str;
         }
-        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityIdString, string entityLogicalName, int statecode, int statuscode)
+        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
         {
             Guid entityId = new Guid(entityIdString);
             Entity entity = new Entity(entityLogicalName, entityId);
