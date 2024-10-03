@@ -288,6 +288,38 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.setManualDiscountAmountAndTaxableAmount = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const manualDiscountAmountControl = formContext.getControl(_self.formModel.fields.manualdiscountamount);
+        const taxableAmountControl = formContext.getControl(_self.formModel.fields.res_taxableamount);
+        const baseAmountControl = formContext.getControl(_self.formModel.fields.baseamount);
+
+        const discountPercent1Control = formContext.getControl(_self.formModel.fields.res_discountpercent1);
+        const discountPercent2Control = formContext.getControl(_self.formModel.fields.res_discountpercent2);
+        const discountPercent3Control = formContext.getControl(_self.formModel.fields.res_discountpercent3);
+
+        if (!discountPercent1Control || !discountPercent2Control || !discountPercent3Control) { console.error("Uno o più campi sconto mancanti"); }
+        const discountPercent1 = discountPercent1Control.getAttribute().getValue() ?? 0;
+        const discountPercent2 = discountPercent2Control.getAttribute().getValue() ?? 0;
+        const discountPercent3 = discountPercent3Control.getAttribute().getValue() ?? 0;
+        const discountPercentages = [discountPercent1, discountPercent2, discountPercent3];
+
+        if (manualDiscountAmountControl) {
+            const manualDiscountAmount = discountPercentages.reduce((sum, percent) => sum + percent, 0);
+            manualDiscountAmountControl.getAttribute().setValue(manualDiscountAmount);
+
+            if (taxableAmountControl) {
+                const baseAmount = baseAmountControl ? baseAmountControl.getAttribute().getValue() ?? 0 : null;
+
+                if (baseAmount) {
+                    const taxableAmount = baseAmount - manualDiscountAmount;
+                    taxableAmountControl.getAttribute().setValue(taxableAmount);
+                }
+            }
+        }
+    }
+    //---------------------------------------------------
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -330,7 +362,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
         formContext.getAttribute(_self.formModel.fields.priceperunit).addOnChange(_self.setBaseAmountValue);
         formContext.getAttribute(_self.formModel.fields.quantity).addOnChange(_self.setBaseAmountValue);
-
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).addOnChange(_self.setManualDiscountAmountAndTaxableAmount);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent2).addOnChange(_self.setManualDiscountAmountAndTaxableAmount);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent3).addOnChange(_self.setManualDiscountAmountAndTaxableAmount);
 
         //Init function
 
