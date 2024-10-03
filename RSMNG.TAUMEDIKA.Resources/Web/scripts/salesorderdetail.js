@@ -138,7 +138,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let isPriceOverriden = formContext.getAttribute(_self.formModel.fields.ispriceoverridden).getValue();
         let productId = formContext.getAttribute(_self.formModel.fields.productid).getValue();
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
-        
+
         let amount = null;
 
         if (!isPriceOverriden) {
@@ -168,7 +168,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
                         amount = results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
 
-                        let importo = _self.getBaseAmount(amount, quantity);                        
+                        let importo = _self.getBaseAmount(amount, quantity);
                         let scontoTotale = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
                         let totaleImponibile = _self.getTaxableAmount(importo, scontoTotale);
 
@@ -258,15 +258,19 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
             let product = await _self.getProductDetails(productLookup[0].id);
 
-            let codiceIva = [{
-                id: product["CodiceIva.res_vatnumberid"],
+            let codiceIva = product._res_vatnumberid_value == null ? null : [{
+                id: product._res_vatnumberid_value,
                 entityType: 'res_vatnumber',
                 name: product["CodiceIva.res_name"]
             }];
 
+            let rate = product.res_vatnumberid == null ? null : product["CodiceIva.res_rate"];
+
+
+
             formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
-            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(product["CodiceIva.res_rate"]);
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate);
         }
         else {
             formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(null);
@@ -313,14 +317,14 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             var fetchXml = [
                 "?fetchXml=<fetch>",
                 "  <entity name='product'>",
+                "    <attribute name='res_vatnumberid'/>",
                 "    <attribute name='productnumber'/>",
                 "    <filter>",
                 "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
                 "    </filter>",
-                "    <link-entity name='res_vatnumber' from='res_vatnumberid' to='res_vatnumberid' link-type='inner' alias='CodiceIva'>",
+                "    <link-entity name='res_vatnumber' from='res_vatnumberid' to='res_vatnumberid' link-type='outer' alias='CodiceIva'>",
                 "      <attribute name='res_rate'/>",
                 "      <attribute name='res_name'/>",
-                "      <attribute name='res_vatnumberid'/>",
                 "    </link-entity>",
                 "  </entity>",
                 "</fetch>"
