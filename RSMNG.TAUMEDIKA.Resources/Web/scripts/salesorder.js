@@ -185,16 +185,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             submitstatusdescription: "submitstatusdescription",
             ///Importo totale
             totalamount: "totalamount",
-            ///Importo totale (Base)
-            totalamount_base: "totalamount_base",
             ///Totale imponibile
             totalamountlessfreight: "totalamountlessfreight",
-            ///Totale senza spedizione (Base)
-            totalamountlessfreight_base: "totalamountlessfreight_base",
             ///Sconto totale
             totaldiscountamount: "totaldiscountamount",
-            ///Importo totale sconto (Base)
-            totaldiscountamount_base: "totaldiscountamount_base",
             ///Totale righe
             totallineitemamount: "totallineitemamount",
             ///Totale dettagli (Base)
