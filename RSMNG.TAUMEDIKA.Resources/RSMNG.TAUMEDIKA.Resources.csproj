@@ -103,6 +103,8 @@
     <Content Include="DataModel\res_cap.js" />
     <Content Include="DataModel\res_commission.js" />
     <Content Include="DataModel\res_country.js" />
+    <Content Include="DataModel\res_dataintegration.js" />
+    <Content Include="DataModel\res_dataintegrationdetail.js" />
     <Content Include="DataModel\res_document.js" />
     <Content Include="DataModel\res_paymentmethod.js" />
     <Content Include="DataModel\res_paymentschedule.js" />
@@ -118,6 +120,7 @@
     <Content Include="Web\pages\getPostalcode.html" />
     <Content Include="Web\pages\postalcode.html" />
     <Content Include="Web\scripts\account.js" />
+    <Content Include="Web\scripts\salesorderdetail.js" />
     <Content Include="Web\scripts\salesorder_ribbon.js" />
     <Content Include="Web\scripts\quote_ribbon.js" />
     <Content Include="Web\scripts\quote.js" />
