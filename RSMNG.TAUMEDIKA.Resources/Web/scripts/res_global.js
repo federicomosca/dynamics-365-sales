@@ -225,8 +225,8 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     _self.invokeClientActionFromButton = (action, entityId, statecode, statuscode) => {
         const json = {
             EntityId: entityId,
-            StateCode = statecode,
-            StatusCode = statuscode
+            StateCode: statecode,
+            StatusCode: statuscode
         }
 
         var execute_res_ClientAction_Request = {
