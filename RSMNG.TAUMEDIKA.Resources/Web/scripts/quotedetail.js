@@ -379,7 +379,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.setPrice = executionContext => {
+    _self.setPrice = (executionContext, source) => {
         const formContext = executionContext.getFormContext();
 
         const controls = {
@@ -401,25 +401,30 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         const priceperunit = controls.priceperunit.getAttribute().getValue() ?? 0;                                      //prezzo unitario
         const quantity = controls.quantity.getAttribute().getValue() ?? 0;                                              //quantità
-        const baseamount = _self.getBaseAmountValue(priceperunit, quantity);                                            //importo
-        controls.baseamount.getAttribute().setValue(baseamount);
-
         const dp1 = controls.discountpercent1.getAttribute().getValue() ?? 0;                                           //sconto%1
         const dp2 = controls.discountpercent2.getAttribute().getValue() ?? 0;                                           //sconto%2
         const dp3 = controls.discountpercent3.getAttribute().getValue() ?? 0;                                           //sconto%3
+        const tax = controls.tax.getAttribute().getValue() ?? 0;                                                        //totale iva
+
+        const baseamount = _self.getBaseAmountValue(priceperunit, quantity);                                            //importo
+        controls.baseamount.getAttribute().setValue(baseamount);
+
         const manualdiscountamount = _self.getManualDiscountAmount(baseamount, dp1, dp2, dp3, executionContext);        //sconto totale
         controls.manualdiscountamount.getAttribute().setValue(manualdiscountamount);
 
-        const taxableamount = _self.setTaxableAmount(baseamount, manualdiscountamount);                                 //totale imponibile
+        const taxableamount = _self.getTaxableAmount(baseamount, manualdiscountamount);                                 //totale imponibile
         controls.taxableamount.getAttribute().setValue(taxableamount);
 
-        const tax = controls.tax.getAttribute().getValue() ?? 0;                                                        //totale iva
-        const extendedamount = _self.setExtendedAmount(taxableamount, tax);                                             //importo totale
+        const extendedamount = _self.getExtendedAmount(taxableamount, tax);                                             //importo totale
         controls.extendedamount.getAttribute().setValue(extendedamount);
     };
     //---------------------------------------------------
     _self.getBaseAmountValue = (priceperunit, quantity) => (priceperunit && quantity) ? priceperunit * quantity : 0;
     //---------------------------------------------------
+    _self.getTaxableAmount = (baseamount, manualdiscountamount) => (baseamount && manualdiscountamount) ? baseamount - manualdiscountamount : 0;
+    //---------------------------------------------------
+    _self.getExtendedAmount = (taxableamount, tax) => (taxableamount && tax) ? taxableamount + tax : 0;
+    //---------------------------------------------------    
     _self.getManualDiscountAmount = (baseamount, dp1, dp2, dp3, executionContext) => {
         const formContext = executionContext.getFormContext();
         const eventSourceAttribute = executionContext.getEventSource();
@@ -449,10 +454,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         return manualDiscountAmount;
     };
-    //---------------------------------------------------
-    _self.setTaxableAmount = (baseamount, manualdiscountamount) => (baseamount && manualdiscountamount) ? baseamount - manualdiscountamount : 0;
-    //---------------------------------------------------
-    _self.setExtendedAmount = (taxableamount, tax) => (taxableamount && tax) ? taxableamount + tax : 0;
     //---------------------------------------------------
     _self.onChangeIsHomage = executionContext => {
         const formContext = executionContext.getFormContext();
