@@ -131,63 +131,42 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-    _self.onChangeIsPriceOverridden = function (executionContext) {
+    _self.onChangeIsPriceOverridden = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
 
         let isPriceOverriden = formContext.getAttribute(_self.formModel.fields.ispriceoverridden).getValue();
         let productId = formContext.getAttribute(_self.formModel.fields.productid).getValue();
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
-
+        let totIva = formContext.getAttribute(_self.formModel.fields.tax).getValue();
         let amount = null;
 
         if (!isPriceOverriden) {
             if (productId !== null && productId !== undefined) {
 
-                // Recupero importo presente su Voce Listino
-                var fetchData = {
-                    "productid": productId[0].id
-                };
-                var fetchXml = [
-                    "?fetchXml=<fetch>",
-                    "  <entity name='product'>",
-                    "    <filter>",
-                    "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-                    "    </filter>",
-                    "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
-                    "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
-                    "        <attribute name='amount'/>",
-                    "      </link-entity>",
-                    "    </link-entity>",
-                    "  </entity>",
-                    "</fetch>"
-                ].join("");
+                amount = await _self.getProductPriceLevelAmount(RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productId[0].id));
 
-                Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
-                    results => {
+                let importo = _self.getBaseAmount(amount, quantity);
+                let scontoTotale = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
+                let totaleImponibile = _self.getTaxableAmount(importo, scontoTotale);
+                let aliquota = formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
 
-                        amount = results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
-
-                        let importo = _self.getBaseAmount(amount, quantity);
-                        let scontoTotale = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
-                        let totaleImponibile = _self.getTaxableAmount(importo, scontoTotale);
-
-                        formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
-                        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(importo);
-                        formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(totaleImponibile);
-                    },
-                    error => {
-                        console.log(error.message);
-                    }
-                );
+                formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
+                formContext.getAttribute(_self.formModel.fields.baseamount).setValue(importo);
+                formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(totaleImponibile);
+                formContext.getAttribute(_self.formModel.fields.tax).setValue(_self.getTax(totaleImponibile, aliquota));
+                formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(totaleImponibile, totIva));
             }
             else {
                 formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
                 formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
                 formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(0);
+                formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(0, totIva));
             }
         }
     }
+
+
     //---------------------------------------------------
     _self.onChangeQuantity = function (executionContext) {
 
@@ -198,9 +177,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let importo = _self.getBaseAmount(pricePerUnit, quantity);
         let scontoTotale = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
         let totaleImponibile = _self.getTaxableAmount(importo, scontoTotale);
+        let totIva = formContext.getAttribute(_self.formModel.fields.tax).getValue();
 
         formContext.getAttribute(_self.formModel.fields.baseamount).setValue(importo);
         formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(totaleImponibile);
+        formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(totaleImponibile, totIva));
     }
     //---------------------------------------------------
     _self.onChangePricePerUnit = function (executionContext) {
@@ -212,9 +193,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let importo = _self.getBaseAmount(prezzoUnitario, quantity);
         let scontoTotale = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
         let totaleImponibile = _self.getTaxableAmount(importo, scontoTotale);
+        let totIva = formContext.getAttribute(_self.formModel.fields.tax).getValue();
 
         formContext.getAttribute(_self.formModel.fields.baseamount).setValue(importo);
         formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(totaleImponibile);
+        formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(totaleImponibile, totIva));
     };
     //---------------------------------------------------
     _self.getBaseAmount = function (pricePerUnit, quantity) {
@@ -247,16 +230,29 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         return i != null && i != 0 ? i - s : null;
     };
+    //---------------------------------------------------
+    _self.getExtendedAmount = function (imponibile, totIva) {
+
+        let i = imponibile != null ? imponibile : 0;
+        let v = totIva != null ? totIva : 0;
+
+        return (i + v);
+    };
 
     //---------------------------------------------------
     _self.onChangeProduct = async function (executionContext) {
         var formContext = executionContext.getFormContext();
 
         let productLookup = formContext.getAttribute(_self.formModel.fields.productid).getValue();
+        let scontoTot = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
+        let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+        let importo = null;
+        let imponibile;
 
         if (productLookup != null) {
-
-            let product = await _self.getProductDetails(productLookup[0].id);
+            let productId = RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productLookup[0].id);
+            let product = await _self.getProductDetails(productId);
+            let amount = await _self.getProductPriceLevelAmount(productId);
 
             let codiceIva = product._res_vatnumberid_value == null ? null : [{
                 id: product._res_vatnumberid_value,
@@ -269,13 +265,21 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
 
             formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
+            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
+            formContext.getAttribute(_self.formModel.fields.baseamount).setValue(_self.getBaseAmount(amount, quantity));
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate);
         }
         else {
+            imponibile = _self.getTaxableAmount(importo, scontoTot);
+
+            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
             formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(null);
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.baseamount).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(imponibile);
+            //formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(imponibile, totIva));
         }
 
     }
@@ -284,17 +288,20 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         var formContext = executionContext.getFormContext();
 
         let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
-
+        let imponibile = formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
 
         if (vatNumberLookup != null) {
             let queryOptions = "?$select=res_rate";
 
             Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
                 function success(result) {
-                    let imponibile = formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
+
+                    let totIva = _self.getTax(imponibile, result.res_rate);
 
                     formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
-                    formContext.getAttribute(_self.formModel.fields.tax).setValue(_self.getTax(imponibile, result.res_rate));
+                    formContext.getAttribute(_self.formModel.fields.tax).setValue(totIva);
+                    formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(imponibile, totIva));
+
                 },
                 function error(error) {
 
@@ -305,6 +312,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         else {
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
             formContext.getAttribute(_self.formModel.fields.tax).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(imponibile, 0));
         }
     };
     //---------------------------------------------------
@@ -337,6 +345,42 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
                     } else {
                         reject(new Error("No product found"));
                     }
+                },
+                error => {
+                    reject(error);
+                }
+            );
+        });
+    };
+    //---------------------------------------------------
+    _self.getProductPriceLevelAmount = function (productId) {
+        return new Promise(function (resolve, reject) {
+
+            // Recupero importo presente su Voce Listino
+            var fetchData = {
+                "productid": productId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='product'>",
+                "    <filter>",
+                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+                "    </filter>",
+                "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
+                "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
+                "        <attribute name='amount'/>",
+                "      </link-entity>",
+                "    </link-entity>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+            console.log(fetchXml);
+            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
+                results => {
+
+                    let amount = results.entities.length > 0 && results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
+                    resolve(amount);
+
                 },
                 error => {
                     reject(error);
