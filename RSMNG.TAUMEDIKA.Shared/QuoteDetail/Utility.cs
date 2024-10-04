@@ -18,8 +18,6 @@ namespace RSMNG.TAUMEDIKA.Shared.QuoteDetail
                 DataModel.quotedetail.productid,
                 DataModel.quotedetail.quantity,
                 DataModel.quotedetail.uomid,
-                DataModel.quotedetail.res_vatnumberid,
-                DataModel.quotedetail.res_vatrate
             };
     }
 }
