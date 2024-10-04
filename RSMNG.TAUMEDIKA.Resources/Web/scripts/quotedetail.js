@@ -270,6 +270,115 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         }
     };
     //---------------------------------------------------
+    _self.getProductDetails = function (productId) {
+        return new Promise(function (resolve, reject) {
+
+            var fetchData = {
+                "productid": productId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='product'>",
+                "    <attribute name='res_vatnumberid'/>",
+                "    <attribute name='productnumber'/>",
+                "    <filter>",
+                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+                "    </filter>",
+                "    <link-entity name='res_vatnumber' from='res_vatnumberid' to='res_vatnumberid' link-type='outer' alias='CodiceIva'>",
+                "      <attribute name='res_rate'/>",
+                "      <attribute name='res_name'/>",
+                "    </link-entity>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
+                results => {
+                    if (results.entities.length > 0) {
+                        resolve(results.entities[0]);
+                    } else {
+                        reject(new Error("No product found"));
+                    }
+                },
+                error => {
+                    reject(error);
+                }
+            );
+        });
+    };
+    //---------------------------------------------------
+    _self.onChangeProductId = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const productIdControl = formContext.getControl(_self.formModel.fields.productid);
+        const productLookup = productIdControl.getAttribute().getValue() ?? null;
+
+        const fieldsToReset = [
+            _self.formModel.fields.priceperunit,
+            _self.formModel.fields.quantity,
+            _self.formModel.fields.baseamount,
+            _self.formModel.fields.res_discountpercent1,
+            _self.formModel.fields.res_discountpercent2,
+            _self.formModel.fields.res_discountpercent3,
+            _self.formModel.fields.manualdiscountamount,
+            _self.formModel.fields.extendedamount,
+            _self.formModel.fields.res_taxableamount
+        ];
+
+        if (!productLookup || productLookup.length === 0) {
+            //all'onChange di productid, vengono azzerati tutti i campi connessi
+            formContext.getControl(_self.formModel.fields.res_itemcode).getAttribute().setValue(null);
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).getAttribute().setValue(null);
+            formContext.getControl(_self.formModel.fields.res_vatrate).getAttribute().setValue(null);
+
+            fieldsToReset.forEach(field => {
+                const control = formContext.getControl(field);
+                control.getAttribute().setValue(0);
+            });
+        } else {
+            const productId = productLookup[0].id.replace(/[{}]/g, "");
+
+            let product = await _self.getProductDetails(productId);
+
+            let codiceIva = product._res_vatnumberid_value == null ? null : [{
+                id: product._res_vatnumberid_value,
+                entityType: 'res_vatnumber',
+                name: product["CodiceIva.res_name"]
+            }];
+
+            let rate = product.res_vatnumberid == null ? null : product["CodiceIva.res_rate"];
+
+            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate);
+        }
+
+    };
+    //---------------------------------------------------
+    _self.onChangeVatNumber = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
+
+        if (vatNumberLookup != null) {
+            let queryOptions = "?$select=res_rate";
+
+            Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
+                function success(result) {
+
+                    formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
+                },
+                function error(error) {
+
+                    console.log(error);
+                }
+            );
+        }
+        else {
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+        }
+    };
+    //---------------------------------------------------
     _self.setPrice = executionContext => {
         const formContext = executionContext.getFormContext();
 
@@ -300,89 +409,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         const manualdiscountamount = _self.getManualDiscountAmount(baseamount, dp1, dp2, dp3, executionContext);     //sconto totale
         controls.manualdiscountamount.getAttribute().setValue(manualdiscountamount);
 
+        //da migliorare la modularità di questi metodi
         _self.setTaxableAmount(executionContext);
         _self.setExtendedAmount(executionContext);
-    }
-    //---------------------------------------------------
-    _self.getProductDetails = function (productId) {
-        return new Promise(function (resolve, reject) {
-
-            var fetchData = {
-                "productid": productId
-            };
-            var fetchXml = [
-                "?fetchXml=<fetch>",
-                "  <entity name='product'>",
-                "    <attribute name='productnumber'/>",
-                "    <filter>",
-                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-                "    </filter>",
-                "    <link-entity name='res_vatnumber' from='res_vatnumberid' to='res_vatnumberid' link-type='inner' alias='CodiceIva'>",
-                "      <attribute name='res_rate'/>",
-                "      <attribute name='res_name'/>",
-                "      <attribute name='res_vatnumberid'/>",
-                "    </link-entity>",
-                "  </entity>",
-                "</fetch>"
-            ].join("");
-
-            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
-                results => {
-                    if (results.entities.length > 0) {
-                        resolve(results.entities[0]);
-                    } else {
-                        reject(new Error("No product found"));
-                    }
-                },
-                error => {
-                    reject(error);
-                }
-            );
-        });
-    };
-    //---------------------------------------------------
-    _self.onChangeProductId = async executionContext => {
-        const formContext = executionContext.getFormContext();
-
-        const productIdControl = formContext.getControl(_self.formModel.fields.productid);
-        const productLookup = productIdControl.getAttribute().getValue() ?? null;
-
-        const fields = [
-            _self.formModel.fields.priceperunit,
-            _self.formModel.fields.quantity,
-            _self.formModel.fields.baseamount,
-            _self.formModel.fields.res_discountpercent1,
-            _self.formModel.fields.res_discountpercent2,
-            _self.formModel.fields.res_discountpercent3,
-            _self.formModel.fields.manualdiscountamount,
-            _self.formModel.fields.extendedamount,
-            _self.formModel.fields.res_taxableamount
-        ];
-
-        if (!productLookup) {
-            //all'onChange di productid, vengono azzerati tutti i campi connessi
-            formContext.getControl(_self.formModel.fields.res_itemcode).getAttribute().setValue(null);
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).getAttribute().setValue(null);
-            formContext.getControl(_self.formModel.fields.res_vatrate).getAttribute().setValue(null);
-
-            fields.forEach(field => {
-                const control = formContext.getControl(field);
-                control.getAttribute().setValue(0);
-            });
-        } else {
-            let product = await _self.getProductDetails(productLookup[0].id);
-
-            let codiceIva = [{
-                id: product["CodiceIva.res_vatnumberid"],
-                entityType: 'res_vatnumber',
-                name: product["CodiceIva.res_name"]
-            }];
-
-            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
-            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
-            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(product["CodiceIva.res_rate"]);
-        }
-
     };
     //---------------------------------------------------
     _self.getBaseAmountValue = (priceperunit, quantity) => (priceperunit && quantity) ? priceperunit * quantity : 0;
@@ -444,28 +473,25 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         extendedAmountControl.getAttribute().setValue(extendedAmount);
     };
     //---------------------------------------------------
-    _self.onChangeVatNumber = function (executionContext) {
-        var formContext = executionContext.getFormContext();
+    _self.onChangeIsHomage = executionContext => {
+        const formContext = executionContext.getFormContext();
 
-        let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
+        const isHomageControl = formContext.getControl(_self.formModel.fields.res_ishomage);
+        const isHomage = isHomageControl.getAttribute().getValue() ?? null;
 
-        if (vatNumberLookup != null) {
-            let queryOptions = "?$select=res_rate";
+        //sconto%1 not editable e valorizzato a 100
+        const dp1Control = formContext.getControl(_self.formModel.fields.res_discountpercent1);
+        dp1Control.getAttribute().setValue(isHomage ? 100 : 0);
+        dp1Control.setDisabled(isHomage);
 
-            Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
-                function success(result) {
+        //sconto%2 e sconto%3 not editable e valorizzati a 0
+        const dp2Control = formContext.getControl(_self.formModel.fields.res_discountpercent2);
+        const dp3Control = formContext.getControl(_self.formModel.fields.res_discountpercent3);
 
-                    formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
-                },
-                function error(error) {
-
-                    console.log(error);
-                }
-            );
-        }
-        else {
-            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
-        }
+        dp2Control.getAttribute().setValue(0);
+        dp3Control.getAttribute().setValue(0);
+        dp2Control.setDisabled(isHomage);
+        dp3Control.setDisabled(isHomage);
     };
     //---------------------------------------------------
     /*
@@ -523,6 +549,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProductId);
         formContext.getAttribute(_self.formModel.fields.res_taxableamount).addOnChange(_self.setExtendedAmount);
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
+        formContext.getAttribute(_self.formModel.fields.res_ishomage).addOnChange(_self.onChangeIsHomage);
 
         //Init function
 
