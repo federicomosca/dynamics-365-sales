@@ -29,7 +29,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
-            //VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
+            VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
             #endregion
 
             #region Valorizzo il campo Codice Articolo
