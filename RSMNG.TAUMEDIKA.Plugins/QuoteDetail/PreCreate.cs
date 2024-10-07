@@ -23,7 +23,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
-
+            Guid targetId = target.Id;
 
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
