@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net;
 using Microsoft.Crm.Sdk.Messages;
 using RSMNG.TAUMEDIKA.DataModel;
+using System.Runtime.Serialization;
 
 namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
 
@@ -40,5 +41,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
             
         //}
     }
-    
+    namespace Model
+    {
+        [DataContract]
+        public class SalesOrderStatusRequest : RSMNG.TAUMEDIKA.Model.BasicOutput
+        {
+            [DataMember] public string EntityId { get; set; }
+            [DataMember] public int? StateCode { get; set; }
+            [DataMember] public int? StatusCode { get; set; }
+        }
+    }
+
 }

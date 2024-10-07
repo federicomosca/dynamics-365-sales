@@ -253,7 +253,6 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             }
         ).then(responseBody => {
             const result = JSON.parse(responseBody.jsonDataOutput);
-            console.log("Raw result:", result);
 
             if (result === 0) {
                 console.log("Client action executed successfully (returned 0)");

@@ -16,6 +16,7 @@ using System.Text.Json.Serialization;
 using RSMNG.TAUMEDIKA.Shared.Quote.Model;
 using Microsoft.Xrm.Sdk.Query;
 using System.Security.Cryptography.Xml;
+using RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder.Model;
 
 namespace RSMNG.TAUMEDIKA.ClientAction
 {
@@ -68,6 +69,12 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         #endregion
 
                         break;
+                    case "UPDATE_SALESORDER_STATUS":
+                        #region Aggiornamento status dell'ordine
+                        PluginRegion = "Aggiornamento status dell'ordine";
+                        jsonDataOutput = updateSalesOrderCode(serviceAdmin, tracingService, jsonDataInput);
+                        #endregion
+                        break;
                     case "COPYPRICELEVEL":
                         jsonDataOutput = CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
                         break;
@@ -111,6 +118,42 @@ namespace RSMNG.TAUMEDIKA.ClientAction
 
             return result;
 
+        }
+        public static string updateSalesOrderCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
+        {
+            string result = string.Empty;
+            BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
+
+            trace.Trace("update Sales Order Code");
+            try
+            {
+                SalesOrderStatusRequest salesORderRequest = Controller.Deserialize<SalesOrderStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(SalesOrderStatusRequest));
+
+                string entityId = salesORderRequest.EntityId ?? string.Empty;
+                int? statecode = salesORderRequest.StateCode ?? null;
+                int? statuscode = salesORderRequest.StatusCode ?? null;
+                
+                trace.Trace(entityId);
+                trace.Trace("statecode: " + statecode.ToString());
+                trace.Trace("statuscode: " + statuscode.ToString());
+
+
+                if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
+                trace.Trace("dentro if");
+                Helper.updateEntityStatusCode(service, trace, salesorder.logicalName, entityId, (int)statecode, (int)statuscode);
+            }
+            catch (Exception ex)
+            {
+                basicOutput.result = -1;
+                basicOutput.message = ex.Message;
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+            finally
+            {
+                result = Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
+            }
+
+            return result;
         }
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
