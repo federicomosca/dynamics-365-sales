@@ -154,19 +154,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "NOT_APPROVED":
                     console.log(`case: ${status}`);
                     console.log(`statuscode: ${quoteStatus}`);
+
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientActionFromButton(actionName, quoteId, statecode = status == "APPROVED" ? 1 : 3, statuscode = status == "APPROVED" ? 3 : 5);
 
-                    // Attendiamo un breve momento per dare il tempo a invokeClientActionFromButton di completare
-                    // e poi eseguiamo il refresh indipendentemente dal risultato
-                    setTimeout(() => {
-                        RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon()
-                            .then(() => {
-                                console.log("Form and ribbon refreshed successfully");
-                            })
-                            .catch(error => {
-                                console.error("Error refreshing form and ribbon:", error);
-                            });
-                    }, 1000);  // Attende 1 secondo prima di eseguire il refresh
+                    RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon()
                     break;
             }
         }
