@@ -32,16 +32,16 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     var _self = this;
 
 
-    _self.statuscodeValues = {
-        Annullato_StateAnnullato: 4,
-        Approvato_StateAttivo: 100005,
-        Bozza_StateAttivo: 1,
-        Completato_StateEvaso: 100001,
-        Fatturato_StateFatturato: 100003,
-        Inapprovazione_StateAttivo: 2,
-        Incorso_StateInviato: 3,
-        Inlavorazione_StateAttivo: 100006,
-        Nonapprovato_StateAnnullato: 100004,
+    _self.STATUS = {
+        Annullato: 4,
+        Approvato: 100005,
+        Bozza: 1,
+        Completato: 100001,
+        Fatturato: 100003,
+        Inapprovazione: 2,
+        Incorso: 3,
+        Inlavorazione: 100006,
+        Nonapprovato: 100004,
         Parziale_StateEvaso: 100002,
         Spedito_StateAttivo: 100007
     }
@@ -71,37 +71,37 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             let currentStatus = formContext.getAttribute("statuscode").getValue();
             console.log(formContext);
             console.log(`Current Status: ${currentStatus}`);
-            console.log(status);
+           
             let isVisible = true;
 
             if (_self.Agent === undefined) {
                 _self.Agent = await _self.getAgent();
             }
-            //switch (status) {
+            switch (status) {
 
-            //    case "APPROVAL": //in approvazione
-            //        if (currentStatus === _self.STATUS.BOZZA && _self.Agent === true) { visible = true; } break;
+                case "APPROVAL": //in approvazione
+                    if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) { isVisible = true; } break;
 
-            //    case "APPROVED": //approvata
-            //        if (currentStatus === _self.STATUS.BOZZA && (_self.Agent === false || _self.Agent === null)) { visible = true; }
-            //        if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
+                case "APPROVED": //approvata
+                    if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
+                    if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
 
-            //    case "NOT_APPROVED": //non approvata
-            //        if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (_self.Agent === false || _self.Agent === null)) { visible = true; } break;
+                case "NOT_APPROVED": //non approvata
+                    if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
 
-            //    case "CREATE_ORDER": //acquisisci offerta (acquisita)
-            //        //da qui invocare il metodo getCustomer() per effettuare verifica sui dati
-            //        //e determinare la visiblità del button
-            //        if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
+                //case "CREATE_ORDER": //acquisisci offerta (acquisita)
+                //    //da qui invocare il metodo getCustomer() per effettuare verifica sui dati
+                //    //e determinare la visiblità del button
+                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
 
-            //    case "CLOSE_QUOTE": //chiudi offerta (persa)
-            //        if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
+                //case "CLOSE_QUOTE": //chiudi offerta (persa)
+                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
 
-            //    case "REVISE": //aggiorna
-            //        if (currentStatus === _self.STATUS.IN_APPROVAZIONE) { visible = true; }
-            //        if (currentStatus === _self.STATUS.APPROVATA) { visible = true; } break;
-            //}
-            return isVisible;
+                //case "REVISE": //aggiorna
+                //    if (currentStatus === _self.STATUS.Inapprovazione) { isVisible = true; }
+                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
+            }
+            return isVisible = true;
         },
         execute: async function (formContext, status) {
 

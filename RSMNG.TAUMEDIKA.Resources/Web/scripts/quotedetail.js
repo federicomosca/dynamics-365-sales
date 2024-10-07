@@ -269,6 +269,212 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         }
     };
+    _self.getBaseAmount = function (pricePerUnit, quantity) {
+
+        let q = quantity != null ? quantity : 0;
+        let p = pricePerUnit != null ? pricePerUnit : 0;
+        let result = p * q;
+
+        return result;
+
+    };
+    //---------------------------------------------------
+    _self.getTax = function (imponibile, aliquota) {
+        let i = imponibile;
+        let a = aliquota;
+        let tax = null;
+
+        if (i != null && a != null && i >= 0) {
+
+            tax = (i * a) / 100;
+        }
+
+        return tax;
+    };
+    //---------------------------------------------------
+    _self.getTaxableAmount = function (importo, scontoTot) {
+
+        let i = importo;
+        let s = scontoTot != null ? scontoTot : 0;
+
+        return i != null && i != 0 ? i - s : null;
+    };
+    //---------------------------------------------------
+    _self.getExtendedAmount = function (imponibile, totIva) {
+
+        let i = imponibile != null ? imponibile : 0;
+        let v = totIva != null ? totIva : 0;
+
+        return (i + v);
+    };
+    //---------------------------------------------------
+    _self.getManualDiscountAmount = function (importo, totPercentoSconti) {
+
+        return importo * (totPercentoSconti / 100);
+    };
+    //---------------------------------------------------
+    _self.getTotalDiscountPercentage = function (executionContext) {
+        const formContext = executionContext.getFormContext();
+
+        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercent1).getValue() ?? 0;
+        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercent2).getValue() ?? 0;
+        let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercent3).getValue() ?? 0;
+
+        return (disc1 + disc2 + disc3);
+    };
+    //---------------------------------------------------
+    _self.onChangeIsPriceOverridden = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+
+        let isPriceOverriden = formContext.getAttribute(_self.formModel.fields.ispriceoverridden).getValue();
+        let productId = formContext.getAttribute(_self.formModel.fields.productid).getValue();
+        let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+
+        let amount = null;
+
+        if (!isPriceOverriden) {
+            if (productId !== null && productId !== undefined) {
+
+                amount = await _self.getProductPriceLevelAmount(RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productId[0].id));
+
+                let importo = _self.getBaseAmount(amount, quantity);
+                formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
+
+
+                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount });
+            }
+            else {
+                formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
+
+                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount });
+            }
+        }
+    };
+    //---------------------------------------------------
+    _self.onChangeQuantity = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+        let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+
+        _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: null });
+    };
+    //---------------------------------------------------
+    _self.onChangePricePerUnit = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+        let pricePerUnit = formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
+
+        _self.setBaseAmount(executionContext, { quantita: null, prezzoUnitario: pricePerUnit });
+    };
+    //---------------------------------------------------
+    _self.onChangeProduct = async function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let productLookup = formContext.getAttribute(_self.formModel.fields.productid).getValue();
+        let scontoTot = formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
+        let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+        let importo = null;
+
+        if (productLookup != null) {
+            let productId = RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productLookup[0].id);
+            let product = await _self.getProductDetails(productId);
+            let amount = await _self.getProductPriceLevelAmount(productId);
+
+            let codiceIva = product._res_vatnumberid_value == null ? null : [{
+                id: product._res_vatnumberid_value,
+                entityType: 'res_vatnumber',
+                name: product["CodiceIva.res_name"]
+            }];
+
+            let rate = product._res_vatnumberid_value == null ? null : product["CodiceIva.res_rate"];
+
+
+            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
+            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
+
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva); // codice Iva
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate); // aliquota
+
+            _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount, aliquota: rate });
+
+
+        }
+        else {
+            imponibile = _self.getTaxableAmount(importo, scontoTot);
+
+            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.baseamount).setValue(null);
+
+            _self.setManualDiscountAmount(executionContext, { importo: null, aliquota: null });
+        }
+
+    };
+    //---------------------------------------------------
+    _self.onChangeVatNumber = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
+        let imponibileTot = formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
+
+        if (vatNumberLookup != null) {
+            let queryOptions = "?$select=res_rate";
+
+            Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
+                function success(result) {
+
+                    formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);  // aliquota
+                    let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: result.res_rate }); // totale iva
+                    _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva }); // importo totale
+
+                },
+                function error(error) {
+
+                    console.log(error);
+                }
+            );
+        }
+        else {
+            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.tax).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(_self.getExtendedAmount(imponibileTot, 0));
+        }
+    };
+    //---------------------------------------------------
+    _self.onChangeIsHomage = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        let isHomage = formContext.getAttribute(_self.formModel.fields.res_ishomage).getValue();
+
+        //sconto%1 not editable e valorizzato a 100
+        let disc1 = isHomage ? 100 : 0;
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).setValue(disc1);
+        formContext.getControl(_self.formModel.fields.res_discountpercent1).setDisabled(isHomage);
+
+        //sconto%2 e sconto%3 not editable e valorizzati a 0
+        formContext.getControl(_self.formModel.fields.res_discountpercent2).setDisabled(isHomage);
+        formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(isHomage);
+
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent2).setValue(0);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent3).setValue(0);
+
+        // ricalcolo Tot Imponibile -> Totale Iva-> Importo Totale
+        let importo = formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
+        let scontoTot = _self.getManualDiscountAmount(importo, disc1);
+        let imponibile = _self.getTaxableAmount(importo, scontoTot);
+        let aliquota = formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
+        let totIva = _self.getTax(imponibile, aliquota);
+        let importoTot = _self.getExtendedAmount(imponibile, totIva);
+
+        formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(scontoTot);
+        formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(imponibile);
+        formContext.getAttribute(_self.formModel.fields.tax).setValue(totIva);
+        formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(importoTot);
+
+    };
     //---------------------------------------------------
     _self.getProductDetails = function (productId) {
         return new Promise(function (resolve, reject) {
@@ -307,178 +513,153 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         });
     };
     //---------------------------------------------------
-    _self.onChangeProductId = async executionContext => {
-        const formContext = executionContext.getFormContext();
+    _self.getProductPriceLevelAmount = function (productId) {
+        return new Promise(function (resolve, reject) {
 
-        const productIdControl = formContext.getControl(_self.formModel.fields.productid);
-        const productLookup = productIdControl.getAttribute().getValue() ?? null;
+            // Recupero importo presente su Voce Listino
+            var fetchData = {
+                "productid": productId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='product'>",
+                "    <filter>",
+                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+                "    </filter>",
+                "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
+                "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
+                "        <attribute name='amount'/>",
+                "        <filter>",
+                "          <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+                "        </filter>",
+                "      </link-entity>",
+                "    </link-entity>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+            console.log(fetchXml);
+            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
+                results => {
 
-        const fieldsToReset = [
-            _self.formModel.fields.priceperunit,
-            _self.formModel.fields.quantity,
-            _self.formModel.fields.baseamount,
-            _self.formModel.fields.res_discountpercent1,
-            _self.formModel.fields.res_discountpercent2,
-            _self.formModel.fields.res_discountpercent3,
-            _self.formModel.fields.manualdiscountamount,
-            _self.formModel.fields.extendedamount,
-            _self.formModel.fields.res_taxableamount
-        ];
+                    let amount = results.entities.length > 0 && results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
+                    resolve(amount);
 
-        if (!productLookup || productLookup.length === 0) {
-            //all'onChange di productid, vengono azzerati tutti i campi connessi
-            formContext.getControl(_self.formModel.fields.res_itemcode).getAttribute().setValue(null);
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).getAttribute().setValue(null);
-            formContext.getControl(_self.formModel.fields.res_vatrate).getAttribute().setValue(null);
-
-            fieldsToReset.forEach(field => {
-                const control = formContext.getControl(field);
-                control.getAttribute().setValue(0);
-            });
-        } else {
-            const productId = productLookup[0].id.replace(/[{}]/g, "");
-
-            let product = await _self.getProductDetails(productId);
-
-            let codiceIva = product._res_vatnumberid_value == null ? null : [{
-                id: product._res_vatnumberid_value,
-                entityType: 'res_vatnumber',
-                name: product["CodiceIva.res_name"]
-            }];
-
-            let rate = product.res_vatnumberid == null ? null : product["CodiceIva.res_rate"];
-
-            formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
-            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva);
-            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate);
-        }
-
-    };
-    //---------------------------------------------------
-    _self.onChangeVatNumber = function (executionContext) {
-        var formContext = executionContext.getFormContext();
-
-        let vatNumberLookup = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue();
-
-        if (vatNumberLookup != null) {
-            let queryOptions = "?$select=res_rate";
-
-            Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberLookup[0].id, queryOptions).then(
-                function success(result) {
-
-                    formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(result.res_rate);
                 },
-                function error(error) {
-
-                    console.log(error);
+                error => {
+                    reject(error);
                 }
             );
-        }
-        else {
-            formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
-        }
+        });
     };
     //---------------------------------------------------
-    _self.setPrice = executionContext => {
+    _self.onChageDiscountPercent1 = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
-        const controls = {
-            priceperunit: formContext.getControl(_self.formModel.fields.priceperunit),
-            quantity: formContext.getControl(_self.formModel.fields.quantity),
-            baseamount: formContext.getControl(_self.formModel.fields.baseamount),
-            discountpercent1: formContext.getControl(_self.formModel.fields.res_discountpercent1),
-            discountpercent2: formContext.getControl(_self.formModel.fields.res_discountpercent2),
-            discountpercent3: formContext.getControl(_self.formModel.fields.res_discountpercent3),
-            manualdiscountamount: formContext.getControl(_self.formModel.fields.manualdiscountamount),
-            extendedamount: formContext.getControl(_self.formModel.fields.extendedamount),
-            taxableamount: formContext.getControl(_self.formModel.fields.res_taxableamount),
-            itemcode: formContext.getControl(_self.formModel.fields.res_itemcode),
-            vatnumberid: formContext.getControl(_self.formModel.fields.res_vatnumberid),
-            vatrate: formContext.getControl(_self.formModel.fields.res_vatrate),
-            productid: formContext.getControl(_self.formModel.fields.productid),
-            tax: formContext.getControl(_self.formModel.fields.tax)
-        };
+        _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
+    };
+    _self.onChageDiscountPercent2 = function (executionContext) {
+        const formContext = executionContext.getFormContext();
 
-        const priceperunit = controls.priceperunit.getAttribute().getValue() ?? 0;                                      //prezzo unitario
-        const quantity = controls.quantity.getAttribute().getValue() ?? 0;                                              //quantità
-        const baseamount = _self.getBaseAmountValue(priceperunit, quantity);                                            //importo
-        controls.baseamount.getAttribute().setValue(baseamount);
+        _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
+    };
+    _self.onChageDiscountPercent3 = function (executionContext) {
+        const formContext = executionContext.getFormContext();
 
-        const dp1 = controls.discountpercent1.getAttribute().getValue() ?? 0;                                           //sconto%1
-        const dp2 = controls.discountpercent2.getAttribute().getValue() ?? 0;                                           //sconto%2
-        const dp3 = controls.discountpercent3.getAttribute().getValue() ?? 0;                                           //sconto%3
-        const manualdiscountamount = _self.getManualDiscountAmount(baseamount, dp1, dp2, dp3, executionContext);        //sconto totale
-        controls.manualdiscountamount.getAttribute().setValue(manualdiscountamount);
-
-        const taxableamount = _self.setTaxableAmount(baseamount, manualdiscountamount);                                 //totale imponibile
-        controls.taxableamount.getAttribute().setValue(taxableamount);
-
-        const tax = controls.tax.getAttribute().getValue() ?? 0;                                                        //totale iva
-        const extendedamount = _self.setExtendedAmount(taxableamount, tax);                                             //importo totale
-        controls.extendedamount.getAttribute().setValue(extendedamount);
+        _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
     //---------------------------------------------------
-    _self.getBaseAmountValue = (priceperunit, quantity) => (priceperunit && quantity) ? priceperunit * quantity : 0;
-    //---------------------------------------------------
-    _self.getManualDiscountAmount = (baseamount, dp1, dp2, dp3, executionContext) => {
+    _self.setManualDiscountAmount = (executionContext, data) => {
         const formContext = executionContext.getFormContext();
-        const eventSourceAttribute = executionContext.getEventSource();
-        const eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
-        let manualDiscountAmount;
+        let eventSourceAttribute = executionContext.getEventSource();
+        let eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
+        let manualDiscountAmount = null;
 
-        const notificationFields = [
-            _self.formModel.fields.res_discountpercent1,
-            _self.formModel.fields.res_discountpercent2,
-            _self.formModel.fields.res_discountpercent3];
-        const totalDiscountPercentage = dp1 + dp2 + dp3;
+        let baseAmount = data.importo != undefined ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
+        let vatRate = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
+
+        let totalDiscountPercentage = _self.getTotalDiscountPercentage(executionContext);
 
         if (totalDiscountPercentage <= 100) {
 
-            notificationFields.forEach(field => {
-                const control = formContext.getControl(field);
-                control.clearNotification();
-            });
+            formContext.getControl(_self.formModel.fields.res_discountpercent1).clearNotification();
+            formContext.getControl(_self.formModel.fields.res_discountpercent2).clearNotification();
+            formContext.getControl(_self.formModel.fields.res_discountpercent3).clearNotification();
 
-            manualDiscountAmount = baseamount * (totalDiscountPercentage / 100);
+            formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, totalDiscountPercentage));
+
+            let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: manualDiscountAmount });
+            let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: vatRate });
+            _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
 
         } else {
-
             eventSourceControl.setNotification("Lo sconto percentuale complessivo non pu\u00f2 essere maggiore di 100.");
-            manualDiscountAmount = 0;
         }
-
         return manualDiscountAmount;
     };
-    //---------------------------------------------------
-    _self.setTaxableAmount = (baseamount, manualdiscountamount) => (baseamount && manualdiscountamount) ? baseamount - manualdiscountamount : 0;
-    //---------------------------------------------------
-    _self.setExtendedAmount = (taxableamount, tax) => (taxableamount && tax) ? taxableamount + tax : 0;
-    //---------------------------------------------------
-    _self.onChangeIsHomage = executionContext => {
+
+    //---------Totale-Imponibile------------------------
+    _self.setTaxableAmount = (executionContext, data) => {
         const formContext = executionContext.getFormContext();
 
-        const isHomageControl = formContext.getControl(_self.formModel.fields.res_ishomage);
-        const isHomage = isHomageControl.getAttribute().getValue() ?? null;
+        let baseAmount = data.importo != null ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
+        let manualDiscountAmount = data.scontoTot != null ? data.scontoTot : formContext.getAttribute(_self.formModel.fields.manualdiscountamount).getValue();
 
-        //sconto%1 not editable e valorizzato a 100
-        const dp1Control = formContext.getControl(_self.formModel.fields.res_discountpercent1);
-        dp1Control.getAttribute().setValue(isHomage ? 100 : 0);
-        dp1Control.setDisabled(isHomage);
+        let taxableAmount = _self.getTaxableAmount(baseAmount, manualDiscountAmount);
 
-        //sconto%2 e sconto%3 not editable e valorizzati a 0
-        const dp2Control = formContext.getControl(_self.formModel.fields.res_discountpercent2);
-        const dp3Control = formContext.getControl(_self.formModel.fields.res_discountpercent3);
+        formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(taxableAmount);
 
-        dp2Control.getAttribute().setValue(0);
-        dp3Control.getAttribute().setValue(0);
-        dp2Control.setDisabled(isHomage);
-        dp3Control.setDisabled(isHomage);
+        return taxableAmount;
+    };
+
+    //---------Totale Iva-------------------------------
+    _self.setTax = (executionContext, data) => {
+        const formContext = executionContext.getFormContext();
+
+        let imponibile = data.imponibile != undefined ? data.imponibile : formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
+        let aliquota = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
+
+        let totaleIva = _self.getTax(imponibile, aliquota);
+
+        formContext.getAttribute(_self.formModel.fields.tax).setValue(totaleIva);
+
+        return totaleIva;
+    };
+
+    //---------Importo Totale---------------------------
+    _self.setExtendedAmount = (executionContext, data) => {
+        const formContext = executionContext.getFormContext();
+
+        let imponibile = data.imponibile != null ? data.imponibile : formContext.getAttribute(_self.formModel.fields.res_taxableamount).getValue();
+        let totaleIva = data.totaleIva != null ? data.totaleIva : formContext.getAttribute(_self.formModel.fields.tax).getValue();
+
+        let importoTotale = _self.getExtendedAmount(imponibile, totaleIva);
+
+        formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(importoTotale);
+    };
+
+    //---------Importo----------------------------------
+    _self.setBaseAmount = (executionContext, data) => {
+        var formContext = executionContext.getFormContext();
+
+        let quantita = data.quantita != null ? data.quantita : formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+        let prezzoUnitario = data.prezzoUnitario != null ? data.prezzoUnitario : formContext.getAttribute(_self.formModel.fields.priceperunit).getValue();
+        let baseAmount = _self.getBaseAmount(prezzoUnitario, quantita);
+
+        formContext.getAttribute(_self.formModel.fields.baseamount).setValue(baseAmount);
+
+        // Ricalcolo sconto totale
+        let totalDiscountPercentage = _self.getTotalDiscountPercentage(executionContext);
+        let scontoTotale = _self.getManualDiscountAmount(baseAmount, totalDiscountPercentage);
+        formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, totalDiscountPercentage));
+
+        let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: scontoTotale });
+        let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: data.aliquota != undefined ? data.aliquota : null });
+        _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
+
+
+        return baseAmount;
     };
     //---------------------------------------------------
-    /*
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
-    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
-    */
     _self.onSaveForm = function (executionContext) {
         if (executionContext.getEventArgs().getSaveMode() == 70) {
             executionContext.getEventArgs().preventDefault();
@@ -502,9 +683,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         _self.checkPotentialCustomerData(executionContext);
     };
-    /* 
-    Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
-    */
+
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
@@ -516,20 +695,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
 
-        const setPriceFields = [
-            _self.formModel.fields.priceperunit,
-            _self.formModel.fields.quantity,
-            _self.formModel.fields.res_discountpercent1,
-            _self.formModel.fields.res_discountpercent2,
-            _self.formModel.fields.res_discountpercent3,
-            _self.formModel.fields.res_taxableamount
-        ];
-        setPriceFields.forEach(field => {
-            formContext.getAttribute(field).addOnChange(_self.setPrice);
-        });
-
-        formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProductId);
+        formContext.getAttribute(_self.formModel.fields.ispriceoverridden).addOnChange(_self.onChangeIsPriceOverridden);
+        formContext.getAttribute(_self.formModel.fields.quantity).addOnChange(_self.onChangeQuantity);
+        formContext.getAttribute(_self.formModel.fields.priceperunit).addOnChange(_self.onChangePricePerUnit);
+        formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProduct);
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
+
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).addOnChange(_self.onChageDiscountPercent1);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent2).addOnChange(_self.onChageDiscountPercent2);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent3).addOnChange(_self.onChageDiscountPercent3);
         formContext.getAttribute(_self.formModel.fields.res_ishomage).addOnChange(_self.onChangeIsHomage);
 
         //Init function
