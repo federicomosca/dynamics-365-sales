@@ -30,8 +30,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 (function () {
 
     var _self = this;
-
-
+    
     _self.STATUS = {
         Annullato: 4,
         Approvato: 100005,
@@ -45,7 +44,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         Parziale_StateEvaso: 100002,
         Spedito_StateAttivo: 100007
     }
-
+    
 
     _self.Agent = undefined;
 
@@ -68,19 +67,21 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
-            let currentStatus = formContext.getAttribute("statuscode").getValue();
-            console.log(formContext);
-            console.log(`Current Status: ${currentStatus}`);
-           
-            let isVisible = true;
+            let currentStatus = formContext.getAttribute("statuscode").getValue();           
+            let isVisible = false;
 
             if (_self.Agent === undefined) {
                 _self.Agent = await _self.getAgent();
             }
             switch (status) {
 
-                case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) { isVisible = true; } break;
+                case "APPROVAL": //in approvazione 
+                    if (formContext.ui.getFormType() != 1) {
+                        if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) {
+                            isVisible = true;
+                        }
+                    }                    
+                    break;
 
                 case "APPROVED": //approvata
                     if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
@@ -89,70 +90,110 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                 case "NOT_APPROVED": //non approvata
                     if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
 
-                //case "CREATE_ORDER": //acquisisci offerta (acquisita)
-                //    //da qui invocare il metodo getCustomer() per effettuare verifica sui dati
-                //    //e determinare la visiblità del button
-                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
+                case "IN_LAVORAZIONE":
+                    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; }
+                    break;
+                case "SPEDITO":
+                    if (currentStatus === _self.STATUS.Approvato || currentStatus === _self.STATUS.Inlavorazione) { isVisible = true; }
 
-                //case "CLOSE_QUOTE": //chiudi offerta (persa)
-                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
-
-                //case "REVISE": //aggiorna
-                //    if (currentStatus === _self.STATUS.Inapprovazione) { isVisible = true; }
-                //    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; } break;
+                    break;
             }
-            return isVisible = true;
+            return isVisible;
         },
         execute: async function (formContext, status) {
 
             await import('../res_scripts/res_global.js');
 
             const salesOrderId = formContext.data.entity.getId().replace(/[{}]/g, "");
-            console.log(`SalesOrder ID: ${salesOrderId}`);
-            console.log(status);
-            const salesOrderStatus = formContext.getAttribute("statuscode").getValue();
 
-            //switch (status) {
-            //    case "APPROVAL":
-            //        debugger;
-            //        console.log(`case: ${status}`)
-            //        console.log(`statuscode: ${quoteStatus}`);
+            let statuscode = null;
+            let statecode = 0;
 
-            //        Sales.QuoteRibbonActions.Instance.activateQuote();
+            switch (status) {
+                case "APPROVAL":
+                    statuscode = _self.STATUS.Inapprovazione;
+                    break;
+                case "APPROVED":
+                    statuscode = _self.STATUS.Approvato;
+                    break;
+                case "NOT_APPROVED":
+                    statuscode = _self.STATUS.Nonapprovato;
+                    statecode = 2; // Annullato
+                    break;
+                case "IN_LAVORAZIONE":
+                    statuscode = _self.STATUS.Inlavorazione;
+                    break;
+                case "SPEDITO":
+                    statuscode = _self.STATUS.Spedito_StateAttivo;
+                    break;
+            }
 
-            //        break;
+            Xrm.Utility.showProgressIndicator("Cambio stato...");
 
-            //    case "APPROVED":
-            //        console.log(`case: ${status}`)
-            //        console.log(`statuscode: ${quoteStatus}`);
+            if (statuscode != null) {
 
-            //        const actionName = "UPDATE_QUOTE_STATUS";
+                const json = {
+                    EntityId: salesOrderId,
+                    StateCode: statecode,
+                    StatusCode: statuscode
+                }
 
-            //        RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName)
-            //            .then(result => {
-            //                console.log("Action executed successfully");
-            //                // Qui puoi gestire il successo dell'azione, ad esempio aggiornando l'UI
-            //            })
-            //            .catch(error => {
-            //                console.error("Error executing action");
-            //                // Qui puoi gestire l'errore, ad esempio mostrando una notifica all'utente
-            //            });
-            //        break;
+                var execute_res_ClientAction_Request = {
 
-            //    case "NOT_APPROVED":
-            //        console.log(`case: ${status}`)
-            //        console.log(`statuscode: ${quoteStatus}`);
+                    // Parameters
+                    actionName: "UPDATE_SALESORDER_STATUS", // Edm.String
+                    jsonDataInput: JSON.stringify(json), // Edm.String
 
-            //        //const actionName = "UPDATE_QUOTE_STATUS";
+                    getMetadata: function () {
+                        return {
+                            boundParameter: null,
+                            parameterTypes: {
+                                actionName: { typeName: "Edm.String", structuralProperty: 1 },
+                                jsonDataInput: { typeName: "Edm.String", structuralProperty: 1 }
+                            },
+                            operationType: 0, operationName: "res_ClientAction"
+                        };
+                    }
+                };
 
-            //        //const success = RSMNG.TAUMEDIKA.GLOBAL.invokeClientAction(quoteId, status, actionName);
-            //        //if (!success) {
+                parent.Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
+                    response => {
+                        if (response.ok) { return response.json(); }
+                    }
+                ).then(responseBody => {
+                    const result = JSON.parse(responseBody.jsonDataOutput);
 
-            //        //formNotification
-            //        //formContext.ui.setFormNotification("Impossibile aggiornare lo stato del record", "ERROR", "01");
-            //        //}
-            //        break;
-            //}
+                    if (result === 0) {
+                        console.log("Client action executed successfully (returned 0)");
+
+
+                    } else if (typeof result === 'object' && result !== null) {
+                        console.log("Client action returned object:", result);
+
+
+                        if (result.message) {
+                            console.log("Message:", result.message);
+
+
+                        }
+                    } else {
+                        console.warn("Client action returned unexpected value:", result);
+                    }
+                    Xrm.Utility.closeProgressIndicator();
+                    RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
+
+                }).catch(error => {
+                    Xrm.Utility.closeProgressIndicator();
+                    console.error("Error in invokeClientAction:", error);
+                });
+
+            }
+            else {
+                console.log("Errore: Bottone non riconosciuto o configurato male");
+            }
+            
+
+            
         }
     };
 }).call(RSMNG.TAUMEDIKA.SALESORDER.RIBBON.FORM);
