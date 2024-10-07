@@ -26,6 +26,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+            Guid targetId = target.Id;
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
@@ -47,6 +49,48 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             if (productNumber != string.Empty)
             {
                 target[quotedetail.res_itemcode] = productNumber;
+            }
+            #endregion
+
+            #region Valorizzo il campo Totale imponibile
+            PluginRegion = "Valorizzo il campo Totale imponibile";
+
+            //totale imponibile = importo - sconto totale
+            decimal taxableamount = 0m;     //totale imponibile
+            decimal baseamount = 0m;        //importo
+
+            /**
+             * recupero l'importo per sottrarvi il totale sconto
+             * e calcolare il totale imponibile
+             */
+            var fetchQuoteDetail = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                            <fetch>
+                              <entity name=""quotedetail"">
+                                <attribute name=""baseamount"" alias=""importo"" />
+                                <filter>
+                                  <condition attribute=""quotedetailid"" operator=""eq"" value=""{targetId}"" />
+                                </filter>
+                              </entity>
+                            </fetch>";
+
+            EntityCollection quoteDetailCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuoteDetail));
+
+            if (quoteDetailCollection.Entities.Count > 0)
+            {
+                Entity enQuoteDetail = quoteDetailCollection.Entities[0];
+
+                if (enQuoteDetail != null)
+                {
+                    baseamount = enQuoteDetail.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
+
+                    decimal manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
+
+                    //calcolo il totale imponibile
+                    taxableamount = baseamount - manualdiscountamount;
+
+                    //valorizzo il campo totale imponibile
+                    target[quotedetail.res_taxableamount] = new Money(taxableamount);
+                }
             }
             #endregion
         }
