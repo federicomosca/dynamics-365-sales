@@ -30,18 +30,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata
             PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata";
 
-            //dati della quotedetail appena creata
-            decimal targetTaxableAmount = 0m;            //totale imponibile
-            decimal targetManualDiscountAmount = 0m;     //sconto totale
-            decimal targetTax = 0m;                      //totale iva
-
-            targetTaxableAmount = target.GetAttributeValue<Money>(quotedetail.res_taxableamount)?.Value ?? 0m;
-            targetManualDiscountAmount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
-            targetTax = target.GetAttributeValue<Money>(quotedetail.tax)?.Value ?? 0m;
-
             /**
              * fetch di tutti i campi interessati nel calcolo di tutte le quotedetail,
-             * meno quella appena creata (i cui dati sono raccolti dal target in prima istanza),
              * associate alla quote che si deve aggiornare
              * 
              * in particolare recupero le seguenti entità correlate all'offerta:
@@ -57,9 +47,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                               <attribute name=""manualdiscountamount"" alias=""scontototale"" aggregate=""sum"" />
                                               <attribute name=""res_taxableamount"" alias=""totaleimponibile"" aggregate=""sum"" />
                                               <attribute name=""tax"" alias=""totaleiva"" aggregate=""sum"" />
-                                              <filter>
-                                                <condition attribute=""quotedetailid"" operator=""ne"" value=""{targetId}"" />
-                                              </filter>
                                             </link-entity>
                                             <link-entity name=""res_additionalexpense"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
                                               <attribute name=""res_amount"" alias=""importo"" groupby=""true"" />
@@ -69,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                             </link-entity>
                                           </entity>
                                         </fetch>";
-
+            crmServiceProvider.TracingService.Trace(fetchQuote);
             EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
             if (aggregateCollection.Entities.Count > 0)
@@ -105,32 +92,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                          * inizio a valorizzare totale iva con l'aliquota applicata alla spesa accessoria
                          * a questo risultato andrà poi aggiunta la somma del totale iva di tutte le righe offerta
                          */
-
                         totaltax = spesaAccessoria * (codiceIvaSpesaAccessoria / 100);
 
                         //recupero totale imponibile, sconto totale e totale iva di tutte le righe di dettaglio
-                        decimal aggrScontoTotale = aggregate.GetAttributeValue<AliasedValue>("scontototale")?.Value is Money scontototale ? scontototale.Value : 0m;
                         decimal aggrTotaleImponibile = aggregate.GetAttributeValue<AliasedValue>("totaleimponibile")?.Value is Money totaleimponibile ? totaleimponibile.Value : 0m;
+                        decimal aggrScontoTotale = aggregate.GetAttributeValue<AliasedValue>("scontototale")?.Value is Money scontototale ? scontototale.Value : 0m;
                         decimal aggrTotaleIva = aggregate.GetAttributeValue<AliasedValue>("totaleiva")?.Value is Money totaleiva ? totaleiva.Value : 0m;
-
-                        //valorizzo i campi offerta addizionando il valore degli aggregati
-                        totaldiscountamount += aggrScontoTotale;
-                        totallineitemamount += aggrTotaleImponibile;
-                        totaltax += aggrTotaleIva;
-
-                        //ai campi offerta valorizzati addiziono i valori dei rispettivi campi della riga in creazione
-                        totallineitemamount += targetTaxableAmount;
-                        totaldiscountamount += targetManualDiscountAmount;
-                        totaltax += targetTax;
 
                         //calcolo il totale imponibile e l'importo totale
                         totalamountlessfreight = totallineitemamount - totaldiscountamount;
                         totalamount = totalamountlessfreight + totaltax;
 
-                        quote[DataModel.quote.totallineitemamount] = new Money(totallineitemamount);
-                        quote[DataModel.quote.totaldiscountamount] = new Money(totaldiscountamount);
+                        quote[DataModel.quote.totallineitemamount] = new Money(aggrTotaleImponibile);
+                        quote[DataModel.quote.totaldiscountamount] = new Money(aggrScontoTotale);
+                        quote[DataModel.quote.totaltax] = new Money(aggrTotaleIva);
                         quote[DataModel.quote.totalamountlessfreight] = new Money(totalamountlessfreight);
-                        quote[DataModel.quote.totaltax] = new Money(totaltax);
                         quote[DataModel.quote.totalamount] = new Money(totalamount);
 
                         crmServiceProvider.Service.Update(quote);
