@@ -868,6 +868,14 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Utente: 3
 		},
 
+		/// Bot Failure Action Type constants.
+		msdyn_botfailureactiontypeValues: {
+			PromptandEscalate: 192350002,
+			PromptandExternalTransfer: 192350001,
+			PromptandHangUp: 192350000,
+			WaitMusicandEscalate: 192350003
+		},
+
 		/// Set di opzioni formato capacità constants.
 		msdyn_capacityformatValues: {
 			Basatosuprofilo: 192360000,
@@ -1349,6 +1357,10 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			AssignToQueueBySupervisor: 192350027,
 			AutoAccept: 192350006,
 			AutoAccepted: 192350020,
+			BotCallFailureEndConversation: 192350043,
+			BotCallFailureEscalate: 192350046,
+			BotCallFailureExternalTransfer: 192350044,
+			BotCallFailurePromptAndEscalate: 192350045,
 			BotEndConversation: 192350025,
 			BotTransferSession: 192350024,
 			Chiuso: 192350007,
@@ -1959,6 +1971,14 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Manuale: 100000000
 		},
 
+		/// Set di opzioni categoria motivo tracker temporale constants.
+		msdyn_timetrackerreasoncategoryoptionsetValues: {
+			Collaborazione: 1,
+			Ricerca: 0,
+			Strumentoesterno: 2,
+			Varie: 3
+		},
+
 		/// Tipo di dati di diagnostica constants.
 		msdyn_unifiedroutingdiagnostic_msdyn_diagnosticdatatypeValues: {
 			Diagnosticaassegnazione: 4,
@@ -2555,6 +2575,17 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Import: 100000000
 		},
 
+		/// OPT_Motivo Stato Precedente Offerta  constants.
+		res_opt_motivostatoprecedenteoffertaValues: {
+			Acquisita: 4,
+			Aggiornata: 7,
+			Approvata: 3,
+			Bozza: 1,
+			Inapprovazione: 2,
+			Nonapprovata: 5,
+			Persa: 6
+		},
+
 		/// OPT_Origin constants.
 		res_opt_originValues: {
 			Dynamics: 100000000,
@@ -2573,6 +2604,13 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Strutturaattrezzature: 1,
 			Team: 2,
 			Utente: 0
+		},
+
+		/// RestAPIAuthType constants.
+		restapiauthtypeValues: {
+			APIKey: 2,
+			EntraSSO: 1,
+			OAuth2: 0
 		},
 
 		/// Tipo di connessione RunDesktopFlow constants.

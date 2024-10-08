@@ -810,7 +810,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Fatturato_StateFatturato = 100003,
 			Inapprovazione_StateAttivo = 2,
 			Incorso_StateInviato = 3,
-			Inlavorazione_StateAttivo = 100006,
+			Inelaborazione_StateAttivo = 100006,
 			Nonapprovato_StateAnnullato = 100004,
 			Parziale_StateEvaso = 100002,
 			Spedito_StateAttivo = 100007
