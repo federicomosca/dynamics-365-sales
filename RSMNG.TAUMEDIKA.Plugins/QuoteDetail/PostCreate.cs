@@ -101,6 +101,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (enQuoteDetail != null)
                 {
+
+                    Entity quoteDetailToUpdate = new Entity(DataModel.quotedetail.logicalName, targetId);
+
                     decimal prezzounitario = enQuoteDetail.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
 
                     decimal quantità = target.GetAttributeValue<decimal?>(DataModel.quotedetail.quantity) ?? 0m;
@@ -113,8 +116,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     taxableamount = baseamount - manualdiscountamount;
 
                     //valorizzo il campo totale imponibile
-                    target[quotedetail.res_taxableamount] = taxableamount;
-                    crmServiceProvider.Service.Update(target);
+                    quoteDetailToUpdate[quotedetail.res_taxableamount] = taxableamount;
+                    crmServiceProvider.Service.Update(quoteDetailToUpdate);
                 }
             }
             #endregion
