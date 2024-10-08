@@ -1071,6 +1071,17 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
+		/// Bot Failure Action Type constants.
+		/// </summary>
+		public enum msdyn_botfailureactiontypeValues
+		{
+			PromptandEscalate = 192350002,
+			PromptandExternalTransfer = 192350001,
+			PromptandHangUp = 192350000,
+			WaitMusicandEscalate = 192350003
+		}
+
+		/// <summary>
 		/// Set di opzioni formato capacità constants.
 		/// </summary>
 		public enum msdyn_capacityformatValues
@@ -1716,6 +1727,10 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			AssignToQueueBySupervisor = 192350027,
 			AutoAccept = 192350006,
 			AutoAccepted = 192350020,
+			BotCallFailureEndConversation = 192350043,
+			BotCallFailureEscalate = 192350046,
+			BotCallFailureExternalTransfer = 192350044,
+			BotCallFailurePromptAndEscalate = 192350045,
 			BotEndConversation = 192350025,
 			BotTransferSession = 192350024,
 			Chiuso = 192350007,
@@ -2474,6 +2489,17 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Automatico = 100000001,
 			Finale = 100000002,
 			Manuale = 100000000
+		}
+
+		/// <summary>
+		/// Set di opzioni categoria motivo tracker temporale constants.
+		/// </summary>
+		public enum msdyn_timetrackerreasoncategoryoptionsetValues
+		{
+			Collaborazione = 1,
+			Ricerca = 0,
+			Strumentoesterno = 2,
+			Varie = 3
 		}
 
 		/// <summary>
@@ -3247,6 +3273,20 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
+		/// OPT_Motivo Stato Precedente Offerta  constants.
+		/// </summary>
+		public enum res_opt_motivostatoprecedenteoffertaValues
+		{
+			Acquisita = 4,
+			Aggiornata = 7,
+			Approvata = 3,
+			Bozza = 1,
+			Inapprovazione = 2,
+			Nonapprovata = 5,
+			Persa = 6
+		}
+
+		/// <summary>
 		/// OPT_Origin constants.
 		/// </summary>
 		public enum res_opt_originValues
@@ -3273,6 +3313,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Strutturaattrezzature = 1,
 			Team = 2,
 			Utente = 0
+		}
+
+		/// <summary>
+		/// RestAPIAuthType constants.
+		/// </summary>
+		public enum restapiauthtypeValues
+		{
+			APIKey = 2,
+			EntraSSO = 1,
+			OAuth2 = 0
 		}
 
 		/// <summary>

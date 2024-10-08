@@ -6,6 +6,8 @@ RSMNG.TAUMEDIKA.DataModel.res_dataintegration = {
 	displayName: "Integrazione Dati",
 	///DataIntegration
 	res_dataintegrationid: "res_dataintegrationid",
+	///File di Distribuzione
+	res_distributionfile: "res_distributionfile",
 	///Azione dell'Integrazione
 	res_integrationaction: "res_integrationaction",
 	///Dati dell'Integrazione

@@ -455,6 +455,21 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_location => "res_location";
 
 		/// <summary>
+		/// Display Name: Motivo stato precedente,
+		/// Type: Picklist,
+		/// Values:
+		/// Bozza: 1,
+		/// In approvazione: 2,
+		/// Approvata: 3,
+		/// Acquisita: 4,
+		/// Non approvata: 5,
+		/// Persa: 6,
+		/// Aggiornata: 7,
+		/// Description: 
+		/// </summary>
+		public static string res_oldstatuscode => "res_oldstatuscode";
+
+		/// <summary>
 		/// Display Name: Condizione di pagamento,
 		/// Type: Lookup,
 		/// Related entities: res_paymentterm,
@@ -868,6 +883,20 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			No = 0,
 			Si = 1
+		}
+
+		/// <summary>
+		/// Values for field Motivo stato precedente
+		/// <summary>
+		public enum res_oldstatuscodeValues
+		{
+			Acquisita = 4,
+			Aggiornata = 7,
+			Approvata = 3,
+			Bozza = 1,
+			Inapprovazione = 2,
+			Nonapprovata = 5,
+			Persa = 6
 		}
 
 		/// <summary>
