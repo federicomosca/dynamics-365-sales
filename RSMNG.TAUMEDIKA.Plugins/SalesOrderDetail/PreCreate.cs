@@ -28,12 +28,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
-            //List<String> mandatoryFieldName = new List<String>();
-            //mandatoryFieldName.Add(salesorderdetail.productid);
-            //mandatoryFieldName.Add(salesorderdetail.salesorderid);
-            //mandatoryFieldName.Add(salesorderdetail.uomid);
-            //mandatoryFieldName.Add(salesorderdetail.productid);
-            //VerifyMandatoryField(crmServiceProvider, mandatoryFieldName);
+            List<String> mandatoryFieldName = new List<String>();
+            mandatoryFieldName.Add(salesorderdetail.productid);
+            mandatoryFieldName.Add(salesorderdetail.salesorderid);
+            mandatoryFieldName.Add(salesorderdetail.uomid);
+            mandatoryFieldName.Add(salesorderdetail.productid);
+            VerifyMandatoryField(crmServiceProvider, mandatoryFieldName);
             #endregion
 
             var service = crmServiceProvider.Service;
