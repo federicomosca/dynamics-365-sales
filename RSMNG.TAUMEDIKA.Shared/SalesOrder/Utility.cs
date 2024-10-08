@@ -15,6 +15,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
 {
     public class Utility
     {
+        public static List<string> mandatoryFields = new List<string> {
+                salesorder.name,
+                salesorder.pricelevelid,
+                salesorder.ordernumber,
+                salesorder.customerid,
+                salesorder.ownerid,
+                salesorder.transactioncurrencyid,
+            };
+
         //public static EntityCollection GetAggregateSum(IOrganizationService service, ITracingService trace, Entity target)
         //{
 
@@ -38,7 +47,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder
         //    return ecSum;
 
         //    //return taxableAmountSum = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
-            
+
         //}
     }
     namespace Model
