@@ -617,6 +617,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                     formContext.ui.setFormNotification("Si è verificato un errore durante il controllo dei dati del cliente.", "ERROR", "errorNotification");
                 }
             }
+        } else {
+            formContext.ui.clearFormNotification("missingDataNotification");
         }
     };
     //---------------------------------------------------
