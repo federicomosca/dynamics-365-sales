@@ -22,46 +22,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            bool isTrace = true;
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Guid targetId = target.Id;
-
-            #region Valorizzo i campi Codice IVA e Aliquota IVA
-            PluginRegion = "Valorizzo i campi Codice IVA e Aliquota IVA";
-
-            var fetchCodiceIVA = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                <fetch>
-                                    <entity name=""quotedetail"">
-                                    <filter>
-                                        <condition attribute=""quotedetailid"" operator=""eq"" value=""{targetId}"" />
-                                    </filter>
-                                    <link-entity name=""product"" from=""productid"" to=""productid"" alias=""product"">
-                                        <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""codiceivalookup"">
-                                        <attribute name=""res_rate"" alias=""aliquota"" />
-                                        <attribute name=""res_vatnumberid"" alias=""codiceiva"" />
-                                        </link-entity>
-                                    </link-entity>
-                                    </entity>
-                                </fetch>";
-
-            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIVA));
-
-            if (collection.Entities.Count > 0)
-            {
-                Entity quotedetail = collection.Entities[0];
-
-                Guid codiceiva = quotedetail.Contains("codiceiva") ? (Guid)quotedetail.GetAttributeValue<AliasedValue>("codiceiva").Value : Guid.Empty;
-                Decimal? aliquota = quotedetail.Contains("aliquota") ? (Decimal?)quotedetail.GetAttributeValue<AliasedValue>("aliquota").Value : null;
-                if (codiceiva != null && aliquota.HasValue)
-                {
-                    EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceiva);
-
-                    target[DataModel.quotedetail.res_vatnumberid] = erCodiceIVA;
-                    target[DataModel.quotedetail.res_vatrate] = aliquota;
-                    crmServiceProvider.Service.Update(target);
-                }
-                else throw new ApplicationException("Codice IVA non trovato");
-            }
-            #endregion
 
             #region Valorizzo il campo Totale imponibile
             PluginRegion = "Valorizzo il campo Totale imponibile";
@@ -119,6 +82,49 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     quoteDetailToUpdate[quotedetail.res_taxableamount] = taxableamount;
                     crmServiceProvider.Service.Update(quoteDetailToUpdate);
                 }
+            }
+            #endregion
+
+            #region Valorizzo i campi Codice IVA e Aliquota IVA
+            PluginRegion = "Valorizzo i campi Codice IVA e Aliquota IVA";
+
+            var fetchCodiceIVA = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                <fetch>
+                                    <entity name=""quotedetail"">
+                                    <filter>
+                                        <condition attribute=""quotedetailid"" operator=""eq"" value=""{targetId}"" />
+                                    </filter>
+                                    <link-entity name=""product"" from=""productid"" to=""productid"" alias=""product"">
+                                        <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""codiceivalookup"">
+                                        <attribute name=""res_rate"" alias=""aliquota"" />
+                                        <attribute name=""res_vatnumberid"" alias=""codiceiva"" />
+                                        </link-entity>
+                                    </link-entity>
+                                    </entity>
+                                </fetch>";
+
+            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIVA));
+
+            if (collection.Entities.Count > 0)
+            {
+                Entity quotedetail = collection.Entities[0];
+
+                Guid codiceiva = quotedetail.GetAttributeValue<AliasedValue>("codiceiva")?.Value is Guid codiceIvaLookup ? codiceIvaLookup : Guid.Empty;
+                decimal aliquota = quotedetail.GetAttributeValue<AliasedValue>("aliquota")?.Value is decimal res_rate ? res_rate : 0m;
+
+                //calcolo il totale iva e lo salvo nel target
+                decimal totaleiva = taxableamount * (aliquota / 100);
+                target[DataModel.quotedetail.tax] = totaleiva;
+
+                if (codiceiva != Guid.Empty)
+                {
+                    EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceiva);
+
+                    target[DataModel.quotedetail.res_vatnumberid] = erCodiceIVA;
+                    target[DataModel.quotedetail.res_vatrate] = aliquota;
+                    crmServiceProvider.Service.Update(target);
+                }
+                else throw new ApplicationException("Codice IVA non trovato");
             }
             #endregion
         }

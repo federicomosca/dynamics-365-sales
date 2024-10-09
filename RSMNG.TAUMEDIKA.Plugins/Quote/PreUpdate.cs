@@ -57,7 +57,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 decimal rateVatNumber = 0;
                 decimal freightAmountRate = 0;
                 decimal totalAmountlessFreight = 0; // Totale imponibile
-                bool isTrace = true;
+                bool isTrace = false;
 
 
                 //----Importo Spesa Accessoria

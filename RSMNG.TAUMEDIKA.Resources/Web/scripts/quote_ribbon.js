@@ -48,7 +48,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             agentPromise = new Promise(function (resolve, reject) {
                 Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
                     result => {
-                        console.log(result);
                         resolve(result["res_isagente"]);
                     },
                     error => {
@@ -80,12 +79,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let currentStatus = formContext.getAttribute("statuscode").getValue();
 
-            console.log(`Current Status: ${currentStatus}`);
-
             let visible = false;
 
             const agent = await _self.getAgent();
-            console.log(`Agent status: ${agent}`);
 
             switch (status) {
 
