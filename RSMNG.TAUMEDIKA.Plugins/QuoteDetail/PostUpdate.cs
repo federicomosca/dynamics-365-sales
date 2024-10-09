@@ -56,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                             </link-entity>
                                           </entity>
                                         </fetch>";
-            crmServiceProvider.TracingService.Trace(fetchQuote);
+            
             EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
             if (aggregateCollection.Entities.Count > 0)
