@@ -108,6 +108,8 @@ RSMNG.TAUMEDIKA.DataModel.quote = {
 	res_isinvoicerequested: "res_isinvoicerequested",
 	///Località
 	res_location: "res_location",
+	///Motivo stato precedente
+	res_oldstatuscode: "res_oldstatuscode",
 	///Condizione di pagamento
 	res_paymenttermid: "res_paymenttermid",
 	///Riferimento spedizione
@@ -285,6 +287,17 @@ RSMNG.TAUMEDIKA.DataModel.quote = {
 	res_isinvoicerequestedValues: {
 		No: 0,
 		Si: 1
+	},
+
+	/// Values for field Motivo stato precedente
+	res_oldstatuscodeValues: {
+		Acquisita: 4,
+		Aggiornata: 7,
+		Approvata: 3,
+		Bozza: 1,
+		Inapprovazione: 2,
+		Nonapprovata: 5,
+		Persa: 6
 	},
 
 	/// Values for field Metodo di spedizione

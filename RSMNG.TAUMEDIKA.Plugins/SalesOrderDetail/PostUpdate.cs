@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using RSMNG.TAUMEDIKA.DataModel;
-using RSMNG.TAUMEDIKA.Shared.SalesOrderDetail;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,26 +45,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata
             PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata";
 
-            //dati della salesorderdetail appena creata
-            decimal targetTaxableAmount = 0m;            //totale imponibile
-            decimal targetManualDiscountAmount = 0m;     //sconto totale
-            decimal targetTax = 0m;                      //totale iva
-
-            targetTaxableAmount = target.GetAttributeValue<Money>(salesorderdetail.res_taxableamount)?.Value ?? 0m;
-            targetManualDiscountAmount = target.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m;
-            targetTax = target.GetAttributeValue<Money>(salesorderdetail.tax)?.Value ?? 0m;
-
             /**
-             * fetch di tutti i campi interessati nel calcolo di tutte le salesorderdetail,
-             * meno quella appena creata (i cui dati sono raccolti dal target in prima istanza),
-             * associate alla salesorder che si deve aggiornare
+             * fetch di tutti i campi interessati nel calcolo di tutte le salesorderdetail
+             * associate al salesorder che si deve aggiornare
              * 
              * in particolare recupero le seguenti entità correlate all'ordine:
              * salesorder detail > sconto totale, totale imponibile, totale iva
              * spesa accessoria > importo
              * codice IVA spesa accessoria > aliquota
              */
-            var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchSalesOrder = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                         <fetch aggregate=""true"">
                                           <entity name=""salesorder"">
                                             <attribute name=""salesorderid"" alias=""salesorderid"" groupby=""true"" />
@@ -73,9 +62,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                               <attribute name=""manualdiscountamount"" alias=""scontototale"" aggregate=""sum"" />
                                               <attribute name=""res_taxableamount"" alias=""totaleimponibile"" aggregate=""sum"" />
                                               <attribute name=""tax"" alias=""totaleiva"" aggregate=""sum"" />
-                                              <filter>
-                                                <condition attribute=""salesorderdetailid"" operator=""ne"" value=""{targetId}"" />
-                                              </filter>
                                             </link-entity>
                                             <link-entity name=""res_additionalexpense"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
                                               <attribute name=""res_amount"" alias=""importo"" groupby=""true"" />
@@ -85,16 +71,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                             </link-entity>
                                           </entity>
                                         </fetch>";
-
-            EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+            crmServiceProvider.TracingService.Trace(fetchSalesOrder);
+            EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchSalesOrder));
 
             if (aggregateCollection.Entities.Count > 0)
             {
-                //ordine da aggiornare
+                //offerta da aggiornare
                 Entity aggregate = aggregateCollection.Entities[0];
 
                 /**
-                 * campi dell'ordine che verranno aggiornati
+                 * campi dell'offerta che verranno aggiornati
                  */
                 decimal totallineitemamount = 0m,    //totale righe        somma del totale imponibile di tutte le salesorderdetail
                     totaldiscountamount = 0m,        //sconto totale       somma dello sconto totale di tutte le salesorderdetail
@@ -104,12 +90,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                 if (aggregate != null)
                 {
-                    //id dell'ordine da aggiornare
+                    //id dell'offerta da aggiornare
                     Guid salesorderid = aggregate.GetAttributeValue<AliasedValue>("salesorderid")?.Value as Guid? ?? Guid.Empty;
 
                     if (salesorderid != Guid.Empty)
                     {
-                        //creo l'ordine da aggiornare
+                        //creo l'offerta da aggiornare
                         Entity salesorder = new Entity(DataModel.salesorder.logicalName, salesorderid);
 
                         //spesa accessoria e aliquota per il calcolo del totale iva
@@ -119,39 +105,28 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                         /**
                          * inizio a valorizzare totale iva con l'aliquota applicata alla spesa accessoria
-                         * a questo risultato andrà poi aggiunta la somma del totale iva di tutte le righe ordine
+                         * a questo risultato andrà poi aggiunta la somma del totale iva di tutte le righe offerta
                          */
-
                         totaltax = spesaAccessoria * (codiceIvaSpesaAccessoria / 100);
 
                         //recupero totale imponibile, sconto totale e totale iva di tutte le righe di dettaglio
-                        decimal aggrScontoTotale = aggregate.GetAttributeValue<AliasedValue>("scontototale")?.Value is Money scontototale ? scontototale.Value : 0m;
                         decimal aggrTotaleImponibile = aggregate.GetAttributeValue<AliasedValue>("totaleimponibile")?.Value is Money totaleimponibile ? totaleimponibile.Value : 0m;
+                        decimal aggrScontoTotale = aggregate.GetAttributeValue<AliasedValue>("scontototale")?.Value is Money scontototale ? scontototale.Value : 0m;
                         decimal aggrTotaleIva = aggregate.GetAttributeValue<AliasedValue>("totaleiva")?.Value is Money totaleiva ? totaleiva.Value : 0m;
-
-                        //valorizzo i campi ordine addizionando il valore degli aggregati
-                        totaldiscountamount += aggrScontoTotale;
-                        totallineitemamount += aggrTotaleImponibile;
-                        totaltax += aggrTotaleIva;
-
-                        //ai campi ordine valorizzati addiziono i valori dei rispettivi campi della riga in creazione
-                        totallineitemamount += targetTaxableAmount;
-                        totaldiscountamount += targetManualDiscountAmount;
-                        totaltax += targetTax;
 
                         //calcolo il totale imponibile e l'importo totale
                         totalamountlessfreight = totallineitemamount - totaldiscountamount;
                         totalamount = totalamountlessfreight + totaltax;
 
-                        salesorder[DataModel.salesorder.totallineitemamount] = new Money(totallineitemamount);
-                        salesorder[DataModel.salesorder.totaldiscountamount] = new Money(totaldiscountamount);
+                        salesorder[DataModel.salesorder.totallineitemamount] = new Money(aggrTotaleImponibile);
+                        salesorder[DataModel.salesorder.totaldiscountamount] = new Money(aggrScontoTotale);
+                        salesorder[DataModel.salesorder.totaltax] = new Money(aggrTotaleIva);
                         salesorder[DataModel.salesorder.totalamountlessfreight] = new Money(totalamountlessfreight);
-                        salesorder[DataModel.salesorder.totaltax] = new Money(totaltax);
                         salesorder[DataModel.salesorder.totalamount] = new Money(totalamount);
 
                         crmServiceProvider.Service.Update(salesorder);
                     }
-                    else { throw new ApplicationException("Salesorder ID is missing"); }
+                    else { throw new ApplicationException("SalesOrder ID is missing"); }
                 }
             }
             else

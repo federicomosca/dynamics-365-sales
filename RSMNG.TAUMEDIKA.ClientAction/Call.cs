@@ -11,12 +11,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
-using static RSMNG.TAUMEDIKA.Model;
 using System.Text.Json.Serialization;
-using RSMNG.TAUMEDIKA.Shared.Quote.Model;
 using Microsoft.Xrm.Sdk.Query;
 using System.Security.Cryptography.Xml;
-using RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder.Model;
 
 namespace RSMNG.TAUMEDIKA.ClientAction
 {
@@ -65,18 +62,27 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                     case "UPDATE_QUOTE_STATUS":
                         #region Aggiornamento status dell'offerta
                         PluginRegion = "Aggiornamento status dell'offerta";
-                        jsonDataOutput = updateQuoteStatusCode(serviceAdmin, tracingService, jsonDataInput);
+                        jsonDataOutput = Shared.Quote.Utility.UpdateQuoteStatusCode(serviceAdmin, tracingService, jsonDataInput);
                         #endregion
 
                         break;
                     case "UPDATE_SALESORDER_STATUS":
                         #region Aggiornamento status dell'ordine
                         PluginRegion = "Aggiornamento status dell'ordine";
-                        jsonDataOutput = updateSalesOrderCode(serviceAdmin, tracingService, jsonDataInput);
+                        jsonDataOutput = Shared.SalesOrder.Utility.UpdateSalesOrderCode(serviceAdmin, tracingService, jsonDataInput);
                         #endregion
                         break;
                     case "COPYPRICELEVEL":
-                        jsonDataOutput = CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
+                        #region Copio il listino prezzi
+                        PluginRegion = "Copio il listino prezzi";
+                        jsonDataOutput = Shared.PriceLevel.Utility.CopyPriceLevel(serviceAdmin, tracingService, jsonDataInput);
+                        #endregion
+                        break;
+                    case "GET_DISTRIBUTIONFILE":
+                        #region Prelevo il file di Distribuzione
+                        PluginRegion = "Prelevo il file di Distribuzione";
+                        jsonDataOutput = Shared.DataIntegration.Utility.GetDistributionFile(serviceAdmin, tracingService, jsonDataInput);
+                        #endregion
                         break;
                 }
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"JsonDataOutput:{jsonDataOutput}.");
@@ -87,152 +93,5 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 throw new Exception("ERRORE CALL ACTION: " + ex);
             }
         }
-
-        public static string updateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
-        {
-            string result = string.Empty;
-            BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
-
-            try
-            {
-                QuoteStatusRequest quoteRequest = Controller.Deserialize<QuoteStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(QuoteStatusRequest));
-
-                string entityId = quoteRequest.EntityId ?? string.Empty;
-                int? statecode = quoteRequest.StateCode ?? null;
-                int? statuscode = quoteRequest.StatusCode ?? null;
-
-                if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
-
-                Helper.updateEntityStatusCode(service, trace, quote.logicalName, entityId, (int)statecode, (int)statuscode);
-            }
-            catch (Exception ex)
-            {
-                basicOutput.result = -1;
-                basicOutput.message = ex.Message;
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-            finally
-            {
-                result = RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
-            }
-
-            return result;
-
-        }
-        public static string updateSalesOrderCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
-        {
-            string result = string.Empty;
-            BasicOutput basicOutput = new BasicOutput() { result = 0, message = "Ok update effettuato con successo." };
-
-            trace.Trace("update Sales Order Code");
-            try
-            {
-                SalesOrderStatusRequest salesORderRequest = Controller.Deserialize<SalesOrderStatusRequest>(Uri.UnescapeDataString(jsonDataInput), typeof(SalesOrderStatusRequest));
-
-                string entityId = salesORderRequest.EntityId ?? string.Empty;
-                int? statecode = salesORderRequest.StateCode ?? null;
-                int? statuscode = salesORderRequest.StatusCode ?? null;
-                
-                trace.Trace(entityId);
-                trace.Trace("statecode: " + statecode.ToString());
-                trace.Trace("statuscode: " + statuscode.ToString());
-
-
-                if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
-                trace.Trace("dentro if");
-                Helper.updateEntityStatusCode(service, trace, salesorder.logicalName, entityId, (int)statecode, (int)statuscode);
-            }
-            catch (Exception ex)
-            {
-                basicOutput.result = -1;
-                basicOutput.message = ex.Message;
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-            finally
-            {
-                result = Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
-            }
-
-            return result;
-        }
-        public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
-        {
-            string result = string.Empty;
-
-            Model.BasicOutput basicOutput = new Model.BasicOutput() { result = 0, message = "Ok copia effettuata con successo." };
-
-            try
-            {
-                ThrowTestException(false);
-
-                //--- Deserializza --------------------------------------------------------------------------
-                PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(PriceLevel));
-                //-------------------------------------------------------------------------------------------
-
-
-                Entity enPriceLevel = new Entity(pricelevel.logicalName);
-
-                OptionSetValueCollection optSet = new OptionSetValueCollection(pl.selectedScope.Select(scope => new OptionSetValue(scope)).ToList());
-
-                DateTime? beginnerDate = null;
-                DateTime? endDate = null;
-                if (pl.begindate != null) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
-                if (pl.enddate != null) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
-
-                enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
-                enPriceLevel.Attributes.Add(pricelevel.begindate, beginnerDate);
-                enPriceLevel.Attributes.Add(pricelevel.enddate, endDate);
-                enPriceLevel.Attributes.Add(pricelevel.description, pl.description);
-                enPriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, new EntityReference("transactioncurrency", new Guid(pl.transactioncurrencyid)));
-                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, false); // Esiste solo un record con isdefaultforagents a true, quindi questo valore a priori non può essere copiato.
-                enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
-                enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
-
-                service.Create(enPriceLevel);
-            }
-            catch (Exception ex)
-            {
-                basicOutput.result = -1;
-                basicOutput.message = ex.Message;
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-            finally
-            {
-                result = RSMNG.Plugins.Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
-            }
-
-            return result;
-        }
-        static void ThrowTestException(bool isThrow)
-        {
-            if (isThrow)
-            {
-                // Simulate an exception
-                throw new InvalidOperationException("This is a test exception to force a catch block.");
-            }
-
-        }
     }
-
-    [System.Runtime.Serialization.DataContract]
-    public class PriceLevel
-    {
-        [System.Runtime.Serialization.DataMember]
-        public string name { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public int[] selectedScope { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public string begindate { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public string enddate { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public string transactioncurrencyid { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public bool isDefautWebsite { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public bool isDefaultForAgents { get; set; }
-        [System.Runtime.Serialization.DataMember]
-        public object description { get; set; }
-    }
-
 }

@@ -16,6 +16,16 @@ namespace RSMNG.TAUMEDIKA
 {
     public class Helper
     {
+
+        public static void ThrowTestException(bool isThrow)
+        {
+            if (isThrow)
+            {
+                // Simulate an exception
+                throw new InvalidOperationException("This is a test exception to force a catch block.");
+            }
+
+        }
         public static void SetStateCode(IOrganizationService service, string entityName, Guid entityID, int stateIn, int statusIn)
         {
             try

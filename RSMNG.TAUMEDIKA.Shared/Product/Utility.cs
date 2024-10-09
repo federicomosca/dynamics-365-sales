@@ -3,6 +3,7 @@ using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace RSMNG.TAUMEDIKA.Shared.Product
 {
@@ -23,5 +24,54 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
 
             return ret;
         }
+    }
+
+
+    [DataContract]
+    public class ImportProductDanea
+    {
+        [DataMember] public string Origine { get; set; }
+        [DataMember] public string Nome { get; set; }
+        [DataMember] public string Codice { get; set; }
+        [DataMember] public ProductCategoryDanea EntitaPrincipale { get; set; }
+        [DataMember] public string Descrizione { get; set; }
+        [DataMember] public LookUp UnitaDiVendita { get; set; }
+        [DataMember] public LookUp UnitaPredefinita { get; set; }
+        [DataMember] public int DecimaliSupportati { get; set; }
+        [DataMember] public LookUp CodiceIVA { get; set; }
+        [DataMember] public decimal? PrezzoDiListino { get; set; }
+        [DataMember] public Option Tipologia { get; set; }
+        [DataMember] public Option StrutturaProdotto { get; set; }
+        [DataMember] public string Produttore { get; set; }
+        [DataMember] public string Fornitore { get; set; }
+        [DataMember] public Option Stato { get; set; }
+        [DataMember] public string CodiceABarre { get; set; }
+        [DataMember] public decimal? PesoLordo { get; set; }
+        [DataMember] public decimal? PesoNetto { get; set; }
+        [DataMember] public decimal? VolumeCm3 { get; set; }
+        [DataMember] public LookUp UnitaDimisuraPeso { get; set; }
+        [DataMember] public ProductCategoryDanea Categoria { get; set; }
+    }
+
+    public class ProductCategoryDanea
+    {
+        [DataMember] public string Nome { get; set; }
+        [DataMember] public string Codice { get; set; }
+    }
+
+    [DataContract]
+    public class Option
+    {
+        [DataMember] public int? Value {  get; set; }
+        [DataMember] public string ExternalValue { get; set; }
+        [DataMember] public string Text { get; set; }
+    }
+
+    [DataContract]
+    public class LookUp
+    {
+        [DataMember] public Guid Id { get; set; }
+        [DataMember] public string Text { get; set; }
+        [DataMember] public string Entity {  get; set; }
     }
 }

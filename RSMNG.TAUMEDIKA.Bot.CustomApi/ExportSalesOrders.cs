@@ -12,6 +12,8 @@ using System.Web.UI.WebControls;
 using System.Xml.Linq;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Text.Json;
+using static RSMNG.TAUMEDIKA.Model;
 
 namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 {
@@ -515,7 +517,11 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         }
                         #endregion
 
-                        #region Creo il file on memoria
+                        #region Serializzo l'oggetto EasyFattDocuments in Json
+                        string jsonOutput = JsonSerializer.Serialize(easyfattDocuments);
+                        #endregion
+
+                        #region Creo il file on memoria per XML
                         PluginRegion = "Creo il file on memoria";
                         // Convertiamo la stringa del StringWriter in byte usando la codifica UTF-8
                         byte[] xmlBytes = Encoding.UTF8.GetBytes(xmlOutput);
@@ -524,7 +530,19 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         string base64Xml = Convert.ToBase64String(xmlBytes);
 
                         // Creiamo il Data URI per il file XML
-                        string dataUri = $"data:text/xml;base64,{base64Xml}";
+                        string dataUriXml = $"data:text/xml;base64,{base64Xml}";
+                        #endregion
+
+                        #region Creo il file on memoria per XML
+                        PluginRegion = "Creo il file on memoria";
+                        // Convertiamo la stringa del StringWriter in byte usando la codifica UTF-8
+                        byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonOutput);
+
+                        // Convertiamo i byte in Base64
+                        string base64Json = Convert.ToBase64String(jsonBytes);
+
+                        // Creiamo il Data URI per il file XML
+                        string dataUriJson = $"data:text/json;base64,{base64Json}";
                         #endregion
 
                         #region definisco la data corretta
@@ -539,14 +557,13 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationtype, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationtypeValues.Export));
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationaction, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini));
                         enDataIntegration.AddWithRemove(res_dataintegration.res_name, $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()} - {GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini.ToString()} - {localTime.ToString("dd/MM/yyyy HH:mm:ss")}");
-                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationdata, xmlOutput);
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, "Esportazione effettuata con successo");
                         Guid enDataIntegrationId = crmServiceProvider.Service.Create(enDataIntegration);
                         #endregion
 
-                        #region Salvo il file nel log DataIntegration
-                        PluginRegion = "Salvo il file nel log DataIntegration";
-                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
+                        #region Salvo il file nel log DataIntegration XML
+                        PluginRegion = "Salvo il file nel log DataIntegration XML";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input_Xml = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
                         {
                             MimeType = "text/xml",
                             FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.defxml",
@@ -554,13 +571,27 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             FileSize = xmlBytes.Length,
                             Content = base64Xml
                         };
+                        #endregion
 
-                        string resultUpload = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_integrationfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
+                        string resultUploadXml = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_integrationfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input_Xml, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
+
+                        #region Salvo il file nel log DataIntegration JSON
+                        PluginRegion = "Salvo il file nel log DataIntegration JSON";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input_Json = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
+                        {
+                            MimeType = "text/json",
+                            FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Ordini.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.json",
+                            Id = enDataIntegrationId.ToString(),
+                            FileSize = jsonBytes.Length,
+                            Content = base64Json
+                        };
+
+                        string resultUploadJson = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_distributionfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input_Json, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
                         #endregion
 
                         #region Controllo l'esito del salvataggio del file
-                        PluginRegion = "Controllo l'esito del salvataggio del file";
-                        RSMNG.TAUMEDIKA.Model.UploadFile_Output uploadFile_Output = RSMNG.Plugins.Controller.Deserialize<RSMNG.TAUMEDIKA.Model.UploadFile_Output>(resultUpload);
+                        PluginRegion = "Controllo l'esito del salvataggio del file XML";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Output uploadFile_Output = RSMNG.Plugins.Controller.Deserialize<RSMNG.TAUMEDIKA.Model.UploadFile_Output>(resultUploadXml);
 
                         if (uploadFile_Output?.result != 0)
                         {
@@ -579,11 +610,11 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                             #region Popolo il parametro di output file
                             PluginRegion = "Popolo il parametro di output file";
-                            outFile.Attributes.Add("mimetype", uploadFile_Input.MimeType);
-                            outFile.Attributes.Add("name", uploadFile_Input.FileName);
-                            outFile.Attributes.Add("size", uploadFile_Input.FileSize);
-                            outFile.Attributes.Add("content", uploadFile_Input.Content);
-                            outFile.Attributes.Add("datauri", dataUri);
+                            outFile.Attributes.Add("mimetype", uploadFile_Input_Xml.MimeType);
+                            outFile.Attributes.Add("name", uploadFile_Input_Xml.FileName);
+                            outFile.Attributes.Add("size", uploadFile_Input_Xml.FileSize);
+                            outFile.Attributes.Add("content", uploadFile_Input_Xml.Content);
+                            outFile.Attributes.Add("datauri", dataUriXml);
                             #endregion
                         }
 

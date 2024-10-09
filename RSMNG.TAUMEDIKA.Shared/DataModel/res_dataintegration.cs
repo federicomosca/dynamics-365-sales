@@ -24,6 +24,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_dataintegrationid => "res_dataintegrationid";
 
 		/// <summary>
+		/// Display Name: File di Distribuzione,
+		/// Type: Virtual,
+		/// Description: 
+		/// </summary>
+		public static string res_distributionfile => "res_distributionfile";
+
+		/// <summary>
 		/// Display Name: Azione dell'Integrazione,
 		/// Type: Picklist,
 		/// Values:

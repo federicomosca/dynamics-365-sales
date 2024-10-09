@@ -223,6 +223,9 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
     };
     //-----------------------------------------------------------------------
     _self.invokeClientActionFromButton = (action, entityId, statecode, statuscode) => {
+
+        Xrm.Utility.showProgressIndicator("Cambio stato...");
+
         const json = {
             EntityId: entityId,
             StateCode: statecode,
@@ -264,12 +267,14 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             } else {
                 console.warn("Client action returned unexpected value:", result);
             }
-
+            Xrm.Utility.closeProgressIndicator();
             // Qui puoi aggiungere eventuale logica aggiuntiva basata sul risultato
         }).catch(error => {
             console.error("Error in invokeClientAction:", error);
+            Xrm.Utility.closeProgressIndicator();
         });
     };
+
     _self.refreshFormAndRibbon = () => {
         Xrm.Page.data.refresh(false).then(
             function () {

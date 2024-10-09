@@ -110,8 +110,10 @@
   <ItemGroup>
     <Compile Include="ExportCustomers.cs" />
     <Compile Include="ExportSalesOrders.cs" />
+    <Compile Include="ImportProducts.cs" />
     <Compile Include="Model\exportcustomersparameter.cs" />
     <Compile Include="Model\exportsalesordersparameter.cs" />
+    <Compile Include="Model\importproductsparameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

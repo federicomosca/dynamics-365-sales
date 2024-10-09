@@ -173,6 +173,9 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         // Converte la stringa CSV in un array di byte
                         byte[] csvBytes = Encoding.UTF8.GetBytes(csvBuilder.ToString());
 
+                        // Converte la stringa CSV in un array di byte
+                        byte[] jsonBytes = Encoding.UTF8.GetBytes(customersJSON.ToString());
+
                         // Crea un Data URI
                         string customersFileDataUri = "data:text/csv;base64," + Convert.ToBase64String(csvBytes);
                         #endregion
@@ -188,14 +191,13 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationtype, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationtypeValues.Export));
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationaction, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationactionValues.Clienti));
                         enDataIntegration.AddWithRemove(res_dataintegration.res_name, $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()} - {GlobalOptionSetConstants.res_opt_integrationactionValues.Clienti.ToString()} - {localTime.ToString("dd/MM/yyyy HH:mm:ss")}");
-                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationdata, customersJSON);
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, "Esportazione effettuata con successo");
                         Guid enDataIntegrationId = crmServiceProvider.Service.Create(enDataIntegration);
                         #endregion
 
-                        #region Salvo il file nel log DataIntegration
-                        PluginRegion = "Salvo il file nel log DataIntegration";
-                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
+                        #region Salvo il file nel log DataIntegration CSV
+                        PluginRegion = "Salvo il file nel log DataIntegration CSV";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input_Csv = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
                         {
                             MimeType = "text/csv",
                             FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Clienti.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.csv",
@@ -204,12 +206,26 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             Content = Convert.ToBase64String(csvBytes)
                         };
 
-                        string resultUpload = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_integrationfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
+                        string resultUploadCsv = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_integrationfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input_Csv, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
+                        #endregion
+
+                        #region Salvo il file nel log DataIntegration Json
+                        PluginRegion = "Salvo il file nel log DataIntegration JSON";
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input_Json = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
+                        {
+                            MimeType = "text/json",
+                            FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Export.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Clienti.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.json",
+                            Id = enDataIntegrationId.ToString(),
+                            FileSize = jsonBytes.Length,
+                            Content = Convert.ToBase64String(jsonBytes)
+                        };
+
+                        string resultUploadJson = Helper.UploadFile(crmServiceProvider.TracingService, crmServiceProvider.Service, res_dataintegration.res_distributionfile, res_dataintegration.logicalName, RSMNG.Plugins.Controller.Serialize<RSMNG.TAUMEDIKA.Model.UploadFile_Input>(uploadFile_Input_Json, typeof(RSMNG.TAUMEDIKA.Model.UploadFile_Input)));
                         #endregion
 
                         #region Controllo l'esito del salvataggio del file
                         PluginRegion = "Controllo l'esito del salvataggio del file";
-                        RSMNG.TAUMEDIKA.Model.UploadFile_Output uploadFile_Output = RSMNG.Plugins.Controller.Deserialize<RSMNG.TAUMEDIKA.Model.UploadFile_Output>(resultUpload);
+                        RSMNG.TAUMEDIKA.Model.UploadFile_Output uploadFile_Output = RSMNG.Plugins.Controller.Deserialize<RSMNG.TAUMEDIKA.Model.UploadFile_Output>(resultUploadCsv);
 
                         if (uploadFile_Output?.result != 0)
                         {
@@ -228,10 +244,10 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                             #region Popolo il parametro di output file
                             PluginRegion = "Popolo il parametro di output file";
-                            outFile.Attributes.Add("mimetype", uploadFile_Input.MimeType);
-                            outFile.Attributes.Add("name", uploadFile_Input.FileName);
-                            outFile.Attributes.Add("size", uploadFile_Input.FileSize);
-                            outFile.Attributes.Add("content", uploadFile_Input.Content);
+                            outFile.Attributes.Add("mimetype", uploadFile_Input_Csv.MimeType);
+                            outFile.Attributes.Add("name", uploadFile_Input_Csv.FileName);
+                            outFile.Attributes.Add("size", uploadFile_Input_Csv.FileSize);
+                            outFile.Attributes.Add("content", uploadFile_Input_Csv.Content);
                             outFile.Attributes.Add("datauri", customersFileDataUri);
                             #endregion
                         }
