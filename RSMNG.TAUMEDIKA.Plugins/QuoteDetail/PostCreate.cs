@@ -31,7 +31,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             //totale imponibile = importo - sconto totale
             decimal taxableamount = 0m;
-            decimal baseamount = 0m;
+            decimal baseamount;
 
             /**
              * recupero il prezzo unitario dalla voce di listino associata
@@ -64,29 +64,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (enQuoteDetail != null)
                 {
-
-                    Entity quoteDetailToUpdate = new Entity(DataModel.quotedetail.logicalName, targetId);
-
                     decimal prezzounitario = enQuoteDetail.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
 
-                    decimal quantità = target.GetAttributeValue<decimal?>(DataModel.quotedetail.quantity) ?? 0m;
-                    decimal manualdiscountamount = target.GetAttributeValue<Money>(DataModel.quotedetail.manualdiscountamount)?.Value ?? 0m;
+                    decimal quantità = target.GetAttributeValue<decimal>(quotedetail.quantity);
+                    decimal manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
 
                     //calcolo l'importo
                     baseamount = prezzounitario * quantità;
+                    if (isTrace) crmServiceProvider.TracingService.Trace($"Importo: {baseamount}");
 
                     //calcolo il totale imponibile
                     taxableamount = baseamount - manualdiscountamount;
+                    if (isTrace) crmServiceProvider.TracingService.Trace($"Totale imponibile: {taxableamount}");
 
                     //valorizzo il campo totale imponibile
-                    quoteDetailToUpdate[quotedetail.res_taxableamount] = taxableamount;
-                    crmServiceProvider.Service.Update(quoteDetailToUpdate);
+                    target[quotedetail.res_taxableamount] = taxableamount;
+                    crmServiceProvider.Service.Update(target);
+                    if (isTrace) crmServiceProvider.TracingService.Trace($"Update del campo Totale imponibile effettuato.");
                 }
             }
             #endregion
 
-            #region Valorizzo i campi Codice IVA e Aliquota IVA
-            PluginRegion = "Valorizzo i campi Codice IVA e Aliquota IVA";
+            #region Valorizzo i campi Codice IVA, Aliquota IVA e Totale IVA
+            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA e Totale IVA";
 
             var fetchCodiceIVA = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
@@ -107,22 +107,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             if (collection.Entities.Count > 0)
             {
-                Entity quotedetail = collection.Entities[0];
+                Entity enQuoteDetail = collection.Entities[0];
 
-                Guid codiceiva = quotedetail.GetAttributeValue<AliasedValue>("codiceiva")?.Value is Guid codiceIvaLookup ? codiceIvaLookup : Guid.Empty;
-                decimal aliquota = quotedetail.GetAttributeValue<AliasedValue>("aliquota")?.Value is decimal res_rate ? res_rate : 0m;
+                Guid codiceiva = enQuoteDetail.GetAttributeValue<AliasedValue>("codiceiva")?.Value is Guid codiceIvaLookup ? codiceIvaLookup : Guid.Empty;
+                decimal aliquota = enQuoteDetail.GetAttributeValue<AliasedValue>("aliquota")?.Value is decimal res_rate ? res_rate : 0m;
 
                 //calcolo il totale iva e lo salvo nel target
                 decimal totaleiva = taxableamount * (aliquota / 100);
-                target[DataModel.quotedetail.tax] = totaleiva;
+                target[quotedetail.tax] = totaleiva;
+                if (isTrace) crmServiceProvider.TracingService.Trace($"Totale iva: {totaleiva}");
 
                 if (codiceiva != Guid.Empty)
                 {
                     EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceiva);
 
-                    target[DataModel.quotedetail.res_vatnumberid] = erCodiceIVA;
-                    target[DataModel.quotedetail.res_vatrate] = aliquota;
+                    target[quotedetail.res_vatnumberid] = erCodiceIVA;
+                    target[quotedetail.res_vatrate] = aliquota;
                     crmServiceProvider.Service.Update(target);
+                    if (isTrace) crmServiceProvider.TracingService.Trace($"Update dei campi Codice IVA e Aliquota IVA effettuato.");
                 }
                 else throw new ApplicationException("Codice IVA non trovato");
             }
