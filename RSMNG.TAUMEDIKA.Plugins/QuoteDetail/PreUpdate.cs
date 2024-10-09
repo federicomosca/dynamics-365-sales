@@ -22,6 +22,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            bool isTrace = false;
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
@@ -56,42 +57,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginRegion = "Valorizzo il campo Totale imponibile";
 
             //totale imponibile = importo - sconto totale
-            decimal taxableamount = 0m;     //totale imponibile
-            decimal baseamount = 0m;        //importo
+            decimal taxableamount;          //totale imponibile
+            decimal baseamount;             //importo
+            decimal manualdiscountamount;   //sconto totale
 
-            /**
-             * recupero l'importo per sottrarvi il totale sconto
-             * e calcolare il totale imponibile
-             */
-            var fetchQuoteDetail = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                            <fetch>
-                              <entity name=""quotedetail"">
-                                <attribute name=""baseamount"" alias=""importo"" />
-                                <filter>
-                                  <condition attribute=""quotedetailid"" operator=""eq"" value=""{targetId}"" />
-                                </filter>
-                              </entity>
-                            </fetch>";
+            baseamount = target.GetAttributeValue<Money>(quotedetail.baseamount)?.Value is decimal importo ? importo : 0m;
+            manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
 
-            EntityCollection quoteDetailCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuoteDetail));
+            if (isTrace) crmServiceProvider.TracingService.Trace($"baseamount :{baseamount}");
+            if (isTrace) crmServiceProvider.TracingService.Trace($"manualdiscountamount :{manualdiscountamount}");
+            //calcolo il totale imponibile
+            taxableamount = baseamount - manualdiscountamount;
+            if (isTrace) crmServiceProvider.TracingService.Trace($"taxableamount :{taxableamount}");
 
-            if (quoteDetailCollection.Entities.Count > 0)
-            {
-                Entity enQuoteDetail = quoteDetailCollection.Entities[0];
-
-                if (enQuoteDetail != null)
-                {
-                    baseamount = enQuoteDetail.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
-
-                    decimal manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
-
-                    //calcolo il totale imponibile
-                    taxableamount = baseamount - manualdiscountamount;
-
-                    //valorizzo il campo totale imponibile
-                    target[quotedetail.res_taxableamount] = new Money(taxableamount);
-                }
-            }
+            //valorizzo il campo totale imponibile
+            target[quotedetail.res_taxableamount] = new Money(taxableamount);
             #endregion
         }
     }
