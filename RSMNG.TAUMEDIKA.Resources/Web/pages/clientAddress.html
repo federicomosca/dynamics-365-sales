@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Indirizzi Cliente</title>
+    <link rel="stylesheet" href="../res_lib/suite.css">
+    <style>
+        .dhx_grid-row:hover {
+            background-color: var(--dhx-color-primary-light-hover);
+        }
+
+        .separaBtn {
+            width: 2px;
+        }
+        .grid-container {
+            max-height: 450px; 
+            overflow-y: auto; 
+        }
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="../res_lib/suite.js"></script>
+    <script src="../res_scripts/res_global.js" type="text/jscript"></script>
+    <script>
+        var rowSel = null;
+        var Xrm = null;
+        onLoad = async function () {
+
+                Xrm = window.parent.Xrm;
+            var formContext = window.parent._formContext;
+    
+                GLOBAL_data = JSON.parse(RSMNG.TAUMEDIKA.GLOBAL.getDataParam(location.search));
+
+                const customerId = GLOBAL_data.customerId;
+
+                document.getElementById('loader').style.display = 'block';
+
+                
+                const formconfig = {
+                    css: "dhx_widget--bordered",
+                    padding: 0,
+                    width: 830,
+                    
+                    rows: [
+                        { type: "container", name: "grid", label: "", height: 550, autoWidth: true, css: "grid-container" },
+                        {
+                            align: "end",
+                            cols: [
+                                { name: "ok", type: "button", submit: true, text: "Ok", size: "medium", view: "flat", color: "primary", disabled: true},
+                                { name: "cancel", type: "button", text: "Annulla", size: "medium", view: "link", color: "primary" }
+                            ]
+                        }
+                    ]
+                };
+
+                const dataset = await getAddresses(customerId);
+                const grid = new dhx.Grid(null, {
+                    columns: [
+                        { width: 200, id: "address", header: [{ text: "Indirizzo" }] },
+                        { width: 180, id: "city", header: [{ text: "Città" }] },
+                        { width: 70, id: "postalcode", maxWidth: 70,  header: [{ text: "CAP" }] },
+                        { width: 140, id: "location", header: [{ text: "Località" }] },
+                        { width: 70, id: "province", maxWidth: 70,  header: [{ text: "Prov." }]},
+                        { width: 150, id: "country", header: [{ text: "Nazione" }]},
+                        { width: 0, id: "countryId", header: [{ text: "NazioneID" }], hidden: true}
+                    ],
+                    data: dataset,
+                    adjust: false,
+                    selection: "row"
+                });
+                grid.events.on("cellClick", function (row, column, events) {
+                    rowSel = row;
+                    form.getItem("ok").enable();
+                });
+                const form = new dhx.Form("content", formconfig);
+                form.getItem("ok").events.on("click", function () {
+
+                    formContext.getAttribute("shipto_line1").setValue(rowSel.address != "" ? rowSel.address : null);
+                    formContext.getAttribute("shipto_postalcode").setValue(rowSel.postalcode != "" ? rowSel.postalcode : null);
+                    formContext.getAttribute("shipto_city").setValue(rowSel.city != "" ? rowSel.city : null);
+                    formContext.getAttribute("shipto_stateorprovince").setValue(rowSel.province != "" ? rowSel.province : null);
+
+                    if (rowSel.countryId != "") {
+
+                        let countryLookup = [{
+                            id: rowSel.countryId,
+                            entityType: 'res_country',
+                            name: rowSel.country
+                        }];
+                        formContext.getAttribute("shipto_country").setValue(rowSel.country);
+                        formContext.getAttribute("res_countryid").setValue(countryLookup);
+                    } else {
+                        formContext.getAttribute("shipto_country").setValue(null);
+                        formContext.getAttribute("res_countryid").setValue(null);
+                    }
+
+                    // forzo tipo spedizione 'Indirizzo' e attivo i campi visibili
+                    formContext.getAttribute("willcall").setValue(false);
+
+                    formContext.getControl("res_shippingreference").setVisible(true);
+                    formContext.getControl("shipto_line1").setVisible(true);
+                    formContext.getControl("shipto_city").setVisible(true);
+                    formContext.getControl("res_location").setVisible(true);
+                    formContext.getControl("shipto_stateorprovince").setVisible(true);
+                    formContext.getControl("res_countryid").setVisible(true);
+
+                    formContext.getControl("shipto_postalcode").setVisible(rowSel.address != "" ? true: false);
+                    formContext.getControl("WebResource_postalcode").setVisible(rowSel.address != "" ? true : false);
+                    formContext.getAttribute("shipto_postalcode").setRequiredLevel(rowSel.address != "" ? "required" : "none");
+
+                    formContext.getAttribute("shipto_city").setRequiredLevel(rowSel.postalcode != "" ? "required" : "none");
+                    formContext.getControl("shipto_city").setDisabled(rowSel.postalcode != "" ? false : true);
+
+                    formContext.getControl("res_location").setDisabled(rowSel.city != "" ? false : true);
+                    formContext.getControl("shipto_stateorprovince").setDisabled(rowSel.city != "" ? false : true);
+                    formContext.getControl("res_countryid").setDisabled(rowSel.city != "" ? false : true);
+ 
+                    formContext.data.refresh(true); // serve per ricaricare la logica dell'iframe
+                    window.close();
+                });
+                form.getItem("cancel").events.on("click", function () {
+                    window.returnValue = null;
+                    window.close();
+                });
+                form.getItem("grid").attach(grid);
+
+                document.getElementById('loader').style.display = 'none';
+            //}
+        };
+
+        getAddresses = async function (customerId) {
+            let results = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerId, false);
+            let addresses = [];
+            if (results != null && results.entities.length > 0) {
+
+
+
+                for (let i = 0; i < results.entities.length; i++) {
+                    var result = results.entities[i];
+
+                    let res_address = result["res_address"] !== undefined && result["res_address"] !== null ? result["res_address"] : "";
+                    let res_city = result["res_city"] !== undefined && result["res_city"] !== null ? result["res_city"] : "";
+                    let res_postalcode = result["res_postalcode"] !== undefined && result["res_postalcode"] !== null ? result["res_postalcode"] : "";
+                    let countryName = result["_res_countryid_value@OData.Community.Display.V1.FormattedValue"] !== undefined && result["_res_countryid_value@OData.Community.Display.V1.FormattedValue"] != null ? result["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]: "";
+                    let countryGuid = result["_res_countryid_value"] !== undefined && result["_res_countryid_value"] !== null ? result["_res_countryid_value"] : "";
+                    let res_location = result["res_location"] !== undefined && result["res_location"] !== null ? result["res_location"] : "";
+                    let res_province = result["res_province"] !== undefined && result["res_province"] !== null ? result["res_province"] : "";
+
+                    let address = {
+                        address: res_address,
+                        city: res_city,
+                        postalcode: res_postalcode,
+                        location: res_location,
+                        province: res_province,
+                        country: countryName,
+                        countryId: countryGuid
+                    }
+                    addresses.push(address);
+                }
+            }
+            return addresses;
+        };
+    </script>
+</head>
+<body onload="onLoad()">
+    <div id="content"></div>
+    <img src="../res_images/spinner.svg" alt="Loading..." id="loader">
+</body>
+</html>

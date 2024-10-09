@@ -43,25 +43,45 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         Nonapprovato: 100004,
         Parziale_StateEvaso: 100002,
         Spedito_StateAttivo: 100007
-    }
-    
+    };
 
+    _self.STATECODE = {
+        Annullato: 2,
+        Attivo: 0,
+        Evaso: 3,
+        Fatturato: 4,
+        Inviato: 1
+    }
+
+    _self.readOnlyFields = [
+        "ordernumber",
+        "res_origincode",
+        "datefulfilled",
+        "totallineitemamount",
+        "totaldiscountamount",
+        "totalamountlessfreight",
+        "totaltax",
+        "totalamount",
+        "quoteid"
+    ];
+ 
     _self.Agent = undefined;
 
-    _self.getAgent = function () {
-        return new Promise(function (resolve, reject) {
-            Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
-                function success(result) {
+    //_self.getAgent = function () {
+    //    return new Promise(function (resolve, reject) {
+    //        Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
+    //            function success(result) {
 
-                    resolve(result["res_isagente"]); // Boolean
-                },
-                function (error) {
-                    reject(null);
-                    console.log(error.message);
-                }
-            );
-        });
-    };
+    //                resolve(result["res_isagente"]); // Boolean
+    //            },
+    //            function (error) {
+    //                reject(null);
+    //                console.log(error.message);
+    //            }
+    //        );
+    //    });
+    //};
+    
     //--------------------------------------------------
 
     //--------------------------------------------------
@@ -71,7 +91,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             let isVisible = false;
 
             if (_self.Agent === undefined) {
-                _self.Agent = await _self.getAgent();
+                _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             }
             switch (status) {
 
@@ -104,27 +124,37 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
+
             const salesOrderId = formContext.data.entity.getId().replace(/[{}]/g, "");
 
             let statuscode = null;
             let statecode = 0;
 
+            let setAllReadOnly = false;
+
             switch (status) {
-                case "APPROVAL":
+                case "APPROVAL": // in approvazione
+
                     statuscode = _self.STATUS.Inapprovazione;
+                    setAllReadOnly = _self.Agent;
+
                     break;
                 case "APPROVED":
+
                     statuscode = _self.STATUS.Approvato;
+                    setAllReadOnly = _self.Agent;
+
                     break;
                 case "NOT_APPROVED":
                     statuscode = _self.STATUS.Nonapprovato;
-                    statecode = 2; // Annullato
+                    statecode = _self.STATECODE.Annullato; 
                     break;
                 case "IN_LAVORAZIONE":
                     statuscode = _self.STATUS.Inlavorazione;
                     break;
                 case "SPEDITO":
                     statuscode = _self.STATUS.Spedito_StateAttivo;
+                    setAllReadOnly = true;
                     break;
             }
 
@@ -163,8 +193,14 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                 ).then(responseBody => {
                     const result = JSON.parse(responseBody.jsonDataOutput);
 
-                    if (result === 0) {
-                        console.log("Client action executed successfully (returned 0)");
+                    // imposto read only tutti i campi
+                    if (setAllReadOnly === true) {
+
+                    RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, true);
+                    }
+
+                    if (result == 0) {
+
 
 
                     } else if (typeof result === 'object' && result !== null) {
@@ -196,7 +232,65 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             
         }
     };
+    //-----------------------------------------------------------
+    _self.INDIRIZZOCLIENTE = {
+        canExecute: function (formContext) {
+
+            let isVisible = true;
+
+
+            return isVisible;
+        },
+        execute: async function (formContext) {
+
+            await import('../res_scripts/res_global.js');
+
+            let customerLookup = formContext.getAttribute("customerid").getValue();
+
+            // gestire visibilita bottone se manca customer
+
+            if (customerLookup != null) {
+
+                jsonDataInput = {
+                    customerId: customerLookup[0].id
+                }
+
+                pageInput = {
+                    pageType: 'webresource',
+                    webresourceName: '/res_pages/clientAddress.html',
+                    data: JSON.stringify(jsonDataInput)
+                }
+
+                navigationOptions = {
+                    target: 2,
+                    width: { value: 850, unit: "px" },
+                    height: { value: 560, unit: "px" },
+                    position: 1,
+                    title: 'Indirizzi Cliente'
+                }
+                window._formContext = formContext;
+                Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                    function (result) {
+
+                        if (result.returnValue != null) {
+
+                            console.log("navigate ok");
+
+                        }
+                    },
+
+                    function (error) {
+                        console.log(error.message);
+                    }
+                );
+            }
+        }
+    };
+    //-----------------------------------------------------------
+
+    //-----------------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.SALESORDER.RIBBON.FORM);
+
 
 /*
 Alla call puoi aggiungere i namespace se hai necessità di estendere le funzionalità

@@ -25,32 +25,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         fields: {
             ///Account
             accountid: "accountid",
-            ///ID indirizzo di fatturazione
-            billto_addressid: "billto_addressid",
-            ///Città fatturazione
-            billto_city: "billto_city",
-            ///Indirizzo di fatturazione
-            billto_composite: "billto_composite",
-            ///Nome contatto fatturazione
-            billto_contactname: "billto_contactname",
-            ///Paese fatturazione
-            billto_country: "billto_country",
-            ///Fax fatturazione
-            billto_fax: "billto_fax",
-            ///Via 1 fatturazione
-            billto_line1: "billto_line1",
-            ///Via 2 fatturazione
-            billto_line2: "billto_line2",
-            ///Via 3 fatturazione
-            billto_line3: "billto_line3",
-            ///Nome fatturazione
-            billto_name: "billto_name",
-            ///CAP fatturazione
-            billto_postalcode: "billto_postalcode",
-            ///Provincia di fatturazione
-            billto_stateorprovince: "billto_stateorprovince",
-            ///Telefono fatturazione
-            billto_telephone: "billto_telephone",
             ///Campagna di origine
             campaignid: "campaignid",
             ///Contatto
@@ -77,34 +51,22 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             exchangerate: "exchangerate",
             ///Importo spesa accessoria
             freightamount: "freightamount",
-            ///Spese di spedizione (Base)
-            freightamount_base: "freightamount_base",
             ///Condizioni di spedizione
             freighttermscode: "freighttermscode",
             ///Prezzi bloccati
             ispricelocked: "ispricelocked",
-            ///Ultimo invio al back office
-            lastbackofficesubmit: "lastbackofficesubmit",
-            ///Ultimo periodo sospensione
-            lastonholdtime: "lastonholdtime",
             ///Nome
             name: "name",
             ///Periodo di sospensione (minuti)
             onholdtime: "onholdtime",
             ///Opportunità
             opportunityid: "opportunityid",
-            ///Metodo di creazione
-            ordercreationmethod: "ordercreationmethod",
-            ///Nr. Ordine
-            ordernumber: "ordernumber",
             ///Condizioni di pagamento
             paymenttermscode: "paymenttermscode",
             ///Listino prezzi
             pricelevelid: "pricelevelid",
             ///Errore di determinazione dei prezzi 
             pricingerrorcode: "pricingerrorcode",
-            ///Priorità
-            prioritycode: "prioritycode",
             ///Process Id
             processid: "processid",
             ///Offerta
@@ -145,14 +107,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             shipto_addressid: "shipto_addressid",
             ///Città spedizione
             shipto_city: "shipto_city",
-            ///Indirizzo di spedizione
-            shipto_composite: "shipto_composite",
             ///Nome contatto spedizione
             shipto_contactname: "shipto_contactname",
             ///Paese spedizione
             shipto_country: "shipto_country",
-            ///Fax spedizione
-            shipto_fax: "shipto_fax",
             ///Condizioni di spedizione per indirizzo spedizione
             shipto_freighttermscode: "shipto_freighttermscode",
             ///Via spedizione
@@ -167,16 +125,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             shipto_postalcode: "shipto_postalcode",
             ///Provincia
             shipto_stateorprovince: "shipto_stateorprovince",
-            ///Telefono spedizione
-            shipto_telephone: "shipto_telephone",
-            ///Ignora calcolo prezzo
-            skippricecalculation: "skippricecalculation",
-            ///CONTRATTO DI SERVIZIO
-            slaid: "slaid",
-            ///Ultimo contratto di servizio applicato
-            slainvokedid: "slainvokedid",
-            ///(Deprecated) Stage Id
-            stageid: "stageid",
             ///Data invio
             submitdate: "submitdate",
             ///Stato invio
@@ -191,22 +139,16 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             totaldiscountamount: "totaldiscountamount",
             ///Totale righe
             totallineitemamount: "totallineitemamount",
-            ///Totale dettagli (Base)
-            totallineitemamount_base: "totallineitemamount_base",
             ///Importo totale sconto per voce
             totallineitemdiscountamount: "totallineitemdiscountamount",
-            ///Importo totale sconto per voce (Base)
-            totallineitemdiscountamount_base: "totallineitemdiscountamount_base",
             ///Totale IVA
             totaltax: "totaltax",
-            ///Totale imposte (Base)
-            totaltax_base: "totaltax_base",
             ///Valuta
             transactioncurrencyid: "transactioncurrencyid",
-            ///(Deprecated) Traversed Path
-            traversedpath: "traversedpath",
             ///Spedizione
             willcall: "willcall",
+            // Motivo Stato
+            statuscode: "statuscode",
 
             /// Values for field Stato
             statecodeValues: {
@@ -232,24 +174,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 Spedito_StateAttivo: 100007
             },
 
-            /// Values for field Condizioni di spedizione
-            freighttermscodeValues: {
-                CFRCostoenolo: 3,
-                CIFCostoassenolo: 4,
-                CIPTraspeasspagatifinoa: 5,
-                CPTTrasportopagatofinoa: 6,
-                DAFResofrontiera: 7,
-                DDPResosdoganato: 10,
-                DDUResononsdoganato: 11,
-                DEQResobanchina: 8,
-                DESResoexship: 9,
-                EXWFrancofabbrica: 12,
-                FASFrancolungobordo: 13,
-                FCAFrancovettore: 14,
-                FOBFrancoabordo: 1,
-                Gratis: 2
-            },
-
             /// Values for field Prezzi bloccati
             ispricelockedValues: {
                 No: 0,
@@ -260,57 +184,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             ordercreationmethodValues: {
                 Acquisisciofferta: 776160001,
                 Sconosciuto: 776160000
-            },
-
-            /// Values for field Condizioni di pagamento
-            paymenttermscodeValues: {
-                _30gg: 1,
-                _60gg: 4,
-                _90gg: 9,
-                Pagamentoincontanti: 10
-            },
-
-            /// Values for field Errore di determinazione dei prezzi 
-            pricingerrorcodeValues: {
-                Attributodelprezzofuoriintervallo: 35,
-                Codicedideterminazionedeiprezzimancante: 8,
-                Codicedideterminazionedeiprezzinonvalido: 9,
-                Costocorrentemancante: 15,
-                Costocorrentenonvalido: 20,
-                Costomediomancante: 16,
-                Costomediononvalido: 21,
-                Dettaglierrore: 1,
-                Erroredicalcolodelprezzo: 25,
-                Importodellistinoprezzimancante: 12,
-                Importodellistinoprezzinonvalido: 17,
-                Lavalutadellatransazionenoneimpostataperlavocedilistinodelprodotto: 38,
-                Listinoprezziinattivo: 3,
-                Listinoprezzimancante: 2,
-                Nessuno: 0,
-                Opzionediarrotondamentononvalida: 23,
-                Overflowdellattributodellavalutadibase: 36,
-                Percentualedellistinoprezzimancante: 13,
-                Percentualedellistinoprezzinonvalida: 18,
-                Precisionedideterminazionedeiprezzinonvalida: 30,
-                Prezzomancante: 14,
-                Prezzononvalido: 19,
-                Prezzounitariomancante: 5,
-                Prodottomancante: 6,
-                Prodottononinclusonellistinoprezzi: 11,
-                Prodottononvalido: 7,
-                Quantitamancante: 4,
-                Quantitanonvalida: 29,
-                Regoladiarrotondamentononvalida: 22,
-                Scontononvalido: 28,
-                Statononvalidotipodisconto: 27,
-                Tipodiscontoinattivo: 33,
-                Tipodiscontononvalido: 26,
-                Underflowdellattributodellavalutadibase: 37,
-                Unitadimisuramancante: 10,
-                Unitadimisurapredefinitadelprodottomancante: 31,
-                Unitadivenditadelprodottomancante: 32,
-                Valorediarrotondamentononvalido: 24,
-                Valutadellistinoprezzinonvalida: 34
             },
 
             /// Values for field Priorità
@@ -328,17 +201,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             res_origincodeValues: {
                 Dynamics: 100000000,
                 ERP: 100000001
-            },
-
-            /// Values for field Metodo di spedizione
-            shippingmethodcodeValues: {
-                Corriereespresso: 28,
-                SpedizionePostale: 5,
-                Trasportoaereo: 1,
-                Trasportoferroviario: 10,
-                Trasportointermodale: 18,
-                Trasportomarittimo: 11,
-                Trasportostradale: 9
             },
 
             /// Values for field Condizioni di spedizione per indirizzo spedizione
@@ -365,6 +227,18 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         }
     };
+
+    _self.readOnlyFields = [
+        _self.formModel.fields.ordernumber,
+        _self.formModel.fields.res_origincode,
+        _self.formModel.fields.datefulfilled,
+        _self.formModel.fields.totallineitemamount,
+        _self.formModel.fields.totaldiscountamount,
+        _self.formModel.fields.totalamountlessfreight,
+        _self.formModel.fields.totaltax,
+        _self.formModel.fields.totalamount,
+        _self.formModel.fields.quoteid
+    ];
 
     //-----------Listino-prezzi-Custom-View--------------   
     _self.addPriceLevelCustomView = function (executionContext) {
@@ -493,12 +367,15 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
-            formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
+            //formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_countryid).setVisible(true);
-            formContext.getControl("WebResource_postalcode").setVisible(true);
+            //formContext.getControl("WebResource_postalcode").setVisible(true);
+            //_self.setContextCapIframe(executionContext); 
+
+            if (isEvent) { _self.onChangeCustomer(executionContext); } // controlla se cliente ha un indirizzo default per settare in auto i campi spedizione
         } else {
             if (isEvent) {
                 formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
@@ -531,6 +408,16 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         let shipToLine1 = formContext.getAttribute(_self.formModel.fields.shipto_line1).getValue();
 
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
+        formContext.getControl("WebResource_postalcode").setVisible(shipToLine1 !== null ? true : false);
+
+        if (shipToLine1 !== null) {
+
+            _self.setContextCapIframe(executionContext); 
+        } else {
+
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+        }
 
     };
 
@@ -589,12 +476,87 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         //  filtro gli account
         const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
         potentialCustomerControl.addCustomFilter(accountFilter, "account");
-        console.log("Filtro account applicato");
 
         //  filtro i contatti
         const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
         potentialCustomerControl.addCustomFilter(contactFilter, "contact");
-        console.log("Filtro contatti applicato");
+
+    };
+    //---------------------------------------------------
+    _self.onChangeCustomer = async function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        console.log("on change customer");
+        let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
+        let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue(); 
+
+        if (customerLookup !== null && tipoSpedizione == _self.formModel.fields.willcallValues.Indirizzo) { // willcall è un bool. richiede == per fare la conversione implicita
+
+            let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
+
+            if (addresses != null && addresses.entities.length > 0) {
+
+                
+
+                let address = addresses.entities[0];
+
+                formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(address.res_address);
+                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(address.res_postalcode);
+                formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
+                formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
+                formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
+
+
+                if (address._res_countryid_value != null) {
+
+
+                    let countryLookup = [{
+                        id: address["_res_countryid_value"],
+                        entityType: 'res_country',
+                        name: address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
+                    }];
+
+                    formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
+                    formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
+
+                   
+                }
+
+                _self.updateAddressFieldsRequirements(executionContext);
+            }
+        } else {
+            formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
+
+            _self.updateAddressFieldsRequirements(executionContext);
+        }
+    };
+    //---------------------------------------------------
+    _self.updateAddressFieldsRequirements = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+       
+        _self.onChangeShipToLine1(executionContext);
+
+        let cap = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
+        formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel(cap !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(cap != null ? false : true);
+
+        let citta = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
+        _self.disableCityRelated(executionContext, citta != null ? false : true);
+
+    };
+    //---------------------------------------------------
+    _self.disableCityRelated = function(executionContext, isDisable){
+        var formContext = executionContext.getFormContext();
+       
+        formContext.getControl(_self.formModel.fields.res_location).setDisabled(isDisable);
+        formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(isDisable);
+        formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
     };
     //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
@@ -655,10 +617,46 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         );
     };
     //---------------------------------------------------
+    _self.setAllFieldsReadOnly = function(executionContext, setAllReadOnly){
+
+        var formContext = executionContext.getFormContext();
+
+        // campi da rimettere readOnly al passaggio stato che consente la modifica di campi
+        const readOnlyFields = [
+            _self.formModel.fields.ordernumber,
+            _self.formModel.fields.res_origincode,
+            _self.formModel.fields.datefulfilled,
+            _self.formModel.fields.totallineitemamount,
+            _self.formModel.fields.totaldiscountamount,
+            _self.formModel.fields.totalamountlessfreight,
+            _self.formModel.fields.totaltax,
+            _self.formModel.fields.totalamount,
+            _self.formModel.fields.quoteid
+        ];
+
+        formContext.ui.controls.forEach(function (field) {
+            console.log(field);
+            //if () {
+            //    control.setDisabled(true);
+            //}
+        });
+
+    };
+    //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
-        //-----
+
+        //--- Blocca/Sblocca i campi in base a Utente-Agente e Motivo Stato---
+        let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+
+        if (currStatus == _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttivo || currStatus == _self.formModel.fields.statuscodeValues.Approvato_StateAttivo) {
+
+            let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
+        }
+                
+        //----------------------------------------------
         _self.onChangeWillCall(executionContext, false);
         _self.onChangeShipToLine1(executionContext);
         _self.onChangeShipToPostalCode(executionContext);
@@ -723,6 +721,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeShipToPostalCode);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeShipToCity);
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeWillCall(executionContext, true); });
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
+
+
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
         //Init function
         _self.addPriceLevelCustomView(executionContext);

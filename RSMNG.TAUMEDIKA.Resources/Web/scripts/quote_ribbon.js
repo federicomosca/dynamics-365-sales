@@ -43,23 +43,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
     let agentPromise = null;
 
-    _self.getAgent = function () {
-        if (agentPromise === null) {
-            agentPromise = new Promise(function (resolve, reject) {
-                Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
-                    result => {
-                        console.log(result);
-                        resolve(result["res_isagente"]);
-                    },
-                    error => {
-                        reject(null);
-                        console.log(error.message);
-                    }
-                );
-            });
-        }
-        return agentPromise;
-    };
     //--------------------------------------------------
     /**
      * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del 
@@ -84,7 +67,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let visible = false;
 
-            const agent = await _self.getAgent();
+            const agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             console.log(`Agent status: ${agent}`);
 
             switch (status) {
