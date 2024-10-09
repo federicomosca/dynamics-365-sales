@@ -27,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
-            VerifyMandatoryField(crmServiceProvider, RSMNG.TAUMEDIKA.Plugins.Shared.SalesOrder.Utility.mandatoryFields);
+            VerifyMandatoryField(crmServiceProvider, RSMNG.TAUMEDIKA.Shared.SalesOrder.Utility.mandatoryFields);
             #endregion
 
             #region Valorizzo il campo Nazione (testo)

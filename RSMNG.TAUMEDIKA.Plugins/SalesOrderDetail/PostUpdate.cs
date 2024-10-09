@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using RSMNG.TAUMEDIKA.DataModel;
-using RSMNG.TAUMEDIKA.Shared.SalesOrderDetail;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
