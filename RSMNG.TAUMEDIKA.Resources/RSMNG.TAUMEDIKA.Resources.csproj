@@ -116,6 +116,7 @@
     <Content Include="DataModel\uom.js" />
     <Content Include="DataModel\uomschedule.js" />
     <Content Include="Web.config" />
+    <Content Include="Web\pages\clientAddress.html" />
     <Content Include="Web\pages\copyPriceLevel.html" />
     <Content Include="Web\pages\getPostalcode.html" />
     <Content Include="Web\pages\postalcode.html" />

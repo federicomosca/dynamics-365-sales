@@ -337,4 +337,78 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
                 });
         });
     };
+    //-----------------------------------------------------------------
+    _self.getCustomerAddresses = async function (customerId, isDefault) {
+        return new Promise(function (resolve, reject) {
+
+            var fetchData = {
+                "statecode": "0",
+                "res_isdefault": isDefault ? `<condition attribute='res_isdefault' operator='eq' value='1' />` : "",
+                "res_customerid": _self.convertGuid(customerId)
+            };
+
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='res_address'>",
+                "    <attribute name='res_address'/>",
+                "    <attribute name='res_city'/>",
+                "    <attribute name='res_postalcode'/>",
+                "    <attribute name='res_countryid'/>",
+                "    <attribute name='res_location'/>",
+                "    <attribute name='res_isdefault'/>",
+                "    <attribute name='res_province'/>",
+                "    <filter>",
+                "      <condition attribute='statecode' operator='eq' value='", fetchData.statecode, "'/>",
+                fetchData.res_isdefault,
+                "      <condition attribute='res_customerid' operator='eq' value='", fetchData.res_customerid, "' />",
+                "    </filter>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+         
+            Xrm.WebApi.retrieveMultipleRecords("res_address", fetchXml)
+                .then(function (result) {
+                    resolve(result); 
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    reject(error.message);  
+                });
+        });
+    };
+    //-----------------------------------------------------------------
+    _self.setAllFieldsReadOnly = function (formContext, setAllReadOnly, readOnlyFields = []) {
+
+        // setAllReadOnly  riabilita campi che non sono inclusi in readOnlyFields
+
+        formContext.ui.controls.forEach(function (field) {
+
+            if (setAllReadOnly === true && !field.getDisabled()) {
+                field.setDisabled(true);
+
+            } 
+            else if (setAllReadOnly === false && !readOnlyFields.includes(field._controlName)) {
+                field.setDisabled(false);
+            }
+            
+        });
+
+    };
+    //-----------------------------------------------------------------
+    _self.getAgent = function () {
+        return new Promise(function (resolve, reject) {
+            Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
+                function success(result) {
+
+                    resolve(result["res_isagente"]); // Boolean
+                },
+                function (error) {
+                    reject(null);
+                    console.log(error.message);
+                }
+            );
+        });
+    };
+    //-----------------------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.GLOBAL);
