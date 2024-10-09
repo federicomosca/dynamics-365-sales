@@ -531,7 +531,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
                 //aggiungo all'importo totale il l'iva calcolata sulla spesa accessoria
                 const totalamount = totalAmountControl.getAttribute().getValue();
-                totalAmountControl.getAttribute().setValue(totalamount ?? 0 + ivaSpesaAccessoria);
+                totalAmountControl.getAttribute().setValue(totalamount ? totalamount + ivaSpesaAccessoria : ivaSpesaAccessoria);
 
             } else throw console.error("additional expense amount or vat number are missing");
         } else {
@@ -550,7 +550,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 "quoteid": formContext.data.entity.getId().replace(/[{}]/g, "")
             };
             var fetchXml = [
-                "<fetch aggregate='true'>",
+                "?fetchXml=<fetch aggregate='true'>",
                 "  <entity name='quotedetail'>",
                 "    <attribute name='manualdiscountamount' alias='totalesconto' aggregate='sum'/>",
                 "    <attribute name='res_taxableamount' alias='totaleimponibile' aggregate='sum'/>",
