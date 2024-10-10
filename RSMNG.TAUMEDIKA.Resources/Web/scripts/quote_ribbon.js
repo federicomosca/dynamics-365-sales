@@ -143,6 +143,61 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             }
         }
     };
+    //--------------------------------------------------
+    _self.INDIRIZZOCLIENTE = {
+        canExecute: function (formContext) {
+
+            let isVisible = true;
+
+
+            return isVisible;
+        },
+        execute: async function (formContext) {
+
+            await import('../res_scripts/res_global.js');
+
+            let customerLookup = formContext.getAttribute("customerid").getValue();
+
+            // gestire visibilita bottone se manca customer
+
+            if (customerLookup != null) {
+
+                jsonDataInput = {
+                    customerId: customerLookup[0].id
+                }
+
+                pageInput = {
+                    pageType: 'webresource',
+                    webresourceName: '/res_pages/clientAddress.html',
+                    data: JSON.stringify(jsonDataInput)
+                }
+
+                navigationOptions = {
+                    target: 2,
+                    width: { value: 850, unit: "px" },
+                    height: { value: 560, unit: "px" },
+                    position: 1,
+                    title: 'Indirizzi Cliente'
+                }
+                window._formContext = formContext;
+                Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                    function (result) {
+
+                        if (result.returnValue != null) {
+
+                            console.log("navigate ok");
+
+                        }
+                    },
+
+                    function (error) {
+                        console.log(error.message);
+                    }
+                );
+            }
+        }
+    };
+    //--------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.QUOTE.RIBBON.FORM);
 
 /*

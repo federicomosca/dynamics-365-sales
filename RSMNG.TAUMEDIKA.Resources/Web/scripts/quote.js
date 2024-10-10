@@ -622,6 +622,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
                 formContext.getControl("WebResource_postalcode").setVisible(true);
                 control.setVisible(true);
+                _self.setContextCapIframe(executionContext);
             }
 
             if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
@@ -774,6 +775,77 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         console.log("Filtro contatti applicato");
     };
     //---------------------------------------------------
+    _self.onChangeCustomer = async function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        console.log("on change customer");
+        let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
+        //let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
+
+        if (customerLookup !== null) { // && tipoSpedizione == _self.formModel.fields.willcallValues.Indirizzo
+
+            let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
+
+            if (addresses != null && addresses.entities.length > 0) {
+
+
+
+                let address = addresses.entities[0];
+
+                formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(address.res_address);
+                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(address.res_postalcode);
+                formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
+                formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
+                formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
+
+                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
+
+
+                if (address._res_countryid_value != null) {
+
+
+                    let countryLookup = [{
+                        id: address["_res_countryid_value"],
+                        entityType: 'res_country',
+                        name: address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
+                    }];
+
+                    formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
+                    formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
+
+
+                }
+
+                
+            }
+        } else {
+            formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
+
+            
+        }
+        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
+        _self.handleWillCallRelatedFields(executionContext);
+    };
+    //---------------------------------------------------
+    _self.onChangeWillCall = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let willCall = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
+
+        if (willCall == _self.formModel.fields.willcallValues.Indirizzo) {
+            _self.onChangeCustomer(executionContext);
+        }
+
+        _self.handleWillCallRelatedFields(executionContext);
+    }
+    //---------------------------------------------------
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -817,12 +889,17 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(() => { _self.handleVatNumberField(executionContext, true) });
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.setFreightAmountEditability);
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber); //codice IVA spesa accessoria
+
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.setPostalCodeRelatedFieldsRequirement);
-        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
+        //formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
+        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.onChangeWillCall);
+        
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.setBankVisibility);
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
+
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
 
         //Init function
