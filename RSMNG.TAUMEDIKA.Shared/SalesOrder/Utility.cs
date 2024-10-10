@@ -46,7 +46,7 @@ namespace RSMNG.TAUMEDIKA.Shared.SalesOrder
 
                 if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
                 trace.Trace("dentro if");
-                Helper.updateEntityStatusCode(service, trace, salesorder.logicalName, entityId, (int)statecode, (int)statuscode);
+                Helper.UpdateEntityStatusCode(service, trace, salesorder.logicalName, entityId, (int)statecode, (int)statuscode);
             }
             catch (Exception ex)
             {

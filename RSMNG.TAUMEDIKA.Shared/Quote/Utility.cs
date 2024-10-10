@@ -41,7 +41,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
 
                 if (statecode == null || statuscode == null || entityId == string.Empty) { throw new Exception("Button or EntityId not found."); }
 
-                Helper.updateEntityStatusCode(service, trace, quote.logicalName, entityId, (int)statecode, (int)statuscode);
+                Helper.UpdateEntityStatusCode(service, trace, quote.logicalName, entityId, (int)statecode, (int)statuscode);
             }
             catch (Exception ex)
             {
