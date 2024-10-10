@@ -56,8 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo il campo Totale imponibile
             PluginRegion = "Valorizzo il campo Totale imponibile";
 
-            //totale imponibile = importo - sconto totale
-            decimal taxableamount;          //totale imponibile
+            decimal taxableamount;          //totale imponibile = importo - sconto totale
             decimal baseamount;             //importo
             decimal manualdiscountamount;   //sconto totale
 

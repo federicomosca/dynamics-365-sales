@@ -110,7 +110,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                     }
                 }
 
-                totalAmountlessFreight = taxableAmountSum - totalDiscountAmount; // Totale imponibile
+                totalAmountlessFreight = taxableAmountSum - totalDiscountAmount + freightAmount; // Totale imponibile
                 decimal totalTax = taxRowsSum + freightAmountRate;
                 decimal totalAmount = totalAmountlessFreight + totalTax;
 
