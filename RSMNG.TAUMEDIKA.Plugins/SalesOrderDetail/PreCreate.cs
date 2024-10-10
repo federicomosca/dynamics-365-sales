@@ -81,34 +81,33 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
              * recupero i campi "prezzo" dell'ordine per aggiornare i valori
              */
             var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                    <fetch>
-                                      <entity name=""salesorder"">
-                                        <attribute name=""totaldiscountamount"" alias=""OrdineScontoTotaleApplicato"" />
-                                        <attribute name=""totallineitemamount"" alias=""OrdineTotaleProdotti"" />
-                                        <attribute name=""freightamount"" alias=""OrdineImportoSpesaAccessoria"" />
-                                        <attribute name=""totaltax"" alias=""OrdineTotaleIva"" />
-                                        <filter>
-                                          <condition attribute=""salesorderid"" operator=""eq"" value=""{erSalesOrder.Id}"" />
-                                        </filter>
-                                        <link-entity name=""pricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
-                                          <link-entity name=""productpricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
-                                            <filter>
-                                              <condition attribute=""productid"" operator=""eq"" value=""{erProduct.Id}"" />
-                                              <condition attribute=""uomid"" operator=""eq"" value=""{erUom.Id}"" />
-                                            </filter>
-                                            <link-entity name=""product"" from=""productid"" to=""productid"" alias=""prodotto"">
-                                              <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                                <attribute name=""res_rate"" alias=""RigaOrdineCodiceIvaAliquota"" />
-                                                <attribute name=""res_vatnumberid"" alias=""RigaOrdineCodiceIvaGuid"" />
-                                              </link-entity>
+                                <fetch>
+                                  <entity name=""salesorder"">
+                                    <attribute name=""{salesorder.totalamountlessfreight}"" alias=""OrdineImportoSpesaAccessoria"" />
+                                    <attribute name=""{salesorder.totaldiscountamount}"" alias=""OrdineScontoTotaleApplicato"" />
+                                    <attribute name=""{salesorder.totallineitemamount}"" alias=""OrdineTotaleProdotti"" />
+                                    <attribute name=""{salesorder.totaltax}"" alias=""OrdineTotaleIva"" />
+                                    <link-entity name=""{quote.logicalName}"" from=""quoteid"" to=""quoteid"" alias=""Offerta"">
+                                      <filter>
+                                        <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""77ce5e3f-5e85-ef11-ac20-00224884a5f7"" uiname=""Dubbi esistenziali"" uitype=""quote"" />
+                                      </filter>
+                                      <link-entity name=""{pricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""Listino"">
+                                        <link-entity name=""{productpricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""VoceListino"">
+                                          <filter>
+                                            <condition attribute=""{productpricelevel.productid}"" operator=""eq"" value=""99197fd0-f71f-eb11-a813-000d3a33f3b4"" uiname=""Café Grande"" uitype=""product"" />
+                                            <condition attribute=""{productpricelevel.uomid}"" operator=""eq"" value=""e21af1d0-2782-ef11-ac20-00224884a5f7"" uiname=""nr"" uitype=""uom"" />
+                                          </filter>
+                                          <link-entity name=""{product.logicalName}"" from=""productid"" to=""productid"" alias=""Prodotto"">
+                                            <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
+                                              <attribute name=""{res_vatnumber.res_rate}"" alias=""RigaOrdineCodiceIvaAliquota"" />
+                                              <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""RigaOrdineCodiceIvaGuid"" />
                                             </link-entity>
                                           </link-entity>
                                         </link-entity>
-                                        <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
-                                          <attribute name=""res_rate"" alias=""OrdineAliquotaIVA"" />
-                                        </link-entity>
-                                      </entity>
-                                    </fetch>";
+                                      </link-entity>
+                                    </link-entity>
+                                  </entity>
+                                </fetch>";
 
             Trace("fetch", fetchProdotto);
             EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
@@ -168,10 +167,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 decimal sommaRigheOrdineTotaleIva = prodotto.GetAttributeValue<AliasedValue>("OrdineTotaleIva")?.Value is Money totaltax ? totaltax.Value : 0m; Trace("Somma_Righe_Ordine_Totale_Iva", sommaRigheOrdineTotaleIva);
 
                 //ordine aliquota iva
-                decimal ordineAliquotaIva = prodotto.GetAttributeValue<AliasedValue>("OrdineAliquotaIVA")?.Value is decimal salesorderRate ? salesorderRate : 0m; Trace("Ordine_Aliquota_Iva", ordineAliquotaIva);
+                target.TryGetAttributeValue<EntityReference>(salesorder.quoteid, out EntityReference erQuote);
+                if (erQuote == null) throw new ApplicationException("Quote entity reference not found.");
+
+                var fetchAliquota = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch>
+                                      <entity name=""{quote.logicalName}"">
+                                        <filter>
+                                          <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{erQuote.Id}"" uiname=""Dubbi esistenziali"" uitype=""quote"" />
+                                        </filter>
+                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
+                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""OrdineAliquotaIVA"" />
+                                        </link-entity>
+                                      </entity>
+                                    </fetch>";
+
+                EntityCollection aliquotaCollection = service.RetrieveMultiple(new FetchExpression(fetchAliquota));
+                if (aliquotaCollection == null) throw new ApplicationException("Cannot find Vat Number linked to Quote");
+
+                Entity offertaCodiceIVA = aliquotaCollection.Entities[0];
+                decimal ordineAliquotaIVA = offertaCodiceIVA.GetAttributeValue<AliasedValue>("OrdineAliquotaIVA")?.Value is decimal salesOrderRate ? salesOrderRate : 0m;
+                //decimal ordineAliquotaIVA = prodotto.GetAttributeValue<AliasedValue>("OrdineAliquotaIva")?.Value is decimal salesorderRate ? salesorderRate : 0m; Trace("Ordine_Aliquota_Iva", ordineAliquotaIVA);
 
                 //iva su importo spesa accessoria
-                decimal ordineIvaImportoSpesaAccessoria = ordineImportoSpesaAccessoria * (ordineAliquotaIva / 100); Trace("Ordine_Iva_Importo_Spesa_Accessoria", ordineIvaImportoSpesaAccessoria);
+                decimal ordineIvaImportoSpesaAccessoria = ordineImportoSpesaAccessoria * (ordineAliquotaIVA / 100); Trace("Ordine_Iva_Importo_Spesa_Accessoria", ordineIvaImportoSpesaAccessoria);
 
                 //sommatoria del totale iva di tutte le righe + iva calcolata su importo spesa accessoria
                 decimal ordineTotaleIva = sommaRigheOrdineTotaleIva + ordineIvaImportoSpesaAccessoria; Trace("Ordine_Totale_Iva", ordineTotaleIva);

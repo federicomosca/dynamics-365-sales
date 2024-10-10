@@ -45,8 +45,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             if (erProduct == null) throw new ApplicationException("Product entity reference not found");
 
-            Entity prodotto = crmServiceProvider.Service.Retrieve(DataModel.product.logicalName, erProduct.Id, new ColumnSet(DataModel.product.productnumber));
-            prodotto.TryGetAttributeValue<string>(DataModel.product.productnumber, out string productNumber);
+            Entity prodotto = crmServiceProvider.Service.Retrieve(product.logicalName, erProduct.Id, new ColumnSet(product.productnumber));
+            prodotto.TryGetAttributeValue<string>(product.productnumber, out string productNumber);
 
             target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
             #endregion
@@ -74,29 +74,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""quote"">
-                                        <attribute name=""totaldiscountamount"" alias=""OffertaScontoTotaleApplicato"" />
-                                        <attribute name=""totallineitemamount"" alias=""OffertaTotaleProdotti"" />
-                                        <attribute name=""freightamount"" alias=""OffertaImportoSpesaAccessoria"" />
-                                        <attribute name=""totaltax"" alias=""OffertaTotaleIva"" />
+                                        <attribute name=""{quote.totaldiscountamount}"" alias=""OffertaScontoTotaleApplicato"" />
+                                        <attribute name=""{quote.totallineitemamount}"" alias=""OffertaTotaleProdotti"" />
+                                        <attribute name=""{quote.freightamount}"" alias=""OffertaImportoSpesaAccessoria"" />
+                                        <attribute name=""{quote.totaltax}"" alias=""OffertaTotaleIva"" />
                                         <filter>
-                                          <condition attribute=""quoteid"" operator=""eq"" value=""{erQuote.Id}"" />
+                                          <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{erQuote.Id}"" />
                                         </filter>
-                                        <link-entity name=""pricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
-                                          <link-entity name=""productpricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
+                                        <link-entity name=""{pricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
+                                          <link-entity name=""{productpricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
                                             <filter>
-                                              <condition attribute=""productid"" operator=""eq"" value=""{erProduct.Id}"" />
-                                              <condition attribute=""uomid"" operator=""eq"" value=""{erUom.Id}"" />
+                                              <condition attribute=""{productpricelevel.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
+                                              <condition attribute=""{productpricelevel.uomid}"" operator=""eq"" value=""{erUom.Id}"" />
                                             </filter>
-                                            <link-entity name=""product"" from=""productid"" to=""productid"" alias=""prodotto"">
-                                              <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                                <attribute name=""res_rate"" alias=""RigaOffertaCodiceIvaAliquota"" />
-                                                <attribute name=""res_vatnumberid"" alias=""RigaOffertaCodiceIvaGuid"" />
+                                            <link-entity name=""{product.logicalName}"" from=""productid"" to=""productid"" alias=""prodotto"">
+                                              <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
+                                                <attribute name=""{res_vatnumber.res_rate}"" alias=""RigaOffertaCodiceIvaAliquota"" />
+                                                <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""RigaOffertaCodiceIvaGuid"" />
                                               </link-entity>
                                             </link-entity>
                                           </link-entity>
                                         </link-entity>
-                                        <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
-                                          <attribute name=""res_rate"" alias=""OffertaAliquotaIVA"" />
+                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
+                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""OffertaAliquotaIVA"" />
                                         </link-entity>
                                       </entity>
                                     </fetch>";

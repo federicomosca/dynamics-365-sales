@@ -25,6 +25,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
+
             #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale
             PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             if (target.Contains(salesorder.totallineitemamount) ||
@@ -42,7 +43,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 decimal rateVatNumber = 0;
                 decimal freightAmountRate = 0;
                 decimal totalAmountlessFreight = 0; // Totale imponibile
-                
+
                 bool isTrace = false;
 
 
@@ -53,12 +54,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 //----Recupera Aliquota Codice IVA Spesa Accessoria
                 EntityReference erVatNumber = target.Contains(salesorder.res_vatnumberid) ? target.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid) : preImage.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid);
 
-                if(freightAmount != 0 && erVatNumber != null)
+                if (freightAmount != 0 && erVatNumber != null)
                 {
                     Entity enVatNumber = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, erVatNumber.Id, new Microsoft.Xrm.Sdk.Query.ColumnSet(new string[] { res_vatnumber.res_rate }));
 
                     rateVatNumber = enVatNumber.ContainsAttributeNotNull(res_vatnumber.res_rate) ? enVatNumber.GetAttributeValue<decimal>(res_vatnumber.res_rate) : 0;
-                    
+
                     freightAmountRate = freightAmount * (rateVatNumber / 100);
                 }
 
@@ -89,11 +90,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                     taxRowsSum = ecSum[0].ContainsAliasNotNull("Tax") ? ecSum[0].GetAliasedValue<Money>("Tax").Value : 0;
                     totalDiscountAmount = ecSum[0].ContainsAliasNotNull("ManualDiscountAmount") ? ecSum[0].GetAliasedValue<Money>("ManualDiscountAmount").Value : 0;
 
-                    if (isTrace) { crmServiceProvider.TracingService.Trace("totalDiscountAmount: " + taxableAmountSum.ToString() + "\n"+
-                                                                            "taxRowsSum: " + taxRowsSum); }
+                    if (isTrace)
+                    {
+                        crmServiceProvider.TracingService.Trace("totalDiscountAmount: " + taxableAmountSum.ToString() + "\n" +
+                                                                            "taxRowsSum: " + taxRowsSum);
+                    }
                 }
 
-                totalAmountlessFreight =  taxableAmountSum - totalDiscountAmount; // Totale imponibile
+                totalAmountlessFreight = taxableAmountSum - totalDiscountAmount + freightAmount; // Totale imponibile
                 decimal totalTax = taxRowsSum + freightAmountRate;
                 decimal totalAmount = totalAmountlessFreight + totalTax;
 
@@ -103,13 +107,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 target[salesorder.totaltax] = (totalTax) != 0 ? new Money(totalTax) : null;
 
                 target[salesorder.totalamount] = (totalAmount) != 0 ? new Money(totalAmount) : null;
-            
+
                 if (isTrace)
                 {
                     crmServiceProvider.TracingService.Trace(
-                        "totallineitemamount: " + taxableAmountSum.ToString() +"\n" +
-                        "totalamountlessfreight: " + totalAmountlessFreight.ToString() +"\n" +
-                        "totaltax: " + totalTax.ToString() +"\n"+
+                        "totallineitemamount: " + taxableAmountSum.ToString() + "\n" +
+                        "totalamountlessfreight: " + totalAmountlessFreight.ToString() + "\n" +
+                        "totaltax: " + totalTax.ToString() + "\n" +
                         "totalamount: " + totalAmount.ToString()
 
                         );
