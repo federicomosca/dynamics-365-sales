@@ -214,7 +214,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                         //Codici IVA
                         PluginRegion = "Codici IVA";
-                        var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                        var fetchXmlIVA = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{res_vatnumber.logicalName}"">
                             <attribute name=""{res_vatnumber.res_code}"" />
@@ -222,7 +222,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             <attribute name=""{res_vatnumber.res_vatnumberid}"" />
                           </entity>
                         </fetch>";
-                        List<Entity> lVatNumber = crmServiceProvider.Service.RetrieveAll(fetchXmlU);
+                        List<Entity> lVatNumber = crmServiceProvider.Service.RetrieveAll(fetchXmlIVA);
                         if (lVatNumber == null)
                         {
                             lVatNumber = new List<Entity>();
@@ -239,7 +239,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             PluginRegion = "Controllo la categoria per determinare il raggruppamento";
                             string category = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.EntitaPrincipale)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.EntitaPrincipale)).position] : null;
                             string delimiter = "  »  ";
-                            List<string> lCategories = category?.Split(new string[] { delimiter }, StringSplitOptions.None)?.ToList() ?? new List<string>();
+                            List<string> lCategories = string.IsNullOrEmpty(category)? new List<string>(): category.Split(new string[] { delimiter }, StringSplitOptions.None)?.ToList();
 
                             //Definisco l'unità di misura
                             PluginRegion = "Definisco l'unità di misura";
