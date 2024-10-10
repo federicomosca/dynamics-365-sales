@@ -16,7 +16,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         {
             PluginStage = Stage.POST;
             PluginMessage = "Update";
-            PluginPrimaryEntityName = DataModel.salesorderdetail.logicalName;
+            PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
@@ -42,19 +42,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             }
 
-            #region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata
-            PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata";
+            #region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Ordine correlato
+            PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Ordine correlato";
 
             /**
-             * fetch di tutti i campi interessati nel calcolo di tutte le salesorderdetail
-             * associate al salesorder che si deve aggiornare
+             * fetch di tutti i campi interessati nel calcolo di tutte le salesorderdetail,
+             * associate alla salesorder che si deve aggiornare
              * 
-             * in particolare recupero le seguenti entità correlate all'ordine:
+             * in particolare recupero le seguenti entità correlate all'offerta:
              * salesorder detail > sconto totale, totale imponibile, totale iva
              * spesa accessoria > importo
              * codice IVA spesa accessoria > aliquota
              */
-            var fetchSalesOrder = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                         <fetch aggregate=""true"">
                                           <entity name=""salesorder"">
                                             <attribute name=""salesorderid"" alias=""salesorderid"" groupby=""true"" />
@@ -71,8 +71,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                             </link-entity>
                                           </entity>
                                         </fetch>";
-            crmServiceProvider.TracingService.Trace(fetchSalesOrder);
-            EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchSalesOrder));
+
+            EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
             if (aggregateCollection.Entities.Count > 0)
             {
@@ -96,7 +96,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     if (salesorderid != Guid.Empty)
                     {
                         //creo l'offerta da aggiornare
-                        Entity salesorder = new Entity(DataModel.salesorder.logicalName, salesorderid);
+                        Entity enSalesorder = new Entity(salesorder.logicalName, salesorderid);
 
                         //spesa accessoria e aliquota per il calcolo del totale iva
                         decimal spesaAccessoria = aggregate.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
@@ -115,18 +115,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         decimal aggrTotaleIva = aggregate.GetAttributeValue<AliasedValue>("totaleiva")?.Value is Money totaleiva ? totaleiva.Value : 0m;
 
                         //calcolo il totale imponibile e l'importo totale
-                        totalamountlessfreight = totallineitemamount - totaldiscountamount;
+                        totalamountlessfreight = totallineitemamount - totaldiscountamount + spesaAccessoria;
                         totalamount = totalamountlessfreight + totaltax;
 
-                        salesorder[DataModel.salesorder.totallineitemamount] = new Money(aggrTotaleImponibile);
-                        salesorder[DataModel.salesorder.totaldiscountamount] = new Money(aggrScontoTotale);
-                        salesorder[DataModel.salesorder.totaltax] = new Money(aggrTotaleIva);
-                        salesorder[DataModel.salesorder.totalamountlessfreight] = new Money(totalamountlessfreight);
-                        salesorder[DataModel.salesorder.totalamount] = new Money(totalamount);
+                        enSalesorder[salesorder.totallineitemamount] = new Money(aggrTotaleImponibile);
+                        enSalesorder[salesorder.totaldiscountamount] = new Money(aggrScontoTotale);
+                        enSalesorder[salesorder.totaltax] = new Money(aggrTotaleIva);
+                        enSalesorder[salesorder.totalamountlessfreight] = new Money(totalamountlessfreight);
+                        enSalesorder[salesorder.totalamount] = new Money(totalamount);
 
-                        crmServiceProvider.Service.Update(salesorder);
+                        crmServiceProvider.Service.Update(enSalesorder);
                     }
-                    else { throw new ApplicationException("SalesOrder ID is missing"); }
+                    else { throw new ApplicationException("Quote ID is missing"); }
                 }
             }
             else

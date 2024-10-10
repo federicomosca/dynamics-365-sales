@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 {
-    public class PreCreate : RSMNG.BaseClass
+    public class PreCreateOld : RSMNG.BaseClass
     {
-        public PreCreate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        public PreCreateOld(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.PRE;
             PluginMessage = "Create";
@@ -60,7 +60,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             if (erUom == null) throw new ApplicationException("Unit of measurement entity reference not found");
             if (erQuote == null) throw new ApplicationException("Quote entity reference not found");
 
-            Trace("fetch", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota.");
+            Trace("fetch", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota. \n" +
+                "Recupero l'importo del listino prezzi associato per determinare il prezzo unitario del prodotto.");
 
             /**
              * [RIGA OFFERTA]
@@ -71,7 +72,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
              * [OFFERTA]
              * recupero i campi "prezzo" dell'offerta per aggiornare i valori
              */
-            var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchImportoVoceListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""quote"">
                                         <attribute name=""totaldiscountamount"" alias=""OffertaScontoTotaleApplicato"" />
@@ -83,6 +84,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                         </filter>
                                         <link-entity name=""pricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
                                           <link-entity name=""productpricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
+                                            <attribute name=""amount"" alias=""VoceDiListinoImporto"" />
                                             <filter>
                                               <condition attribute=""productid"" operator=""eq"" value=""{erProduct.Id}"" />
                                               <condition attribute=""uomid"" operator=""eq"" value=""{erUom.Id}"" />
@@ -101,8 +103,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                       </entity>
                                     </fetch>";
 
-            Trace("fetch", fetchProdotto);
-            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
+            Trace("fetch", fetchImportoVoceListino);
+            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchImportoVoceListino));
 
             if (collection.Entities.Count > 0)
             {
@@ -113,9 +115,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 //dalla fetch
                 Guid rigaOffertaCodiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                 decimal rigaOffertaCodiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaAliquota")?.Value is decimal rate ? rate : 0m; Trace("riga_offerta_aliquota_iva", rigaOffertaCodiceIvaAliquota);
+                decimal voceDiListinoImporto = prodotto.GetAttributeValue<AliasedValue>("VoceDiListinoImporto")?.Value is Money amount ? amount.Value : 0m; Trace("riga_offerta_prezzo_unitario", voceDiListinoImporto);
 
                 //dal target
-                decimal rigaOffertaPrezzoUnitario = target.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("riga_offerta_prezzo_unitario", rigaOffertaPrezzoUnitario);
                 decimal rigaOffertaQuantità = target.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
                 decimal rigaOffertaScontoTotale = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
 
@@ -130,7 +132,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.res_vatrate] = rigaOffertaCodiceIvaAliquota;
 
                 //calcolo l'importo [riga offerta]
-                decimal rigaOffertaImporto = rigaOffertaPrezzoUnitario * rigaOffertaQuantità; Trace("riga_offerta_importo", rigaOffertaImporto);
+                decimal rigaOffertaImporto = voceDiListinoImporto * rigaOffertaQuantità; Trace("riga_offerta_importo", rigaOffertaImporto);
 
                 //calcolo il totale imponibile [riga offerta]
                 decimal rigaOffertaTotaleImponibile = rigaOffertaImporto - rigaOffertaScontoTotale; Trace("riga_offerta_totale_imponibile", rigaOffertaTotaleImponibile);
