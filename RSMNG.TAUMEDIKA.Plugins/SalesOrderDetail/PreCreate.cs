@@ -167,26 +167,26 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 decimal sommaRigheOrdineTotaleIva = prodotto.GetAttributeValue<AliasedValue>("OrdineTotaleIva")?.Value is Money totaltax ? totaltax.Value : 0m; Trace("Somma_Righe_Ordine_Totale_Iva", sommaRigheOrdineTotaleIva);
 
                 //ordine aliquota iva
-                target.TryGetAttributeValue<EntityReference>(salesorder.quoteid, out EntityReference erQuote);
-                if (erQuote == null) throw new ApplicationException("Quote entity reference not found.");
 
                 var fetchAliquota = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                    <fetch>
-                                      <entity name=""{quote.logicalName}"">
-                                        <filter>
-                                          <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{erQuote.Id}"" uiname=""Dubbi esistenziali"" uitype=""quote"" />
-                                        </filter>
-                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
-                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""OrdineAliquotaIVA"" />
-                                        </link-entity>
-                                      </entity>
-                                    </fetch>";
+                                        <fetch>
+                                          <entity name=""{salesorder.logicalName}"">
+                                            <filter>
+                                              <condition attribute=""{salesorder.salesorderid}"" operator=""eq"" value=""{erSalesOrder.Id}"" />
+                                            </filter>
+                                            <link-entity name=""{quote.logicalName}"" from=""quoteid"" to=""quoteid"" alias=""Offerta"">
+                                              <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""OffertaCodiceIVA"">
+                                                <attribute name=""{res_vatnumber.res_rate}"" alias=""OrdineAliquotaIVA"" />
+                                              </link-entity>
+                                            </link-entity>
+                                          </entity>
+                                        </fetch>";
 
                 EntityCollection aliquotaCollection = service.RetrieveMultiple(new FetchExpression(fetchAliquota));
                 if (aliquotaCollection == null) throw new ApplicationException("Cannot find Vat Number linked to Quote");
 
                 Entity offertaCodiceIVA = aliquotaCollection.Entities[0];
-                decimal ordineAliquotaIVA = offertaCodiceIVA.GetAttributeValue<AliasedValue>("OrdineAliquotaIVA")?.Value is decimal salesOrderRate ? salesOrderRate : 0m;
+                decimal ordineAliquotaIVA = offertaCodiceIVA.GetAttributeValue<AliasedValue>("OrdineAliquotaIVA")?.Value is decimal salesOrderRate ? salesOrderRate : 0m; Trace("Ordine_Aliquota_Iva", ordineAliquotaIVA);
                 //decimal ordineAliquotaIVA = prodotto.GetAttributeValue<AliasedValue>("OrdineAliquotaIva")?.Value is decimal salesorderRate ? salesorderRate : 0m; Trace("Ordine_Aliquota_Iva", ordineAliquotaIVA);
 
                 //iva su importo spesa accessoria
