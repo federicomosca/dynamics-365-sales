@@ -430,7 +430,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                     vatNumberControl.getAttribute().setRequiredLevel("required");
                     vatNumberControl.setDisabled(false);
 
-                    //se codice iva non è selezionato
+                    //gestisco totale iva e importo totale
+                    _self.onChangeVatNumber(executionContext);
                 },
                 error => {
                     console.error(error.message);
@@ -451,7 +452,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 //svuoto il campo importo spesa accessoria
                 freightAmountControl.getAttribute().setValue(null);
 
-                //e sottraggo l'iva calcolata sulla spesa accessoria al totale iva
+                //e sottraggo l'iva calcolata sulla spesa accessoria al totale iva e all'importo totale
                 _self.onChangeVatNumber(executionContext);
             }
         }
@@ -816,7 +817,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
                 }
 
-                
+
             }
         } else {
             formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
@@ -827,7 +828,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(null);
             formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
 
-            
+
         }
         _self.setPostalCodeRelatedFieldsRequirement(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
@@ -893,7 +894,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.setPostalCodeRelatedFieldsRequirement);
         //formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.onChangeWillCall);
-        
+
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.setBankVisibility);
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
