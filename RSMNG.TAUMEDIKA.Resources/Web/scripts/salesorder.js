@@ -489,7 +489,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
         let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue(); 
 
-        if (customerLookup !== null && tipoSpedizione == _self.formModel.fields.willcallValues.Indirizzo) { // willcall è un bool. richiede == per fare la conversione implicita
+        if (customerLookup !== null) { // willcall è un bool. richiede == per fare la conversione implicita
 
             let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
 
@@ -505,6 +505,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
 
+
+                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
 
                 if (address._res_countryid_value != null) {
 
@@ -616,32 +618,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             }
         );
     };
-    //---------------------------------------------------
-    _self.setAllFieldsReadOnly = function(executionContext, setAllReadOnly){
-
-        var formContext = executionContext.getFormContext();
-
-        // campi da rimettere readOnly al passaggio stato che consente la modifica di campi
-        const readOnlyFields = [
-            _self.formModel.fields.ordernumber,
-            _self.formModel.fields.res_origincode,
-            _self.formModel.fields.datefulfilled,
-            _self.formModel.fields.totallineitemamount,
-            _self.formModel.fields.totaldiscountamount,
-            _self.formModel.fields.totalamountlessfreight,
-            _self.formModel.fields.totaltax,
-            _self.formModel.fields.totalamount,
-            _self.formModel.fields.quoteid
-        ];
-
-        formContext.ui.controls.forEach(function (field) {
-            console.log(field);
-            //if () {
-            //    control.setDisabled(true);
-            //}
-        });
-
-    };
+    
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
 
