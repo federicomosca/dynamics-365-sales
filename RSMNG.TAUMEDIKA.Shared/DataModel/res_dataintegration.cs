@@ -65,6 +65,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_integrationresult => "res_integrationresult";
 
 		/// <summary>
+		/// Display Name: Numero di integrazioni,
+		/// Type: Integer,
+		/// Description: 
+		/// </summary>
+		public static string res_integrationsnumber => "res_integrationsnumber";
+
+		/// <summary>
 		/// Display Name: Tipo di Integrazione,
 		/// Type: Picklist,
 		/// Values:
@@ -98,6 +105,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Creato_StateAttivo = 1,
 			Distribuito_StateInattivo = 2,
+			Distribuitoparzialmente_StateInattivo = 100000004,
 			InElaborazione_StateAttivo = 100000002,
 			InValidazione_StateAttivo = 100000001,
 			NonDistribuito_StateInattivo = 100000003

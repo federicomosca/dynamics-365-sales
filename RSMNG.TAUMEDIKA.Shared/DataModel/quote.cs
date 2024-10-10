@@ -757,8 +757,8 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// Display Name: Spedizione,
 		/// Type: Boolean,
 		/// Values:
-		/// Spedizione a carico del cliente: 1,
-		/// Indirizzo: 0,
+		/// Rtiro da cliente: 1,
+		/// Spedizione presso cliente: 0,
 		/// Description: Specificare se i prodotti inclusi nell'offerta devono essere consegnati all'indirizzo indicato o trattenuti fino a quando il cliente non impartisce ulteriori istruzioni di ritiro o dl consegna.
 		/// </summary>
 		public static string willcall => "willcall";
@@ -935,8 +935,8 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// <summary>
 		public enum willcallValues
 		{
-			Indirizzo = 0,
-			Spedizioneacaricodelcliente = 1
+			Rtirodacliente = 1,
+			Spedizionepressocliente = 0
 		}
 	};
 }

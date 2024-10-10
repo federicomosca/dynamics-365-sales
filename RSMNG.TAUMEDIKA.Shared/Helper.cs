@@ -11,6 +11,8 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using RSMNG.TAUMEDIKA.DataModel;
 using static RSMNG.TAUMEDIKA.Model;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace RSMNG.TAUMEDIKA
 {
@@ -207,7 +209,7 @@ namespace RSMNG.TAUMEDIKA
 
             return str;
         }
-        public static void updateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
+        public static void UpdateEntityStatusCode(IOrganizationService service, ITracingService trace, string entityLogicalName, string entityIdString, int statecode, int statuscode)
         {
             Guid entityId = new Guid(entityIdString);
             Entity entity = new Entity(entityLogicalName, entityId);
@@ -217,6 +219,18 @@ namespace RSMNG.TAUMEDIKA
 
             service.Update(entity);
         }
+        public static OptionMetadata GetOptionSetUserLocalized(IOrganizationService service, String entityName, String optionSetFieldName, string externalValue)
+        {
+
+            RetrieveAttributeResponse opt = RSMNG.Plugins.MetaData.getAttributeMetadata(service, entityName, optionSetFieldName);
+            OptionSetMetadata optionSet = ((PicklistAttributeMetadata)opt.AttributeMetadata).OptionSet;
+
+            var attMetadata = (EnumAttributeMetadata)opt.AttributeMetadata;
+            OptionMetadata option = attMetadata.OptionSet.Options.Where(x => x.ExternalValue == externalValue).FirstOrDefault();
+
+            return option;
+        }
+
     }
     public class CustomStringWriter : StringWriter
     {

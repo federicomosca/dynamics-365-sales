@@ -30,7 +30,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
     [DataContract]
     public class ImportProductDanea
     {
-        [DataMember] public string Origine { get; set; }
+        [DataMember] public Option Origine { get; set; }
         [DataMember] public string Nome { get; set; }
         [DataMember] public string Codice { get; set; }
         [DataMember] public ProductCategoryDanea EntitaPrincipale { get; set; }
@@ -45,6 +45,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
         [DataMember] public string Produttore { get; set; }
         [DataMember] public string Fornitore { get; set; }
         [DataMember] public Option Stato { get; set; }
+        [DataMember] public Option MotivoStato { get; set; }
         [DataMember] public string CodiceABarre { get; set; }
         [DataMember] public decimal? PesoLordo { get; set; }
         [DataMember] public decimal? PesoNetto { get; set; }

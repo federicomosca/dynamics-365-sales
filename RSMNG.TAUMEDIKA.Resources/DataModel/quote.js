@@ -324,7 +324,7 @@ RSMNG.TAUMEDIKA.DataModel.quote = {
 
 	/// Values for field Spedizione
 	willcallValues: {
-		Indirizzo: 0,
-		Spedizioneacaricodelcliente: 1
+		Rtirodacliente: 1,
+		Spedizionepressocliente: 0
 	}
 };

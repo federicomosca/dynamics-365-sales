@@ -341,7 +341,7 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 
 	/// Values for field Spedizione
 	willcallValues: {
-		Indirizzo: 0,
-		Spedizioneacaricodelcliente: 1
+		Ritirodacliente: 1,
+		Spedizionepressocliente: 0
 	}
 };
