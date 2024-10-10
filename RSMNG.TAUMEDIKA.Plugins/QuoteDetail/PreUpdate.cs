@@ -48,7 +48,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo il campo Codice Articolo
             PluginRegion = "Valorizzo il campo Codice Articolo";
 
-            target.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
+            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
 
             if (erProduct == null) throw new ApplicationException("Product entity reference not found");
 
