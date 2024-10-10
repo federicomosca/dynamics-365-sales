@@ -125,7 +125,6 @@
     <Compile Include="PriceLevel\PreCreate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuoteDetail\PostUpdate.cs" />
-    <Compile Include="QuoteDetail\PostCreate.cs" />
     <Compile Include="QuoteDetail\PreUpdate.cs" />
     <Compile Include="QuoteDetail\PreCreate.cs" />
     <Compile Include="Quote\PostCreate.cs" />
