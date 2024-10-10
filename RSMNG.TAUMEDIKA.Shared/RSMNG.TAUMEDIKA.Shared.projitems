@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BankDetails\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contact\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Country\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataIntegrationDetail\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\account.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\contact.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\EntityGenericConstants.cs" />

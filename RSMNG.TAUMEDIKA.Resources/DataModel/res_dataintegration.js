@@ -16,6 +16,8 @@ RSMNG.TAUMEDIKA.DataModel.res_dataintegration = {
 	res_integrationfile: "res_integrationfile",
 	///Risultato dell'Integrazione
 	res_integrationresult: "res_integrationresult",
+	///Numero di integrazioni
+	res_integrationsnumber: "res_integrationsnumber",
 	///Tipo di Integrazione
 	res_integrationtype: "res_integrationtype",
 	///Name
@@ -31,6 +33,7 @@ RSMNG.TAUMEDIKA.DataModel.res_dataintegration = {
 	statuscodeValues: {
 		Creato_StateAttivo: 1,
 		Distribuito_StateInattivo: 2,
+		Distribuitoparzialmente_StateInattivo: 100000004,
 		InElaborazione_StateAttivo: 100000002,
 		InValidazione_StateAttivo: 100000001,
 		NonDistribuito_StateInattivo: 100000003
