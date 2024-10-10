@@ -85,6 +85,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
                                     enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                     enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
+                                    enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                     UpsertRequest upsertRequestProductFamily = new UpsertRequest()
                                     {
                                         Target = enProductFamily
@@ -107,6 +108,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     {
                                         enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
                                     }
+                                    enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                     UpsertRequest upsertRequestSubProductFamily = new UpsertRequest()
                                     {
                                         Target = enSubProductFamily
