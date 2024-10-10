@@ -56,21 +56,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo il campo Totale imponibile
             PluginRegion = "Valorizzo il campo Totale imponibile";
 
-            decimal taxableamount;          //totale imponibile = importo - sconto totale
-            decimal baseamount;             //importo
-            decimal manualdiscountamount;   //sconto totale
+            decimal importo = target.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m;
+            decimal manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
 
-            baseamount = target.GetAttributeValue<Money>(quotedetail.baseamount)?.Value is decimal importo ? importo : 0m;
-            manualdiscountamount = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
-
-            if (isTrace) crmServiceProvider.TracingService.Trace($"baseamount :{baseamount}");
+            if (isTrace) crmServiceProvider.TracingService.Trace($"importo :{importo}");
             if (isTrace) crmServiceProvider.TracingService.Trace($"manualdiscountamount :{manualdiscountamount}");
+
             //calcolo il totale imponibile
-            taxableamount = baseamount - manualdiscountamount;
-            if (isTrace) crmServiceProvider.TracingService.Trace($"taxableamount :{taxableamount}");
+            decimal totaleImponibile = importo - manualdiscountamount;
+            if (isTrace) crmServiceProvider.TracingService.Trace($"totaleImponibile :{totaleImponibile}");
 
             //valorizzo il campo totale imponibile
-            target[quotedetail.res_taxableamount] = new Money(taxableamount);
+            target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
             #endregion
         }
     }
