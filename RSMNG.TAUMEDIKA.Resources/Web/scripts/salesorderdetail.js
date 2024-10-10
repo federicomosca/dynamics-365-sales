@@ -125,11 +125,52 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
     _self.onLoadUpdateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
+        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
+
+        if (disc1 == 0) {
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+        }
+        else {
+            if (disc2 == 0) {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+                formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+            }
+            else {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(false);
+            }
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
+        }
     };
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
+    _self.onChangeUomId = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
+        let unita = formContext.getAttribute(_self.formModel.fields.uomid).getValue();
+
+        if (unita != null) {
+            Xrm.Utility.showProgressIndicator("Ricalcolo...");
+            setTimeout(function () {
+                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: undefined, aliquota: undefined });
+                formContext.data.entity.save();
+                Xrm.Utility.closeProgressIndicator();
+            }, 2000);
+
+        } else {
+            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
+
+            _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: null });
+        }
     };
     //---------------------------------------------------
     _self.onChangeIsPriceOverridden = async function (executionContext) {
@@ -139,24 +180,24 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let isPriceOverriden = formContext.getAttribute(_self.formModel.fields.ispriceoverridden).getValue();
         let productId = formContext.getAttribute(_self.formModel.fields.productid).getValue();
         let quantity = formContext.getAttribute(_self.formModel.fields.quantity).getValue();
-
-        let amount = null;
+        let baseAmountOld = formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
 
         if (!isPriceOverriden) {
             if (productId !== null && productId !== undefined) {
 
-                amount = await _self.getProductPriceLevelAmount(RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productId[0].id));
 
-                let importo = _self.getBaseAmount(amount, quantity);
-                formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
+                Xrm.Utility.showProgressIndicator("Ricalcolo...");
+                setTimeout(function () {
 
+                    _self.delayRecalcProduct(executionContext, baseAmountOld);
 
-                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount });
+                }, 2000);
+
             }
             else {
                 formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
 
-                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount });
+                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: null });
             }
         }
     };
@@ -216,9 +257,30 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         return (i + v);
     };
     //---------------------------------------------------
-    _self.getManualDiscountAmount = function (importo, totPercentoSconti) {
+    _self.getManualDiscountAmount = function (importo, arrDisc = []) {
+        let manualDiscount = 0;
+        let importoModificato = importo;
 
-        return importo * (totPercentoSconti / 100);
+        if (arrDisc.length > 0) {
+
+            for (let i = 0; i < arrDisc.length; i++) {
+
+                if (Number.isFinite(arrDisc[i])) {
+
+                    let sconto = importoModificato * arrDisc[i] / 100;
+
+                    importoModificato -= sconto;
+                    manualDiscount += sconto;
+                } else {
+                    console.log("passed not a finite number to the getManualDiscountAmount");
+                }
+            }
+
+        }
+
+
+        return manualDiscount;
+
     };
 
     //---------------------------------------------------
@@ -234,7 +296,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         if (productLookup != null) {
             let productId = RSMNG.TAUMEDIKA.GLOBAL.convertGuid(productLookup[0].id);
             let product = await _self.getProductDetails(productId);
-            let amount = await _self.getProductPriceLevelAmount(productId);
 
             let codiceIva = product._res_vatnumberid_value == null ? null : [{
                 id: product._res_vatnumberid_value,
@@ -244,15 +305,16 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
             let rate = product._res_vatnumberid_value == null ? null : product["CodiceIva.res_rate"];
 
-
             formContext.getAttribute(_self.formModel.fields.res_itemcode).setValue(product.productnumber);
-            formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(amount);
-
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(codiceIva); // codice Iva
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(rate); // aliquota
 
-            _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: amount, aliquota: rate });
-            
+            Xrm.Utility.showProgressIndicator("Ricalcolo...");
+            setTimeout(function () {
+                _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: undefined, aliquota: rate });
+                formContext.data.entity.save();
+                Xrm.Utility.closeProgressIndicator();
+            }, 2000);
 
         }
         else {
@@ -264,10 +326,27 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             formContext.getAttribute(_self.formModel.fields.res_vatrate).setValue(null);
             formContext.getAttribute(_self.formModel.fields.baseamount).setValue(null);
 
-            _self.setManualDiscountAmount(executionContext, {importo: null, aliquota: null});
+            _self.setManualDiscountAmount(executionContext, { importo: null, aliquota: null });
         }
 
-    }
+    };
+    //---------------------------------------------------
+    _self.delayRecalcProduct = function (executionContext, oldBaseAmount) {
+
+        var formContext = executionContext.getFormContext();
+
+        if (formContext.getAttribute(_self.formModel.fields.baseamount).getValue() == oldBaseAmount) {
+            setTimeout(function () {
+                _self.delayRecalcProduct(executionContext);
+            }, 2000);
+        } else {
+
+            _self.setBaseAmount(executionContext, { quantita: undefined, prezzoUnitario: undefined, aliquota: undefined });
+            formContext.data.entity.save();
+            Xrm.Utility.closeProgressIndicator();
+        }
+
+    };
     //---------------------------------------------------
     _self.onChangeVatNumber = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -318,7 +397,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         // ricalcolo Tot Imponibile -> Totale Iva-> Importo Totale
         let importo = formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
-        let scontoTot = _self.getManualDiscountAmount(importo, disc1);
+        let scontoTot = _self.getManualDiscountAmount(importo, [disc1]);
         let imponibile = _self.getTaxableAmount(importo, scontoTot);
         let aliquota = formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
         let totIva = _self.getTax(imponibile, aliquota);
@@ -328,7 +407,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(imponibile);
         formContext.getAttribute(_self.formModel.fields.tax).setValue(totIva);
         formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(importoTot);
-        
+
     };
     //---------------------------------------------------
     _self.getProductDetails = function (productId) {
@@ -368,50 +447,51 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         });
     };
     //---------------------------------------------------
-    _self.getProductPriceLevelAmount = function (productId) {
-        return new Promise(function (resolve, reject) {
+    //_self.getProductPriceLevelAmount = function (productId) {
+    //    return new Promise(function (resolve, reject) {
 
-            // Recupero importo presente su Voce Listino
-            var fetchData = {
-                "productid": productId
-            };
-            var fetchXml = [
-                "?fetchXml=<fetch>",
-                "  <entity name='product'>",
-                "    <filter>",
-                "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-                "    </filter>",
-                "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
-                "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
-                "        <attribute name='amount'/>",
-                "        <filter>",
-                "          <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-                "        </filter>",
-                "      </link-entity>",
-                "    </link-entity>",
-                "  </entity>",
-                "</fetch>"
-            ].join("");
-            console.log(fetchXml);
-            Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
-                results => {
+    //        // Recupero importo presente su Voce Listino
+    //        var fetchData = {
+    //            "productid": productId
+    //        };
+    //        var fetchXml = [
+    //            "?fetchXml=<fetch>",
+    //            "  <entity name='product'>",
+    //            "    <filter>",
+    //            "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+    //            "    </filter>",
+    //            "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
+    //            "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
+    //            "        <attribute name='amount'/>",
+    //            "        <filter>",
+    //            "          <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
+    //            "        </filter>",
+    //            "      </link-entity>",
+    //            "    </link-entity>",
+    //            "  </entity>",
+    //            "</fetch>"
+    //        ].join("");
+    //        console.log(fetchXml);
+    //        Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
+    //            results => {
 
-                    let amount = results.entities.length > 0 && results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
-                    resolve(amount);
+    //                let amount = results.entities.length > 0 && results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
+    //                resolve(amount);
 
-                },
-                error => {
-                    reject(error);
-                }
-            );
-        });
-    };
+    //            },
+    //            error => {
+    //                reject(error);
+    //            }
+    //        );
+    //    });
+    //};
 
     //---------------------------------------------------
     _self.onChageDiscountPercent1 = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
+
     };
     _self.onChageDiscountPercent2 = function (executionContext) {
         const formContext = executionContext.getFormContext();
@@ -424,26 +504,47 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
     //---------------------------------------------------
-    _self.getTotalDiscountPercentage = function (executionContext) {
+
+    //---------------------------------------------------
+    _self.setManualDiscountAmount = (executionContext, data) => {
         const formContext = executionContext.getFormContext();
+
+        let eventSourceAttribute = executionContext.getEventSource();
+        let eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
+        let manualDiscountAmount = null;
 
         let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
         let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
         let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).getValue() ?? 0;
 
-        return (disc1 + disc2 + disc3);
-    };
-    //---------------------------------------------------
-    _self.setManualDiscountAmount = (executionContext, data) => {
-        const formContext = executionContext.getFormContext();
-        let eventSourceAttribute = executionContext.getEventSource();
-        let eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
-        let manualDiscountAmount = null;
+
+        //-----------------------
+        if (disc1 == 0) {
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+            disc2 = 0;
+            disc3 = 0;
+        }
+        else {
+            if (disc2 == 0) {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+                formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+                disc3 = 0;
+            }
+            else {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(false);
+            }
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
+        }
+        //----------------------
 
         let baseAmount = data.importo != undefined ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
         let vatRate = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
 
-        let totalDiscountPercentage = _self.getTotalDiscountPercentage(executionContext);
+        let totalDiscountPercentage = disc1 + disc2 + disc3;
 
         if (totalDiscountPercentage <= 100) {
 
@@ -451,9 +552,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             formContext.getControl(_self.formModel.fields.res_discountpercentage2).clearNotification();
             formContext.getControl(_self.formModel.fields.res_discountpercentage3).clearNotification();
 
-            formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, totalDiscountPercentage));
+            formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]));
 
-            let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: manualDiscountAmount });
+            let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: null });
             let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: vatRate });
             _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
 
@@ -512,9 +613,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.baseamount).setValue(baseAmount);
 
         // Ricalcolo sconto totale
-        let totalDiscountPercentage = _self.getTotalDiscountPercentage(executionContext);
-        let scontoTotale = _self.getManualDiscountAmount(baseAmount, totalDiscountPercentage);
-        formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, totalDiscountPercentage));
+        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
+        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
+        let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).getValue() ?? 0;
+        let scontoTotale = _self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]);
+        formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(scontoTotale);
 
         let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: scontoTotale });
         let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: data.aliquota != undefined ? data.aliquota : null });
@@ -541,6 +644,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.priceperunit).addOnChange(_self.onChangePricePerUnit);
         formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProduct);
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
+        formContext.getAttribute(_self.formModel.fields.uomid).addOnChange(_self.onChangeUomId);
 
         formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).addOnChange(_self.onChageDiscountPercent1);
         formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).addOnChange(_self.onChageDiscountPercent2);
