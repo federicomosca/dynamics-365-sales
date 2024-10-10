@@ -22,11 +22,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            #region Trace
             void Trace(string key, object value)
             {
-                bool isTrace = true;
+                //flag per attivare/disattivare il trace
+                bool isTrace = false;
                 if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
+            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
+            Trace("Esempio", oggettoEsempio);
+            #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -56,8 +61,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]
             PluginRegion = "Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]";
 
-            target.TryGetAttributeValue<EntityReference>(quotedetail.uomid, out EntityReference erUom);
-            target.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
+            postImage.TryGetAttributeValue<EntityReference>(quotedetail.uomid, out EntityReference erUom);
+            postImage.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
 
             if (erUom == null) throw new ApplicationException("Unit of measurement entity reference not found");
             if (erQuote == null) throw new ApplicationException("Quote entity reference not found");
@@ -117,9 +122,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 decimal rigaOffertaCodiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaAliquota")?.Value is decimal rate ? rate : 0m; Trace("riga_offerta_aliquota_iva", rigaOffertaCodiceIvaAliquota);
 
                 //dal target
-                decimal rigaOffertaPrezzoUnitario = target.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("riga_offerta_prezzo_unitario", rigaOffertaPrezzoUnitario);
-                decimal rigaOffertaQuantità = target.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
-                decimal rigaOffertaScontoTotale = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
+                decimal rigaOffertaPrezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("riga_offerta_prezzo_unitario", rigaOffertaPrezzoUnitario);
+                decimal rigaOffertaQuantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
+                decimal rigaOffertaScontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
 
                 if (rigaOffertaCodiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
 

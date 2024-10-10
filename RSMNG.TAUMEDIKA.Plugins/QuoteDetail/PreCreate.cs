@@ -22,12 +22,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-
+            #region Trace
             void Trace(string key, object value)
             {
-                bool isTrace = true;
+                //flag per attivare/disattivare il trace
+                bool isTrace = false;
                 if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
+            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
+            Trace("Esempio", oggettoEsempio);
+            #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Guid targetId = target.Id;
