@@ -109,9 +109,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
                         offertaScontoTotale,            // S [quotedetail] sconto totale
-                        offertaTotaleImponibile,        // totaleprodotti - sconto totale
-                        offertaTotaleIva,               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
-                        offertaImportoTotale;           // totale imponibile + totale iva
+                                                        //offertaTotaleImponibile,        // totaleprodotti - sconto totale
+                        offertaTotaleIva;               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
+                        //offertaImportoTotale;           // totale imponibile + totale iva
 
                     Trace("scontoTotale", scontoTotale);
                     Trace("totaleImponibile", totaleImponibile);
@@ -135,9 +135,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     //enQuote[quote.totalamount] = offertaImportoTotale != 0 ? new Money(offertaImportoTotale) : null;
 
                     crmServiceProvider.Service.Update(enQuote);
-
-
-
 
                 }  
                 

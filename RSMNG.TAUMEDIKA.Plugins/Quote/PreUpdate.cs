@@ -23,10 +23,28 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            #region Trace Activation Method
+            bool isFirstExecute = true;
+            void Trace(string key, object value)
+            {
+                bool isTraceActive = true;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+            }
+            #endregion
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             crmServiceProvider.PluginContext.PreEntityImages.TryGetValue("PreImage", out Entity preImage);
             if (preImage == null) { return; }
+
             Entity postImage = target.GetPostImage(preImage);
+
+            Guid quoteId = postImage.Id;
 
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
@@ -41,7 +59,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             #endregion
 
             #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [DISABLED]
-            //PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
+            PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             //if (target.Contains(quote.totallineitemamount) ||
             //    target.Contains(quote.totaldiscountamount) ||
             //    target.Contains(quote.totaltax) ||
@@ -151,6 +169,60 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             string countryName = erCountry != null ? Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
             target[DataModel.quote.shipto_country] = countryName;
+            #endregion
+
+            #region Ricalcolo di Totale imponibile, Importo totale, Totale IVA
+            PluginRegion = "Ricalcolo di Totale imponibile, Importo totale, Totale IVA";
+
+            Trace("Check", "Ricalcolo di Totale imponibile, Importo totale, Totale IVA");
+
+            if (!target.Contains(quote.totalamountlessfreight) &&
+                !target.Contains(quote.totaltax) &&
+                !target.Contains(quote.totalamount) &&
+                !target.Contains(quote.totaldiscountamount) &&
+                !target.Contains(quote.totallineitemamount)
+                ) { return; }
+
+            Money totaleIva,
+                scontoTotale,
+                totaleProdotti;
+
+            postImage.TryGetAttributeValue<Money>(quote.totaltax, out totaleIva);
+            postImage.TryGetAttributeValue<Money>(quote.totaldiscountamount, out scontoTotale);
+            postImage.TryGetAttributeValue<Money>(quote.totallineitemamount, out totaleProdotti);
+
+            Trace("totale_prodotti", totaleProdotti.Value);
+            Trace("sconto_totale", scontoTotale.Value);
+            Trace("totale_iva", totaleIva.Value);
+
+            decimal totaleImponibile, importoTotale;
+
+            //si rompe perché cerca di accedere a totale iva che è 0, bisogna rimpostare, salvare direttamente in una variabile i decimal
+            //e fare controllo sul valore
+
+            totaleImponibile = totaleProdotti.Value - scontoTotale.Value;
+            importoTotale = totaleImponibile + totaleIva.Value;
+
+            target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
+            target[quote.totalamount] = importoTotale != 0 ? new Money(importoTotale) : null;
+
+            var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                <fetch>
+                                  <entity name=""quote"">
+                                    <attribute name=""freightamount"" alias=""ImportoSpesaAccessoria"" />
+                                    <filter>
+                                      <condition attribute=""quoteid"" operator=""eq"" value=""{quoteId}"" />
+                                    </filter>
+                                    <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
+                                      <attribute name=""res_rate"" alias=""Aliquota"" />
+                                    </link-entity>
+                                  </entity>
+                                </fetch>";
+            Trace("fetch_quote", fetchQuote);
+            EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+
+            //bisogna valorizzare recuperare l'aliquota per calcolare importo spesa accessoria e calcolare il totale imponibile
+
             #endregion
         }
     }
