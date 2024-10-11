@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Indirizzi Cliente</title>
+    <link rel="stylesheet" href="../res_lib/suite.css">
+    <style>
+        .dhx_grid-row:hover {
+            background-color: var(--dhx-color-primary-light-hover);
+        }
+
+        .separaBtn {
+            width: 2px;
+        }
+
+        .grid-container {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="../res_lib/suite.js"></script>
+    <script src="../res_scripts/res_global.js" type="text/jscript"></script>
+    <script>
+        var rowSel = null;
+        var Xrm = null;
+        onLoad = async function () {
+
+            Xrm = window.parent.Xrm;
+            var formContext = window.parent._formContext;
+
+            document.getElementById('loader').style.display = 'block';
+
+            const formconfig = {
+                css: "dhx_widget--bordered",
+                padding: "40px",
+                width: "600px",
+                rows: [
+
+
+                    {
+                        align: "end", cols: [
+                            { name: "inputName", type: "input", width: "350px", labelPosition: "top", label: "Cerca agente" },
+                            { name: "checkAll", type: "checkbox", label: "Includi tutti", labelPosition: "left", labelWidth: "100", css: "customCheckbox" }]
+                    },
+
+                    { type: "container", name: "grid", height: "400px" },
+                    {
+                        align: "end", cols: [
+
+                            { name: "send", type: "button", submit: true, text: "Avvia Calcolo", size: "medium", view: "flat", color: "primary", disabled: true },
+                            { name: "cancel", type: "button", submit: true, text: "Annulla", size: "medium", view: "link", color: "primary" }
+                        ]
+                    }
+                ]
+            };
+
+            const dataset = await getAgents();
+            const grid = new dhx.Grid(null, {
+                columns: [
+                    { id: "fullname", header: [{ text: "Agente" }], autoWidth: true },
+                    { id: "isIncluso", header: [{ text: "Includi" }], type: "boolean", editorType: "select", editable: true },
+                    { width: "150px", id: "systemuserid", header: [{ text: "Id" }], hidden: true }
+
+                ],
+                data: dataset,
+                selection: "row"
+            });
+            const form = new dhx.Form("content", formconfig);
+
+            
+            form.getItem("inputName").events.on("input", function (inputValue) {
+                grid.data.filter(function (item) {
+                    return item.fullname.toLowerCase().includes(inputValue);
+                });
+            });
+            form.getItem("checkAll").events.on("change", function (value) {
+                grid.data.map(row => {
+                    row.isIncluso = value;
+
+                });
+                grid.data.update();
+                grid.paint(); // Serve per fare il refresh della grafica perché grid.data.update non influenza i checkbox visivamente
+
+                if (value == true) {
+                    form.getItem("send").enable();
+                }
+                else {
+                    form.getItem("send").disable();
+                }
+            });
+            form.getItem("cancel").events.on("click", function () {
+                
+                window.close();
+            });
+
+            form.getItem("grid").attach(grid);
+            document.getElementById('loader').style.display = 'none';
+
+            // Function to check if any checkbox is selected
+            function checkSelection() {
+                const data = grid.data.serialize();
+                const isSelected = data.some(row => row.isIncluso);
+                if (isSelected) {
+                    form.getItem("send").enable();
+                }
+                else {
+                    form.getItem("send").disable();
+                }
+
+            }
+
+            // Attach event listener to checkboxes
+            grid.events.on("cellClick", function (row, col, e) {
+                if (col.id === "isIncluso") {
+                    checkSelection();
+                }
+            });
+        };
+
+
+
+        getAgents = async function () {
+            return new Promise(function (resolve, reject) {
+
+                var fetchData = {
+                    "res_isagente": "1",
+                    "res_iscommissioncalculationdisabled": "0"
+                };
+                var fetchXml = [
+                    "  <entity name='systemuser'>",
+                    "    <attribute name='fullname'/>",
+                    "    <attribute name='systemuserid'/>",
+                    "    <filter>",
+                    "      <condition attribute='res_isagente' operator='eq' value='", fetchData.res_isagente/*1*/, "'/>",
+                    "      <condition attribute='res_iscommissioncalculationdisabled' operator='eq' value='", fetchData.res_iscommissioncalculationdisabled/*0*/, "'/>",
+                    "    </filter>",
+                    "  </entity>",
+                ].join("");
+
+                RSMNG.TAUMEDIKA.GLOBAL.retrieveAllRecords("systemuser", 5000, fetchXml).then(results => {
+                    if (results != null && results.length > 0) {
+                        let agents = [];
+                        for (var i = 0; i < results.length; i++) {
+                            var result = results[i];
+                            // Columns
+
+                            let fullname = result["fullname"] != undefined && result["fullname"] != null ? result["fullname"] : "undefined";
+                            let systemuserid = result["systemuserid"];
+
+
+                            let agent = {
+                                "fullname": fullname,
+                                "systemuserid": systemuserid
+                            };
+                            agents.push(agent);
+                        }
+                        console.log("Total records retrieved:", results.length);
+                        console.log(results);
+
+                        resolve(agents);
+                    }
+                }).catch(error => {
+                    console.error("Error:", error);
+                });
+            });
+        };
+    </script>
+</head>
+<body onload="onLoad()">
+    <div id="content"></div>
+    <img src="../res_images/spinner.svg" alt="Loading..." id="loader">
+</body>
+</html>
