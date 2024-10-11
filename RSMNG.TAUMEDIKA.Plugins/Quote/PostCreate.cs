@@ -24,7 +24,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Valorizzazione campo data
+            #region Valorizzazione campo data [DISABLED]
             PluginRegion = "Valorizzazione campo data";
 
             //DateTime rcDate = (DateTime)target[DataModel.quote.createdon];

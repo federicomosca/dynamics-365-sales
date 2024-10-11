@@ -20,6 +20,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            #region Trace Activation Method
+            bool isFirstExecute = true;
+            void Trace(string key, object value)
+            {
+                bool isTraceActive = false;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    object objectExample = new object();
+                    Trace("Esempio", objectExample);
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+            }
+            #endregion
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Crea indirizzo di default

@@ -37,7 +37,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
             #endregion
 
-            #region Valorizzazione automatica del campo Importo spesa accessoria [disabled]
+            #region Valorizzazione automatica del campo Importo spesa accessoria [DISABLED]
             //PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
             //Money amount = null;
             //target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_additionalexpenseid, out EntityReference erAdditionalExpense);
@@ -63,7 +63,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             target[DataModel.contact.address1_country] = countryName;
             #endregion
 
-            #region Controllo anagrafica del potenziale cliente
+            #region Controllo anagrafica del potenziale cliente [DISABLED]
             //PluginRegion = "Controllo anagrafica del potenziale cliente";
 
             //target.TryGetAttributeValue<EntityReference>(DataModel.quote.customerid, out EntityReference erCustomer);

@@ -40,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
             #endregion
 
-            #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [disabled]
+            #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [DISABLED]
             //PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             //if (target.Contains(quote.totallineitemamount) ||
             //    target.Contains(quote.totaldiscountamount) ||
