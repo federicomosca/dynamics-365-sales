@@ -31,8 +31,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 {
                     crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
 
-                    object objectExample = new object();
-                    Trace("Esempio", objectExample);
                     isFirstExecute = false;
                 }
                 if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
@@ -71,6 +69,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
                                         <filter>
+                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{product.statecodeValues.Attivo}"" />
                                           <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
                                         </filter>
                                         <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
