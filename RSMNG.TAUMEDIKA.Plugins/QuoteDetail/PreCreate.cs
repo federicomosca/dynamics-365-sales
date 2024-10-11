@@ -31,8 +31,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 {
                     crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
 
-                    
-                    
                     isFirstExecute = false;
                 }
                 if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");

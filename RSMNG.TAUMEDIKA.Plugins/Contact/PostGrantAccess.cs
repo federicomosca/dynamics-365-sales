@@ -57,19 +57,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                     Trace("Principal ID", principalId);
                     Trace("Principal_logical_name", principalLogicalName);
-                    crmServiceProvider.TracingService.Trace($"Principal Logical Name: {principalLogicalName}");
 
                     //qui recupero i permessi selezionati nel record padre
                     AccessRights rights = principalAccess.AccessMask;
-                    crmServiceProvider.TracingService.Trace($"Rights: {rights}");
+                    Trace("Rights", rights);
 
                     var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
-                              <entity name=""res_address"">
+                              <entity name=""{res_address.logicalName}"">
                                 <filter>
-                                  <condition attribute=""res_customerid"" operator=""eq"" value=""{contactId}"" />
-                                  <condition attribute=""res_customerid"" operator=""eq"" value=""{contactId}"" />
-                                  <condition attribute=""statecode"" operator=""eq"" value=""0"" />
+                                  <condition attribute=""{res_address.statecode}"" operator=""eq"" value=""{res_address.statecodeValues.Attivo}"" />
+                                  <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{contactId}"" />
                                 </filter>
                               </entity>
                             </fetch>";
@@ -77,11 +75,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                     if (addresses.Entities.Count > 0)
                     {
-                        crmServiceProvider.TracingService.Trace($"I've found addresses");
-
+                        Trace("Check", "Fetched results.");
                         foreach (var address in addresses.Entities)
                         {
-                            crmServiceProvider.TracingService.Trace($"Address ID: {address.Id}");
+                            Trace("address_id", address.Id);
                             crmServiceProvider.Service.GrantAccess(principal, target, rights);
                         }
                     }
