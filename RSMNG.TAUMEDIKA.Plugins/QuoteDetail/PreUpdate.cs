@@ -22,15 +22,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace
+            #region Trace Activation Method
+            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                //flag per attivare/disattivare il trace
-                bool isTrace = false;
-                if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+                bool isTraceActive = true;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    object objectExample = new object();
+                    Trace("Esempio", objectExample);
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
-            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
-            Trace("Esempio", oggettoEsempio);
             #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
@@ -58,52 +64,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
             #endregion
 
-            #region Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]
-            PluginRegion = "Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]";
+            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
+            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.uomid, out EntityReference erUom);
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
-
-            if (erUom == null) throw new ApplicationException("Unit of measurement entity reference not found");
-            if (erQuote == null) throw new ApplicationException("Quote entity reference not found");
-
-            Trace("fetch", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota.");
-
-            /**
-             * [RIGA OFFERTA]
-             * recupero l'importo associato al prodotto per l'unità di misura selezionata
-             * nella voce listino del listino prezzi associato all'offerta,
-             * offerta con id recuperato dal campo lookup della riga offerta
-             * 
-             * [OFFERTA]
-             * recupero i campi "prezzo" dell'offerta per aggiornare i valori
-             */
             var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
-                                      <entity name=""quote"">
-                                        <attribute name=""{quote.totaldiscountamount}"" alias=""OffertaScontoTotaleApplicato"" />
-                                        <attribute name=""{quote.totallineitemamount}"" alias=""OffertaTotaleProdotti"" />
-                                        <attribute name=""{quote.freightamount}"" alias=""OffertaImportoSpesaAccessoria"" />
-                                        <attribute name=""{quote.totaltax}"" alias=""OffertaTotaleIva"" />
+                                      <entity name=""{product.logicalName}"">
                                         <filter>
-                                          <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{erQuote.Id}"" />
+                                          <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
                                         </filter>
-                                        <link-entity name=""{pricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
-                                          <link-entity name=""{productpricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
-                                            <filter>
-                                              <condition attribute=""{productpricelevel.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                              <condition attribute=""{productpricelevel.uomid}"" operator=""eq"" value=""{erUom.Id}"" />
-                                            </filter>
-                                            <link-entity name=""{product.logicalName}"" from=""productid"" to=""productid"" alias=""prodotto"">
-                                              <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                                <attribute name=""{res_vatnumber.res_rate}"" alias=""RigaOffertaCodiceIvaAliquota"" />
-                                                <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""RigaOffertaCodiceIvaGuid"" />
-                                              </link-entity>
-                                            </link-entity>
-                                          </link-entity>
-                                        </link-entity>
-                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
-                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""OffertaAliquotaIVA"" />
+                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
+                                          <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""CodiceIVAGuid"" />
+                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
                                         </link-entity>
                                       </entity>
                                     </fetch>";
@@ -118,67 +90,32 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 //---------------------------- Riga Offerta ----------------------------//
 
                 //dalla fetch
-                Guid rigaOffertaCodiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                decimal rigaOffertaCodiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaAliquota")?.Value is decimal rate ? rate : 0m; Trace("riga_offerta_aliquota_iva", rigaOffertaCodiceIvaAliquota);
+                Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota_iva", codiceIvaAliquota);
 
                 //dal target
-                decimal rigaOffertaPrezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("riga_offerta_prezzo_unitario", rigaOffertaPrezzoUnitario);
-                decimal rigaOffertaQuantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
-                decimal rigaOffertaScontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
+                decimal prezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("prezzo_unitario", prezzoUnitario);
+                decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("quantità", quantità);
+                decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("sconto_totale", scontoTotale);
 
-                if (rigaOffertaCodiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
+                if (codiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
 
-                EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, rigaOffertaCodiceIvaGuid);
-
-                //imposto l'entity reference del codice iva nel campo lookup di riga offerta
-                target[quotedetail.res_vatnumberid] = erCodiceIVA;
-
-                //imposto l'aliquota nel campo nascosto di riga offerta
-                target[quotedetail.res_vatrate] = rigaOffertaCodiceIvaAliquota;
+                EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
                 //calcolo l'importo [riga offerta]
-                decimal rigaOffertaImporto = rigaOffertaPrezzoUnitario * rigaOffertaQuantità; Trace("riga_offerta_importo", rigaOffertaImporto);
+                decimal importo = prezzoUnitario * quantità; Trace("importo", importo);
 
                 //calcolo il totale imponibile [riga offerta]
-                decimal rigaOffertaTotaleImponibile = rigaOffertaImporto - rigaOffertaScontoTotale; Trace("riga_offerta_totale_imponibile", rigaOffertaTotaleImponibile);
+                decimal totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
 
                 //calcolo il totale iva [riga offerta]
-                decimal rigaOffertaTotaleIVA = rigaOffertaTotaleImponibile * (rigaOffertaCodiceIvaAliquota / 100); Trace("riga_offerta_totale_iva", rigaOffertaTotaleIVA);
+                decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); Trace("totale_iva", totaleIva);
 
                 //aggiorno i campi di riga offerta
-                target[quotedetail.res_taxableamount] = new Money(rigaOffertaTotaleImponibile);
-                target[quotedetail.tax] = new Money(rigaOffertaTotaleIVA);
-
-                //---------------------------- Offerta ----------------------------//
-
-                //creo l'oggetto Offerta da aggiornare
-                Entity offerta = new Entity(quote.logicalName, erQuote.Id);
-
-                //recupero l'importo spesa accessoria dell'offerta dalla fetch
-                decimal offertaTotaleProdotti = prodotto.GetAttributeValue<AliasedValue>("OffertaTotaleProdotti")?.Value is Money totallineitemamount ? totallineitemamount.Value : 0m; Trace("Offerta_Totale_Prodotti", offertaTotaleProdotti);
-                decimal offertaScontoTotaleApplicato = prodotto.GetAttributeValue<AliasedValue>("OffertaScontoTotaleApplicato")?.Value is Money totaldiscountamount ? totaldiscountamount.Value : 0m; Trace("Offerta_Sconto_Totale_Applicato", offertaScontoTotaleApplicato);
-                decimal offertaImportoSpesaAccessoria = prodotto.GetAttributeValue<AliasedValue>("OffertaImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0m; Trace("Offerta_Importo_Spesa_Accessoria", offertaImportoSpesaAccessoria);
-
-                //calcolo il totale imponibile dell'offerta (totale prodotti - sconto totale applicato + importo spesa accessoria)
-                decimal offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotaleApplicato + offertaImportoSpesaAccessoria; Trace("Offerta_Totale_Imponibile", offertaTotaleImponibile);
-
-                //totale iva di tutte le righe
-                decimal sommaRigheOffertaTotaleIva = prodotto.GetAttributeValue<AliasedValue>("OffertaTotaleIva")?.Value is Money totaltax ? totaltax.Value : 0m; Trace("Somma_Righe_Offerta_Totale_Iva", sommaRigheOffertaTotaleIva);
-
-                //offerta aliquota iva
-                decimal offertaAliquotaIva = prodotto.GetAttributeValue<AliasedValue>("OffertaAliquotaIVA")?.Value is decimal quoteRate ? quoteRate : 0m; Trace("Offerta_Aliquota_Iva", offertaAliquotaIva);
-
-                //iva su importo spesa accessoria
-                decimal offertaIvaImportoSpesaAccessoria = offertaImportoSpesaAccessoria * (offertaAliquotaIva / 100); Trace("Offerta_Iva_Importo_Spesa_Accessoria", offertaIvaImportoSpesaAccessoria);
-
-                //sommatoria del totale iva di tutte le righe + iva calcolata su importo spesa accessoria
-                decimal offertaTotaleIva = sommaRigheOffertaTotaleIva + offertaIvaImportoSpesaAccessoria; Trace("Offerta_Totale_Iva", offertaTotaleIva);
-
-                //aggiorno i campi dell'offerta
-                offerta[quote.totalamountlessfreight] = new Money(offertaTotaleImponibile);
-                offerta[quote.totaltax] = new Money(offertaTotaleIva);
-
-                crmServiceProvider.Service.Update(offerta);
+                target[quotedetail.res_vatnumberid] = erCodiceIVA;
+                target[quotedetail.res_vatrate] = codiceIvaAliquota;
+                target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
+                target[quotedetail.tax] = new Money(totaleIva);
             }
             #endregion
         }

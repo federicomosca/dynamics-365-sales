@@ -22,6 +22,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            #region Trace Activation Method
+            bool isFirstExecute = true;
+            void Trace(string key, object value)
+            {
+                bool isTraceActive = true;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    object objectExample = new object(); 
+                    Trace("Esempio", objectExample);
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+            }
+            #endregion
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
@@ -39,85 +56,67 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
              * spesa accessoria > importo
              * codice IVA spesa accessoria > aliquota
              */
-            var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                        <fetch aggregate=""true"">
-                                          <entity name=""quote"">
-                                            <attribute name=""quoteid"" alias=""quoteid"" groupby=""true"" />
-                                            <link-entity name=""quotedetail"" from=""quoteid"" to=""quoteid"" link-type=""inner"" alias=""quotedetail"">
-                                              <attribute name=""manualdiscountamount"" alias=""scontototale"" aggregate=""sum"" />
-                                              <attribute name=""res_taxableamount"" alias=""totaleimponibile"" aggregate=""sum"" />
-                                              <attribute name=""tax"" alias=""totaleiva"" aggregate=""sum"" />
-                                            </link-entity>
-                                            <link-entity name=""res_additionalexpense"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
-                                              <attribute name=""res_amount"" alias=""importo"" groupby=""true"" />
-                                            </link-entity>
-                                            <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""vatnumber"">
-                                              <attribute name=""res_rate"" alias=""aliquota"" groupby=""true"" />
-                                            </link-entity>
-                                          </entity>
-                                        </fetch>";
+            var fetchAggregatiRigheOfferta = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                <fetch aggregate=""true"">
+                                    <entity name=""{quote.logicalName}"">
+                                    <attribute name=""{quote.quoteid}"" alias=""quoteid"" groupby=""true"" />
+                                    <link-entity name=""{quotedetail.logicalName}"" from=""quoteid"" to=""quoteid"" link-type=""inner"" alias=""quotedetail"">
+                                        <attribute name=""{quotedetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
+                                    </link-entity>
+                                    <link-entity name=""{res_additionalexpense.logicalName}"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
+                                        <attribute name=""{res_additionalexpense.res_amount}"" alias=""Importo"" groupby=""true"" />
+                                    </link-entity>
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""vatnumber"">
+                                        <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" groupby=""true"" />
+                                    </link-entity>
+                                    </entity>
+                                </fetch>";
+            Trace("fetchAggregatiRigheOfferta", fetchAggregatiRigheOfferta);
+            EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
 
-            EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+            if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
+            Entity aggregatoRigheOfferta = aggregatiRigheOfferta.Entities[0];
 
-            if (aggregateCollection.Entities.Count > 0)
-            {
-                //offerta da aggiornare
-                Entity aggregate = aggregateCollection.Entities[0];
+            //----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
 
-                /**
-                 * campi dell'offerta che verranno aggiornati
-                 */
-                decimal totallineitemamount = 0m,    //totale righe        somma del totale imponibile di tutte le quotedetail
-                    totaldiscountamount = 0m,        //sconto totale       somma dello sconto totale di tutte le quotedetail
-                    totalamountlessfreight = 0m,     //totale imponibile   totale righe - sconto totale
-                    totaltax = 0m,                   //totale iva          somma del totale iva di tutte le quotedetail + iva calcolata su importo spesa accessoria
-                    totalamount = 0m;                //importo totale      totale imponibile + totale iva
+            decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
+                offertaScontoTotale,            // S [quotedetail] sconto totale
+                offertaTotaleImponibile,        // totaleprodotti - sconto totale
+                offertaTotaleIva,               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
+                offertaImportoTotale;           // totale imponibile + totale iva
 
-                if (aggregate != null)
-                {
-                    //id dell'offerta da aggiornare
-                    Guid quoteid = aggregate.GetAttributeValue<AliasedValue>("quoteid")?.Value as Guid? ?? Guid.Empty;
+            //------------------------------------< LOGICA RELATIVA ALL'IVA >------------------------------------//
 
-                    if (quoteid != Guid.Empty)
-                    {
-                        //creo l'offerta da aggiornare
-                        Entity quote = new Entity(DataModel.quote.logicalName, quoteid);
+            Guid quoteid = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("quoteid")?.Value as Guid? ?? Guid.Empty;
+            if (quoteid == Guid.Empty) throw new ApplicationException("Quote ID fetched not found");
+            decimal righeSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("righe_Spesa_Accessoria", righeSpesaAccessoria);
+            decimal righeAliquotaSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Aliquota")?.Value is Money res_rate ? res_rate.Value : 0m; Trace("righe_Aliquota_Spesa_Accessoria", righeAliquotaSpesaAccessoria);
 
-                        //spesa accessoria e aliquota per il calcolo del totale iva
-                        decimal spesaAccessoria = aggregate.GetAttributeValue<AliasedValue>("importo")?.Value is Money importo ? importo.Value : 0m;
+            //-------------------------------------< AGGREGATI DALLA FETCH >-------------------------------------//
 
-                        decimal codiceIvaSpesaAccessoria = aggregate.GetAttributeValue<AliasedValue>("aliquota")?.Value is Money aliquota ? aliquota.Value : 0m;
+            decimal righeScontoTotale = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("ScontoTotale")?.Value is Money manualdiscountamount ? manualdiscountamount.Value : 0m; Trace("righe_Sconto_Totale", righeScontoTotale);
+            decimal righeTotaleImponibile = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleImponibile")?.Value is Money res_taxableamount ? res_taxableamount.Value : 0m; Trace("righe_Totale_Imponibile", righeTotaleImponibile);
+            decimal righeTotaleIva = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleIva")?.Value is Money tax ? tax.Value : 0m; Trace("righe_Totale_Iva", righeTotaleIva);
 
-                        /**
-                         * inizio a valorizzare totale iva con l'aliquota applicata alla spesa accessoria
-                         * a questo risultato andrà poi aggiunta la somma del totale iva di tutte le righe offerta
-                         */
-                        totaltax = spesaAccessoria * (codiceIvaSpesaAccessoria / 100);
+            //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                        //recupero totale imponibile, sconto totale e totale iva di tutte le righe di dettaglio
-                        decimal aggrTotaleImponibile = aggregate.GetAttributeValue<AliasedValue>("totaleimponibile")?.Value is Money totaleimponibile ? totaleimponibile.Value : 0m;
-                        decimal aggrScontoTotale = aggregate.GetAttributeValue<AliasedValue>("scontototale")?.Value is Money scontototale ? scontototale.Value : 0m;
-                        decimal aggrTotaleIva = aggregate.GetAttributeValue<AliasedValue>("totaleiva")?.Value is Money totaleiva ? totaleiva.Value : 0m;
+            offertaTotaleProdotti = righeTotaleImponibile; Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+            offertaScontoTotale = righeScontoTotale; Trace("offerta_Sconto_Totale", offertaScontoTotale);
+            offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + righeSpesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
+            offertaTotaleIva = righeTotaleIva + (righeSpesaAccessoria * (righeAliquotaSpesaAccessoria / 100)); Trace("offerta_Totale_Iva", offertaTotaleIva);
+            offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva; Trace("offerta_Importo_Totale", offertaImportoTotale);
 
-                        //calcolo il totale imponibile e l'importo totale
-                        totalamountlessfreight = totallineitemamount - totaldiscountamount + spesaAccessoria;
-                        totalamount = totalamountlessfreight + totaltax;
+            Entity enQuote = new Entity(quote.logicalName, quoteid);
 
-                        quote[DataModel.quote.totallineitemamount] = new Money(aggrTotaleImponibile);
-                        quote[DataModel.quote.totaldiscountamount] = new Money(aggrScontoTotale);
-                        quote[DataModel.quote.totaltax] = new Money(aggrTotaleIva);
-                        quote[DataModel.quote.totalamountlessfreight] = new Money(totalamountlessfreight);
-                        quote[DataModel.quote.totalamount] = new Money(totalamount);
+            enQuote[quote.totallineitemamount] = new Money(offertaTotaleProdotti);
+            enQuote[quote.totaldiscountamount] = new Money(offertaScontoTotale);
+            enQuote[quote.totaltax] = new Money(offertaTotaleIva);
+            enQuote[quote.totalamountlessfreight] = new Money(offertaTotaleImponibile);
+            enQuote[quote.totalamount] = new Money(offertaImportoTotale);
 
-                        crmServiceProvider.Service.Update(quote);
-                    }
-                    else { throw new ApplicationException("Quote ID is missing"); }
-                }
-            }
-            else
-            {
-                throw new ApplicationException("Cannot find quote details");
-            }
+            crmServiceProvider.Service.Update(enQuote);
             #endregion
         }
     }
