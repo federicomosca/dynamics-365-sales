@@ -22,20 +22,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            bool isFirstExecute = true;
-            void Trace(string key, object value)
-            {
-                bool isTraceActive = true;
-                if (isFirstExecute)
-                {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+            var trace = crmServiceProvider.TracingService;
 
-                    isFirstExecute = false;
-                }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
-            }
-            #endregion
+            //#region Trace Activation Method
+            //bool isFirstExecute = true;
+            //void Trace(string key, object value)
+            //{
+            //    bool isTraceActive = true;
+            //    if (isFirstExecute)
+            //    {
+            //        crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+            //        object objectExample = new object();
+            //        Trace("Esempio", objectExample);
+            //        isFirstExecute = false;
+            //    }
+            //    if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+            //}
+            //#endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -43,11 +47,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             Guid targetId = target.Id;
 
-            #region Controllo campi obbligatori
-            PluginRegion = "Controllo campi obbligatori";
 
-            VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
-            #endregion
+            trace.Trace("01");
+            //#region Controllo campi obbligatori
+            //PluginRegion = "Controllo campi obbligatori";
+
+            //VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
+            //#endregion
 
             #region Valorizzo il campo Codice Articolo
             PluginRegion = "Valorizzo il campo Codice Articolo";
@@ -61,7 +67,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
             #endregion
-
+            trace.Trace("02");
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
@@ -69,7 +75,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
                                         <filter>
-                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{product.statecodeValues.Attivo}"" />
                                           <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
                                         </filter>
                                         <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
@@ -79,42 +84,43 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                       </entity>
                                     </fetch>";
 
-            Trace("fetch", fetchProdotto);
+            //Trace("fetch", fetchProdotto);
             EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
-
+            trace.Trace("03");
             if (collection.Entities.Count > 0)
             {
                 prodotto = collection.Entities[0];
-
+                trace.Trace("04");
                 //---------------------------- Riga Offerta ----------------------------//
 
                 //dalla fetch
                 Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota_iva", codiceIvaAliquota);
+                decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; //Trace("aliquota_iva", codiceIvaAliquota);
 
                 //dal target
-                decimal prezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("prezzo_unitario", prezzoUnitario);
-                decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("quantità", quantità);
-                decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("sconto_totale", scontoTotale);
+                decimal prezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; //Trace("prezzo_unitario", prezzoUnitario);
+                decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); //Trace("quantità", quantità);
+                decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; //Trace("sconto_totale", scontoTotale);
 
                 if (codiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
 
                 EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
                 //calcolo l'importo [riga offerta]
-                decimal importo = prezzoUnitario * quantità; Trace("importo", importo);
+                decimal importo = prezzoUnitario * quantità; //Trace("importo", importo);
 
                 //calcolo il totale imponibile [riga offerta]
-                decimal totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
+                decimal totaleImponibile = importo - scontoTotale; //Trace("totale_imponibile", totaleImponibile);
 
                 //calcolo il totale iva [riga offerta]
-                decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); Trace("totale_iva", totaleIva);
+                decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); //Trace("totale_iva", totaleIva);
 
                 //aggiorno i campi di riga offerta
                 target[quotedetail.res_vatnumberid] = erCodiceIVA;
                 target[quotedetail.res_vatrate] = codiceIvaAliquota;
                 target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
                 target[quotedetail.tax] = new Money(totaleIva);
+                trace.Trace("05");
             }
             #endregion
         }
