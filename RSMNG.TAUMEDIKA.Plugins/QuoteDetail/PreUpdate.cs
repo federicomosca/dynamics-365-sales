@@ -72,7 +72,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
                                         <filter>
-                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{product.statecodeValues.Attivo}"" />
+                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
                                           <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
                                         </filter>
                                         <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
@@ -84,11 +84,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             Trace("fetch", fetchProdotto);
             EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
-            trace.Trace("03");
             if (collection.Entities.Count > 0)
             {
                 prodotto = collection.Entities[0];
-                trace.Trace("04");
                 //---------------------------- Riga Offerta ----------------------------//
 
                 //dalla fetch
@@ -118,7 +116,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.res_vatrate] = codiceIvaAliquota;
                 target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
                 target[quotedetail.tax] = new Money(totaleIva);
-                trace.Trace("05");
             }
             #endregion
         }

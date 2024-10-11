@@ -42,8 +42,110 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity postImage = target.GetPostImage(preImage);
             Guid targetId = target.Id;
 
-            #region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata
-            PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata";
+            EntityReference erQuote = postImage.GetAttributeValue<EntityReference>(quotedetail.quoteid);
+
+            if (target.Contains(quotedetail.tax) || target.Contains(quotedetail.manualdiscountamount) || target.Contains(quotedetail.res_taxableamount))
+            {
+
+                decimal aliquota = 0;
+                decimal importoSpesaAccessoria = 0;
+
+                decimal scontoTotale = 0;
+                decimal totaleImponibile = 0;
+                decimal totaleIva = 0;
+
+                var fetchData = new
+                {
+                    quoteid = erQuote.Id
+                };
+                var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch aggregate=""true"">
+                                      <entity name=""quotedetail"">
+                                        <attribute name=""manualdiscountamount"" alias=""ScontoTotale"" aggregate=""sum"" />
+                                        <attribute name=""res_taxableamount"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""tax"" alias=""TotaleIva"" aggregate=""sum"" />
+                                        <filter>
+                                          <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData.quoteid}"" />
+                                        </filter>
+                                      </entity>
+                                    </fetch>";
+
+                EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
+
+                if (aggregatiRigheOfferta.Entities.Count  > 0)
+                {
+
+                    scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
+                    totaleImponibile = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
+                    totaleIva = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
+
+                    var fetchData2 = new
+                    {
+                        quoteid = erQuote.Id
+                    };
+                    // Recupero Importo Spesa Accessoria  e Aliquota
+                    var fetchXml2 = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                <fetch>
+                                  <entity name=""quote"">
+                                    <attribute name=""freightamount"" />
+                                    <filter>
+                                      <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData2.quoteid}"" />
+                                    </filter>
+                                    <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
+                                      <attribute name=""res_rate"" alias=""Aliquota"" />
+                                    </link-entity>
+                                  </entity>
+                                </fetch>";
+
+                    EntityCollection ecOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml2));
+
+                    if (ecOfferta.Entities.Count > 0)
+                    {
+                        importoSpesaAccessoria = ecOfferta.Entities[0].ContainsAttributeNotNull(quote.freightamount) ? ecOfferta.Entities[0].GetAttributeValue<Money>(quote.freightamount).Value : 0;
+                        aliquota = ecOfferta.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOfferta.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
+                    }
+
+                    ////----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
+
+                    decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
+                        offertaScontoTotale,            // S [quotedetail] sconto totale
+                        offertaTotaleImponibile,        // totaleprodotti - sconto totale
+                        offertaTotaleIva,               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
+                        offertaImportoTotale;           // totale imponibile + totale iva
+
+                    Trace("scontoTotale", scontoTotale);
+                    Trace("totaleImponibile", totaleImponibile);
+                    Trace("importoSpesaAccessoria", importoSpesaAccessoria);
+                    Trace("aliquota", aliquota);
+                    Trace("TotaleIva", totaleIva);
+                    //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
+
+                    offertaTotaleProdotti = totaleImponibile;                                                       Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    offertaScontoTotale = scontoTotale;                                                             Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    //offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + importoSpesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));                     Trace("offerta_Totale_Iva", offertaTotaleIva);
+                    //offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva;                              Trace("offerta_Importo_Totale", offertaImportoTotale);
+
+                    Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
+
+                    enQuote[quote.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
+                    enQuote[quote.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
+                    enQuote[quote.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
+                    //enQuote[quote.totalamountlessfreight] = offertaTotaleImponibile != 0 ? new Money(offertaTotaleImponibile) : null;
+                    //enQuote[quote.totalamount] = offertaImportoTotale != 0 ? new Money(offertaImportoTotale) : null;
+
+                    crmServiceProvider.Service.Update(enQuote);
+
+
+
+
+                }  
+                
+            }
+
+
+            //#region Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata
+            //PluginRegion = "Aggiorno i campi Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale dell'Offerta correlata";
 
             /**
              * fetch di tutti i campi interessati nel calcolo di tutte le quotedetail,
@@ -54,68 +156,46 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
              * spesa accessoria > importo
              * codice IVA spesa accessoria > aliquota
              */
-            var fetchAggregatiRigheOfferta = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                <fetch aggregate=""true"">
-                                    <entity name=""{quote.logicalName}"">
-                                    <attribute name=""{quote.quoteid}"" alias=""quoteid"" groupby=""true"" />
-                                    <link-entity name=""{quotedetail.logicalName}"" from=""quoteid"" to=""quoteid"" link-type=""inner"" alias=""quotedetail"">
-                                        <attribute name=""{quotedetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
-                                        <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
-                                        <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
-                                    </link-entity>
-                                    <link-entity name=""{res_additionalexpense.logicalName}"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
-                                        <attribute name=""{res_additionalexpense.res_amount}"" alias=""Importo"" groupby=""true"" />
-                                    </link-entity>
-                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""vatnumber"">
-                                        <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" groupby=""true"" />
-                                    </link-entity>
-                                    </entity>
-                                </fetch>";
-            Trace("fetchAggregatiRigheOfferta", fetchAggregatiRigheOfferta);
-            EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
+            //var fetchAggregatiRigheOfferta = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            //                    <fetch aggregate=""true"">
+            //                        <entity name=""{quote.logicalName}"">
+            //                        <attribute name=""{quote.quoteid}"" alias=""quoteid"" groupby=""true"" />
+            //                        <link-entity name=""{quotedetail.logicalName}"" from=""quoteid"" to=""quoteid"" link-type=""inner"" alias=""quotedetail"">
+            //                            <attribute name=""{quotedetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+            //                            <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+            //                            <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
+            //                        </link-entity>
+            //                        <link-entity name=""{res_additionalexpense.logicalName}"" from=""res_additionalexpenseid"" to=""res_additionalexpenseid"" alias=""additionalexpense"">
+            //                            <attribute name=""{res_additionalexpense.res_amount}"" alias=""Importo"" groupby=""true"" />
+            //                        </link-entity>
+            //                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""vatnumber"">
+            //                            <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" groupby=""true"" />
+            //                        </link-entity>
+            //                        </entity>
+            //                    </fetch>";
 
-            if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
-            Entity aggregatoRigheOfferta = aggregatiRigheOfferta.Entities[0];
+            //Trace("fetchAggregatiRigheOfferta", fetchAggregatiRigheOfferta);
+            //EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
 
-            //----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
 
-            decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
-                offertaScontoTotale,            // S [quotedetail] sconto totale
-                offertaTotaleImponibile,        // totaleprodotti - sconto totale
-                offertaTotaleIva,               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
-                offertaImportoTotale;           // totale imponibile + totale iva
+            
+
+            //if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
+            //Entity aggregato = aggregatiRigheOfferta.Entities[0];
+
+           
 
             //------------------------------------< LOGICA RELATIVA ALL'IVA >------------------------------------//
 
-            Guid quoteid = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("quoteid")?.Value as Guid? ?? Guid.Empty;
-            if (quoteid == Guid.Empty) throw new ApplicationException("Quote ID fetched not found");
-            decimal righeSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("righe_Spesa_Accessoria", righeSpesaAccessoria);
-            decimal righeAliquotaSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Aliquota")?.Value is Money res_rate ? res_rate.Value : 0m; Trace("righe_Aliquota_Spesa_Accessoria", righeAliquotaSpesaAccessoria);
+            //Guid quoteid = aggregato.GetAttributeValue<AliasedValue>("quoteid")?.Value as Guid? ?? Guid.Empty;
+            //if (quoteid == Guid.Empty) throw new ApplicationException("Quote ID fetched not found");
+            //decimal offertaImportoSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("offerta_importo_Spesa_Accessoria", offertaImportoSpesaAccessoria);
+            //decimal offertaAliquotaSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0m; Trace("offerta_Aliquota_Spesa_Accessoria", offertaAliquotaSpesaAccessoria);
 
-            //-------------------------------------< AGGREGATI DALLA FETCH >-------------------------------------//
+            
 
-            decimal righeScontoTotale = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("ScontoTotale")?.Value is Money manualdiscountamount ? manualdiscountamount.Value : 0m; Trace("righe_Sconto_Totale", righeScontoTotale);
-            decimal righeTotaleImponibile = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleImponibile")?.Value is Money res_taxableamount ? res_taxableamount.Value : 0m; Trace("righe_Totale_Imponibile", righeTotaleImponibile);
-            decimal righeTotaleIva = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleIva")?.Value is Money tax ? tax.Value : 0m; Trace("righe_Totale_Iva", righeTotaleIva);
-
-            //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
-
-            offertaTotaleProdotti = righeTotaleImponibile; Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-            offertaScontoTotale = righeScontoTotale; Trace("offerta_Sconto_Totale", offertaScontoTotale);
-            offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + righeSpesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
-            offertaTotaleIva = righeTotaleIva + (righeSpesaAccessoria * (righeAliquotaSpesaAccessoria / 100)); Trace("offerta_Totale_Iva", offertaTotaleIva);
-            offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva; Trace("offerta_Importo_Totale", offertaImportoTotale);
-
-            Entity enQuote = new Entity(quote.logicalName, quoteid);
-
-            enQuote[quote.totallineitemamount] = new Money(offertaTotaleProdotti);
-            enQuote[quote.totaldiscountamount] = new Money(offertaScontoTotale);
-            enQuote[quote.totaltax] = new Money(offertaTotaleIva);
-            enQuote[quote.totalamountlessfreight] = new Money(offertaTotaleImponibile);
-            enQuote[quote.totalamount] = new Money(offertaImportoTotale);
-
-            crmServiceProvider.Service.Update(enQuote);
-            #endregion
+           
+            //#endregion
         }
     }
 }
