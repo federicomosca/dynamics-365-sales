@@ -57,6 +57,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                 }
                 #endregion
 
+                #region Recupero le categorie/sottocategorie
+                Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
+                #endregion
+
                 #region Controllo il tipo di distribuzione da fare in base all'azione
                 PluginRegion = "Controllo il tipo di distribuzione da fare in base all'azione";
                 switch (eDataIntegration.GetAttributeValue<OptionSetValue>(res_dataintegration.res_integrationaction).Value)
@@ -78,43 +82,106 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 #region Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale
                                 PluginRegion = "Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale";
                                 EntityReference erProductFamily = null;
+                                KeyValuePair<string, Guid> categoryKey = default(KeyValuePair<string, Guid>);
+                                KeyValuePair<string, Guid> subCategoryKey = default(KeyValuePair<string, Guid>);
                                 if (importProductDanea.Categoria != null)
                                 {
-                                    KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
-                                    productFamilyKeys.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                    Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
-                                    enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
-                                    enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                    enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                    UpsertRequest upsertRequestProductFamily = new UpsertRequest()
+                                    var foundCategory = dCategory
+                                        .Where(entry => entry.Key.Key.Equals(importProductDanea.Categoria.Codice, StringComparison.OrdinalIgnoreCase))
+                                        .FirstOrDefault();
+                                    if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                     {
-                                        Target = enProductFamily
-                                    };
-                                    UpsertResponse upsertResponseProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProductFamily);
-                                    erProductFamily = upsertResponseProductFamily.Target;
+                                        KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
+                                        productFamilyKeys.Add(product.productnumber, importProductDanea.Categoria.Codice);
+                                        Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
+                                        enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
+                                        enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
+                                        enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
+                                        UpsertRequest upsertRequestProductFamily = new UpsertRequest()
+                                        {
+                                            Target = enProductFamily
+                                        };
+                                        UpsertResponse upsertResponseProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProductFamily);
+                                        erProductFamily = upsertResponseProductFamily.Target;
+
+                                        //Inserisco la nuova categoria del dictionary
+                                        categoryKey = new KeyValuePair<string, Guid>(importProductDanea.Categoria.Codice, erProductFamily.Id);
+                                        dCategory[categoryKey] = new List<KeyValuePair<string, Guid>>();
+                                    }
+                                    else
+                                    {
+                                        erProductFamily = new EntityReference(product.logicalName, foundCategory.Key.Value);
+                                        categoryKey = foundCategory.Key;
+                                    }
                                 }
                                 if (importProductDanea.EntitaPrincipale != null)
                                 {
-                                    KeyAttributeCollection subProductFamilyKeys = new KeyAttributeCollection();
-                                    subProductFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                    if (erProductFamily != null)
+                                    if (erProductFamily != null && !categoryKey.Equals(default(KeyValuePair<string, Guid>)))
                                     {
-                                        subProductFamilyKeys.Add(product.parentproductid, erProductFamily);
+                                        //Cerco la sotto categoria
+                                        var foundSubCategory = dCategory
+                                            .Where(entry => entry.Key.Key.Equals(categoryKey.Key, StringComparison.OrdinalIgnoreCase)) // Filtra per nome del padre
+                                            .SelectMany(entry => entry.Value.Select(child => new { Parent = entry.Key, Child = child }))
+                                            .FirstOrDefault(x => x.Child.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase)); // Filtra per nome del figlio
+
+                                        if (foundSubCategory == null)
+                                        {
+                                            //Creo la sotto categoria legata alla categoria
+                                            KeyAttributeCollection subProductFamilyKeys = new KeyAttributeCollection();
+                                            subProductFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                            Entity enSubProductFamily = new Entity(product.logicalName, subProductFamilyKeys);
+                                            enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
+                                            enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                            enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
+                                            enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
+                                            UpsertRequest upsertRequestSubProductFamily = new UpsertRequest()
+                                            {
+                                                Target = enSubProductFamily
+                                            };
+                                            UpsertResponse upsertResponseSubProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestSubProductFamily);
+                                            erProductFamily = upsertResponseSubProductFamily.Target;
+
+                                            //Inserisco la nuova categoria del dictionary
+                                            subCategoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
+                                            dCategory[categoryKey].Add(subCategoryKey);
+                                        }
+                                        else
+                                        {
+                                            erProductFamily = new EntityReference(product.logicalName, foundSubCategory.Child.Value);
+                                            subCategoryKey = foundSubCategory.Child;
+                                        }
                                     }
-                                    Entity enSubProductFamily = new Entity(product.logicalName, subProductFamilyKeys);
-                                    enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
-                                    enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                    if (erProductFamily != null)
+                                    else
                                     {
-                                        enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
+                                        //Cerco la catagoria
+                                        var foundCategory = dCategory
+                                            .Where(entry => entry.Key.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase))
+                                            .FirstOrDefault();
+                                        if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
+                                        {
+                                            KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
+                                            productFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                            Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
+                                            enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
+                                            enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                            enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
+                                            UpsertRequest upsertRequestProductFamily = new UpsertRequest()
+                                            {
+                                                Target = enProductFamily
+                                            };
+                                            UpsertResponse upsertResponseProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProductFamily);
+                                            erProductFamily = upsertResponseProductFamily.Target;
+
+                                            //Inserisco la nuova categoria del dictionary
+                                            categoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
+                                            dCategory[categoryKey] = new List<KeyValuePair<string, Guid>>();
+                                        }
+                                        else
+                                        {
+                                            categoryKey = foundCategory.Key;
+                                            erProductFamily = new EntityReference(product.logicalName, foundCategory.Key.Value);
+                                        }
                                     }
-                                    enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                    UpsertRequest upsertRequestSubProductFamily = new UpsertRequest()
-                                    {
-                                        Target = enSubProductFamily
-                                    };
-                                    UpsertResponse upsertResponseSubProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestSubProductFamily);
-                                    erProductFamily = upsertResponseSubProductFamily.Target;
                                 }
                                 #endregion
 
@@ -134,6 +201,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     if (erProductFamily != null)
                                     {
                                         enProduct.Attributes.Add(product.parentproductid, erProductFamily);
+                                    }
+                                    if (!categoryKey.Equals(default(KeyValuePair<string, Guid>)))
+                                    {
+                                        enProduct.Attributes.Add(product.res_parentcategoryid, new EntityReference(product.logicalName, categoryKey.Value));
                                     }
                                     enProduct.Attributes.Add(product.description, importProductDanea.Descrizione);
                                     enProduct.Attributes.Add(product.defaultuomscheduleid, new EntityReference(importProductDanea.UnitaDiVendita.Entity, importProductDanea.UnitaDiVendita.Id));

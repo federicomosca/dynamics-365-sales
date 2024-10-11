@@ -39,14 +39,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             description: "description",
             ///Importo sconto ordine
             discountamount: "discountamount",
-            ///Importo sconto ordine (Base)
-            discountamount_base: "discountamount_base",
             ///Sconto ordine (%)
             discountpercentage: "discountpercentage",
             ///Email Address
             emailaddress: "emailaddress",
-            ///Immagine entità
-            entityimage: "entityimage",
             ///Tasso di cambio
             exchangerate: "exchangerate",
             ///Importo spesa accessoria
@@ -57,8 +53,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             ispricelocked: "ispricelocked",
             ///Nome
             name: "name",
-            ///Periodo di sospensione (minuti)
-            onholdtime: "onholdtime",
             ///Opportunità
             opportunityid: "opportunityid",
             ///Condizioni di pagamento
@@ -71,8 +65,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             processid: "processid",
             ///Offerta
             quoteid: "quoteid",
-            ///Data consegna richiesta
-            requestdeliveryby: "requestdeliveryby",
             ///Spesa accessoria
             res_additionalexpenseid: "res_additionalexpenseid",
             ///Banca
@@ -111,8 +103,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             shipto_contactname: "shipto_contactname",
             ///Paese spedizione
             shipto_country: "shipto_country",
-            ///Condizioni di spedizione per indirizzo spedizione
-            shipto_freighttermscode: "shipto_freighttermscode",
             ///Via spedizione
             shipto_line1: "shipto_line1",
             ///Via 2 spedizione
@@ -334,7 +324,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         if (additionlExpenseId !== null) {
 
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("required");
-            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(false);
+            
 
             Xrm.WebApi.retrieveRecord("res_additionalexpense", additionlExpenseId[0].id, "?$select=res_amount").then(
                 function success(result) {
@@ -350,7 +340,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("none");
             formContext.getAttribute(_self.formModel.fields.freightamount).setValue(null);
-            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(true);
+            
         }
 
 
@@ -561,6 +551,83 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
     };
     //---------------------------------------------------
+    _self.onChangeVatNumber = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                    //codice iva spesa accessoria
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);    //spesa accessoria
+        const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
+        const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
+
+        /**
+         * calcolo la spesa accessoria con applicata l'aliquota
+         * recupero il totale iva di tutte le righe offerta associate
+         * e imposto il risultato nel campo totale iva dell'offerta
+         */
+        const vatNumberLookup = vatNumberControl.getAttribute().getValue();
+        const additionalExpenseLookup = additionalExpenseControl.getAttribute().getValue();
+
+        const vatNumberId = vatNumberLookup ? vatNumberLookup[0].id.replace(/[{}]/g, "") : null;
+        const additionalExpenseId = additionalExpenseLookup ? additionalExpenseLookup[0].id.replace(/[{}]/g, "") : null;
+
+        //retrieve della somma del Totale IVA di tutte le righe offerta
+        var fetchData = {
+            "salesorderid": formContext.data.entity.getId().replace(/[{}]/g, "")
+        };
+        var fetchXml = [
+            "?fetchXml=<fetch aggregate='true'>",
+            "  <entity name='salesorderdetail'>",
+            "    <attribute name='tax' alias='totaleiva' aggregate='sum'/>",
+            "    <attribute name='manualdiscountamount' alias='totalesconto' aggregate='sum'/>",
+            "    <attribute name='res_taxableamount' alias='totaleimponibile' aggregate='sum'/>",
+            "    <filter>",
+            "      <condition attribute='salesorderid' operator='eq' value='", fetchData.salesorderid, "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        var salesorderDetails = await Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchXml);
+
+        const totaleIvaRigheOrdine = salesorderDetails ? salesorderDetails.entities[0].totaleiva != undefined ? salesorderDetails.entities[0].totaleiva : 0 : 0;
+
+        //se è stato selezionato il codice iva spesa accessoria
+        if (vatNumberId) {
+            let vatNumber = await Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberId, "?$select=res_rate")
+
+            const aliquotaCodiceIVA = vatNumber ? vatNumber.res_rate : 0;
+
+            let additionalExpense = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseId, "?$select=res_amount")
+            const importoSpesaAccessoria = additionalExpense ? additionalExpense.res_amount : 0;
+
+            //calcolo l'iva sulla spesa accessoria
+            if (importoSpesaAccessoria && aliquotaCodiceIVA) {
+                const ivaSpesaAccessoria = importoSpesaAccessoria ? importoSpesaAccessoria * (aliquotaCodiceIVA / 100) : 0;
+
+                let totaleIVA = totaleIvaRigheOrdine + ivaSpesaAccessoria;
+
+                totalTaxControl.getAttribute().setValue(totaleIVA);
+
+                const totalamount = totalAmountControl.getAttribute().getValue();
+                totalAmountControl.getAttribute().setValue(totalamount ? totalamount + ivaSpesaAccessoria : ivaSpesaAccessoria);
+
+            } else throw console.error("additional expense amount or vat number are missing");
+        } else {
+
+            totalTaxControl.getAttribute().setValue(totaleIvaRigheOrdine);
+
+            const totaleScontoRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totalesconto != undefined ? salesorderDetails.entities[0].totalesconto : 0 : 0;
+            const totaleImponibileRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totaleimponibile != undefined ? salesorderDetails.entities[0].totaleimponibile : 0 : 0;
+
+            const totaleimponibile = totaleImponibileRigheOfferta - totaleScontoRigheOfferta;
+            const importototale = totaleimponibile + totaleIvaRigheOrdine;
+
+            totalAmountControl.getAttribute().setValue(importototale);
+        }
+    };
+    //---------------------------------------------------
+
+    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -642,7 +709,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
 
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel(additionlExpenseId !== null ? "required" : "none");
-        formContext.getControl(_self.formModel.fields.freightamount).setDisabled(additionlExpenseId !== null ? false : true);
+        
         //-----
 
         let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
@@ -669,6 +736,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     };
     //---------------------------------------------------
+    
+    //---------------------------------------------------
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -694,6 +763,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.onChangePaymentTermId);
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeAdditionalExpenseId);
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
+
+
         formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.onChangeShipToLine1);
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeShipToPostalCode);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeShipToCity);
