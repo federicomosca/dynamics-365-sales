@@ -23,12 +23,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            bool isTrace = false;
+            var service = crmServiceProvider.Service;
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-
-            var service = crmServiceProvider.Service;
-            
-
 
             #region Re-Imposta Codice Articolo
             PluginRegion = "Re-Imposta codice articolo";
@@ -48,8 +46,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             }
             #endregion
 
+            #region Valorizzo il campo Totale imponibile
+            PluginRegion = "Valorizzo il campo Totale imponibile";
 
-            
+            decimal importo = target.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m;
+            decimal manualdiscountamount = target.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m;
+
+            if (isTrace) crmServiceProvider.TracingService.Trace($"importo :{importo}");
+            if (isTrace) crmServiceProvider.TracingService.Trace($"manualdiscountamount :{manualdiscountamount}");
+
+            //calcolo il totale imponibile
+            decimal totaleImponibile = importo - manualdiscountamount;
+            if (isTrace) crmServiceProvider.TracingService.Trace($"totaleImponibile :{totaleImponibile}");
+
+            //valorizzo il campo totale imponibile
+            target[salesorderdetail.res_taxableamount] = new Money(totaleImponibile);
+            #endregion
+
 
         }
     }

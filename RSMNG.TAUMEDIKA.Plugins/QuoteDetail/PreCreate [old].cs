@@ -10,33 +10,26 @@ using System.Threading.Tasks;
 
 namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 {
-    public class PreUpdate : RSMNG.BaseClass
+    public class PreCreateOld : RSMNG.BaseClass
     {
-        public PreUpdate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        public PreCreateOld(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
         {
             PluginStage = Stage.PRE;
-            PluginMessage = "Update";
+            PluginMessage = "Create";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace
+
             void Trace(string key, object value)
             {
-                //flag per attivare/disattivare il trace
-                bool isTrace = false;
+                bool isTrace = true;
                 if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
-            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
-            Trace("Esempio", oggettoEsempio);
-            #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
-            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-            Entity postImage = target.GetPostImage(preImage);
-
             Guid targetId = target.Id;
 
             #region Controllo campi obbligatori
@@ -48,12 +41,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo il campo Codice Articolo
             PluginRegion = "Valorizzo il campo Codice Articolo";
 
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
+            target.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
 
             if (erProduct == null) throw new ApplicationException("Product entity reference not found");
 
-            Entity prodotto = crmServiceProvider.Service.Retrieve(product.logicalName, erProduct.Id, new ColumnSet(product.productnumber));
-            prodotto.TryGetAttributeValue<string>(product.productnumber, out string productNumber);
+            Entity prodotto = crmServiceProvider.Service.Retrieve(DataModel.product.logicalName, erProduct.Id, new ColumnSet(DataModel.product.productnumber));
+            prodotto.TryGetAttributeValue<string>(DataModel.product.productnumber, out string productNumber);
 
             target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
             #endregion
@@ -61,13 +54,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]
             PluginRegion = "Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA] e (Offerta)[Totale imponibile, Totale IVA]";
 
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.uomid, out EntityReference erUom);
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
+            target.TryGetAttributeValue<EntityReference>(quotedetail.uomid, out EntityReference erUom);
+            target.TryGetAttributeValue<EntityReference>(quotedetail.quoteid, out EntityReference erQuote);
 
             if (erUom == null) throw new ApplicationException("Unit of measurement entity reference not found");
             if (erQuote == null) throw new ApplicationException("Quote entity reference not found");
 
-            Trace("fetch", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota.");
+            Trace("fetch", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota. \n" +
+                "Recupero l'importo del listino prezzi associato per determinare il prezzo unitario del prodotto.");
 
             /**
              * [RIGA OFFERTA]
@@ -78,38 +72,39 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
              * [OFFERTA]
              * recupero i campi "prezzo" dell'offerta per aggiornare i valori
              */
-            var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchImportoVoceListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""quote"">
-                                        <attribute name=""{quote.totaldiscountamount}"" alias=""OffertaScontoTotaleApplicato"" />
-                                        <attribute name=""{quote.totallineitemamount}"" alias=""OffertaTotaleProdotti"" />
-                                        <attribute name=""{quote.freightamount}"" alias=""OffertaImportoSpesaAccessoria"" />
-                                        <attribute name=""{quote.totaltax}"" alias=""OffertaTotaleIva"" />
+                                        <attribute name=""totaldiscountamount"" alias=""OffertaScontoTotaleApplicato"" />
+                                        <attribute name=""totallineitemamount"" alias=""OffertaTotaleProdotti"" />
+                                        <attribute name=""freightamount"" alias=""OffertaImportoSpesaAccessoria"" />
+                                        <attribute name=""totaltax"" alias=""OffertaTotaleIva"" />
                                         <filter>
-                                          <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{erQuote.Id}"" />
+                                          <condition attribute=""quoteid"" operator=""eq"" value=""{erQuote.Id}"" />
                                         </filter>
-                                        <link-entity name=""{pricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
-                                          <link-entity name=""{productpricelevel.logicalName}"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
+                                        <link-entity name=""pricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""listino"">
+                                          <link-entity name=""productpricelevel"" from=""pricelevelid"" to=""pricelevelid"" alias=""voce"">
+                                            <attribute name=""amount"" alias=""VoceDiListinoImporto"" />
                                             <filter>
-                                              <condition attribute=""{productpricelevel.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                              <condition attribute=""{productpricelevel.uomid}"" operator=""eq"" value=""{erUom.Id}"" />
+                                              <condition attribute=""productid"" operator=""eq"" value=""{erProduct.Id}"" />
+                                              <condition attribute=""uomid"" operator=""eq"" value=""{erUom.Id}"" />
                                             </filter>
-                                            <link-entity name=""{product.logicalName}"" from=""productid"" to=""productid"" alias=""prodotto"">
-                                              <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                                <attribute name=""{res_vatnumber.res_rate}"" alias=""RigaOffertaCodiceIvaAliquota"" />
-                                                <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""RigaOffertaCodiceIvaGuid"" />
+                                            <link-entity name=""product"" from=""productid"" to=""productid"" alias=""prodotto"">
+                                              <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
+                                                <attribute name=""res_rate"" alias=""RigaOffertaCodiceIvaAliquota"" />
+                                                <attribute name=""res_vatnumberid"" alias=""RigaOffertaCodiceIvaGuid"" />
                                               </link-entity>
                                             </link-entity>
                                           </link-entity>
                                         </link-entity>
-                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
-                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""OffertaAliquotaIVA"" />
+                                        <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIvaSpesaAccessoria"">
+                                          <attribute name=""res_rate"" alias=""OffertaAliquotaIVA"" />
                                         </link-entity>
                                       </entity>
                                     </fetch>";
 
-            Trace("fetch", fetchProdotto);
-            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
+            Trace("fetch", fetchImportoVoceListino);
+            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchImportoVoceListino));
 
             if (collection.Entities.Count > 0)
             {
@@ -120,11 +115,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 //dalla fetch
                 Guid rigaOffertaCodiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                 decimal rigaOffertaCodiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("RigaOffertaCodiceIvaAliquota")?.Value is decimal rate ? rate : 0m; Trace("riga_offerta_aliquota_iva", rigaOffertaCodiceIvaAliquota);
+                decimal voceDiListinoImporto = prodotto.GetAttributeValue<AliasedValue>("VoceDiListinoImporto")?.Value is Money amount ? amount.Value : 0m; Trace("riga_offerta_prezzo_unitario", voceDiListinoImporto);
 
                 //dal target
-                decimal rigaOffertaPrezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("riga_offerta_prezzo_unitario", rigaOffertaPrezzoUnitario);
-                decimal rigaOffertaQuantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
-                decimal rigaOffertaScontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
+                decimal rigaOffertaQuantità = target.GetAttributeValue<decimal>(quotedetail.quantity); Trace("riga_offerta_quantità", rigaOffertaQuantità);
+                decimal rigaOffertaScontoTotale = target.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("riga_offerta_sconto_totale", rigaOffertaScontoTotale);
 
                 if (rigaOffertaCodiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
 
@@ -137,7 +132,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.res_vatrate] = rigaOffertaCodiceIvaAliquota;
 
                 //calcolo l'importo [riga offerta]
-                decimal rigaOffertaImporto = rigaOffertaPrezzoUnitario * rigaOffertaQuantità; Trace("riga_offerta_importo", rigaOffertaImporto);
+                decimal rigaOffertaImporto = voceDiListinoImporto * rigaOffertaQuantità; Trace("riga_offerta_importo", rigaOffertaImporto);
 
                 //calcolo il totale imponibile [riga offerta]
                 decimal rigaOffertaTotaleImponibile = rigaOffertaImporto - rigaOffertaScontoTotale; Trace("riga_offerta_totale_imponibile", rigaOffertaTotaleImponibile);

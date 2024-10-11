@@ -82,11 +82,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 {
                                     KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
                                     productFamilyKeys.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                    productFamilyKeys.Add(product.parentproductid, null);
                                     Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
                                     enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                     enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                    enProductFamily.Attributes.Add(product.parentproductid, null);
+                                    enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                     UpsertRequest upsertRequestProductFamily = new UpsertRequest()
                                     {
                                         Target = enProductFamily
@@ -98,7 +97,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 {
                                     KeyAttributeCollection subProductFamilyKeys = new KeyAttributeCollection();
                                     subProductFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                    subProductFamilyKeys.Add(product.parentproductid, erProductFamily);
+                                    if (erProductFamily != null)
+                                    {
+                                        subProductFamilyKeys.Add(product.parentproductid, erProductFamily);
+                                    }
                                     Entity enSubProductFamily = new Entity(product.logicalName, subProductFamilyKeys);
                                     enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                     enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
@@ -106,6 +108,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     {
                                         enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
                                     }
+                                    enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                     UpsertRequest upsertRequestSubProductFamily = new UpsertRequest()
                                     {
                                         Target = enSubProductFamily
@@ -120,12 +123,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 {
                                     KeyAttributeCollection productKeys = new KeyAttributeCollection();
                                     productKeys.Add(product.productnumber, importProductDanea.Codice);
-                                    productKeys.Add(product.parentproductid, erProductFamily);
+                                    if (erProductFamily != null)
+                                    {
+                                        productKeys.Add(product.parentproductid, erProductFamily);
+                                    }
                                     Entity enProduct = new Entity(product.logicalName);
                                     enProduct.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                     enProduct.Attributes.Add(product.name, importProductDanea.Nome);
                                     enProduct.Attributes.Add(product.productnumber, importProductDanea.Codice);
-                                    enProduct.Attributes.Add(product.parentproductid, erProductFamily);
+                                    if (erProductFamily != null)
+                                    {
+                                        enProduct.Attributes.Add(product.parentproductid, erProductFamily);
+                                    }
                                     enProduct.Attributes.Add(product.description, importProductDanea.Descrizione);
                                     enProduct.Attributes.Add(product.defaultuomscheduleid, new EntityReference(importProductDanea.UnitaDiVendita.Entity, importProductDanea.UnitaDiVendita.Id));
                                     enProduct.Attributes.Add(product.defaultuomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
@@ -167,7 +176,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     crmServiceProvider.Service.Update(enDataIntegrationDetail);
                                     #endregion
 
-                                    detailMessage += $@"\r\n- Errore: {e.Message}";
+                                    detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
                                 }
                                 #endregion
                             }
@@ -195,7 +204,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
             catch (Exception e)
             {
                 statusCode = integrationsNumber == 0 ? (int)res_dataintegration.statuscodeValues.NonDistribuito_StateInattivo : (int)res_dataintegration.statuscodeValues.Distribuitoparzialmente_StateInattivo;
-                detailMessage += $@"\r\n- Errore: {e.Message}";
+                detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
                 eDataIntegration.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegration.statecodeValues.Inattivo));
                 eDataIntegration.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue(statusCode));
                 eDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, detailMessage);

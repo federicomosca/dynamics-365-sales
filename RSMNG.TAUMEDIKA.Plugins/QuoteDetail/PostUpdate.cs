@@ -56,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                             </link-entity>
                                           </entity>
                                         </fetch>";
-            
+
             EntityCollection aggregateCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
             if (aggregateCollection.Entities.Count > 0)
@@ -100,7 +100,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         decimal aggrTotaleIva = aggregate.GetAttributeValue<AliasedValue>("totaleiva")?.Value is Money totaleiva ? totaleiva.Value : 0m;
 
                         //calcolo il totale imponibile e l'importo totale
-                        totalamountlessfreight = totallineitemamount - totaldiscountamount;
+                        totalamountlessfreight = totallineitemamount - totaldiscountamount + spesaAccessoria;
                         totalamount = totalamountlessfreight + totaltax;
 
                         quote[DataModel.quote.totallineitemamount] = new Money(aggrTotaleImponibile);

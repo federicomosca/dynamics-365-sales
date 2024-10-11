@@ -14,6 +14,8 @@ namespace RSMNG.TAUMEDIKA.Shared.DataIntegrationDetail
             var fetchData = new
             {
                 statuscode = statusCode.ToString(),
+                res_dataintegrationid = dataIntegrationId.ToString(),
+
             };
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
             <fetch top=""{numberRows}"">
@@ -21,6 +23,7 @@ namespace RSMNG.TAUMEDIKA.Shared.DataIntegrationDetail
                 <attribute name=""{res_dataintegrationdetail.res_integrationrow}"" />
                 <filter>
                   <condition attribute=""{res_dataintegrationdetail.statuscode}"" operator=""eq"" value=""{fetchData.statuscode}"" />
+                  <condition attribute=""{res_dataintegrationdetail.res_dataintegrationid}"" operator=""eq"" value=""{fetchData.res_dataintegrationid}"" />
                 </filter>
               </entity>
             </fetch>";
