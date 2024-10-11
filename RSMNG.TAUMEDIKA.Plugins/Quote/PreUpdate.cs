@@ -114,7 +114,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 decimal totalTax = taxRowsSum + freightAmountRate;
                 decimal totalAmount = totalAmountlessFreight + totalTax;
 
-                target[quote.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null; // Totale Righe = Somma totale imponibile righe
+                target[quote.totallineitemamount] = taxableAmountSum != 0 ? new Money(taxableAmountSum) : null; // Totale Prodotti = Somma totale imponibile righe
                 target[quote.totalamountlessfreight] = totalAmountlessFreight != 0 ? new Money(totalAmountlessFreight) : null;
                 target[quote.totaldiscountamount] = totalDiscountAmount != 0 ? new Money(totalDiscountAmount) : null;   // Somma Sconto Totale righe
                 target[quote.totaltax] = (totalTax) != 0 ? new Money(totalTax) : null;
