@@ -22,15 +22,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace
+            #region Trace Activation Method
+            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                //flag per attivare/disattivare il trace
-                bool isTrace = false;
-                if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+                bool isTraceActive = true;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    object objectExample = new object();
+                    Trace("Esempio", objectExample);
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
-            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
-            Trace("Esempio", oggettoEsempio);
             #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];

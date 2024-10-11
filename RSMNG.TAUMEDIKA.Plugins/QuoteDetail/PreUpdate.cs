@@ -22,15 +22,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace
+            #region Trace Activation Method
+            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                //flag per attivare/disattivare il trace
-                bool isTrace = false;
-                if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+                bool isTraceActive = true;
+                if (isFirstExecute)
+                {
+                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+
+                    object objectExample = new object();
+                    Trace("Esempio", objectExample);
+                    isFirstExecute = false;
+                }
+                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
-            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
-            Trace("Esempio", oggettoEsempio);
             #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
@@ -58,10 +64,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
             #endregion
 
-            #region Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA]
-            PluginRegion = "Valorizzo i campi (Riga Offerta)[Codice IVA, Aliquota IVA, Totale IVA]";
+            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
+            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
-            Trace("fetch aim", "Fetch del prodotto associato alla riga offerta per recuperare lookup dell'iva e l'aliquota.");
             var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
