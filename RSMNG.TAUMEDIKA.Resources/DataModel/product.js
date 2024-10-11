@@ -70,6 +70,8 @@ RSMNG.TAUMEDIKA.DataModel.product = {
 	res_manufacturer: "res_manufacturer",
 	///Origine
 	res_origincode: "res_origincode",
+	///Categoria Principale
+	res_parentcategoryid: "res_parentcategoryid",
 	///Unità di misura (peso)
 	res_uomweightid: "res_uomweightid",
 	///Codice IVA

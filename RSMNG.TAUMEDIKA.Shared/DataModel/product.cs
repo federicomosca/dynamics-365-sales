@@ -281,6 +281,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_origincode => "res_origincode";
 
 		/// <summary>
+		/// Display Name: Categoria Principale,
+		/// Type: Lookup,
+		/// Related entities: product,
+		/// Description: 
+		/// </summary>
+		public static string res_parentcategoryid => "res_parentcategoryid";
+
+		/// <summary>
 		/// Display Name: Unità di misura (peso),
 		/// Type: Lookup,
 		/// Related entities: uom,
