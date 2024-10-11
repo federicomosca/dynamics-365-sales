@@ -73,7 +73,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
 
             Entity aggregatoRigheOfferta = aggregatiRigheOfferta.Entities[0];
-            if (aggregatoRigheOfferta == null) throw new ApplicationException("Quote ID needed for fetch is missing");
 
             /**
              * campi dell'offerta che verranno aggiornati
@@ -85,7 +84,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 offertaImportoTotale;               //totale imponibile + totale iva
 
             Guid quoteid = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("quoteid")?.Value as Guid? ?? Guid.Empty;
-            if (quoteid != Guid.Empty) throw new ApplicationException("Quote ID fetched not found");
+            if (quoteid == Guid.Empty) throw new ApplicationException("Quote ID fetched not found");
 
             //creo l'offerta da aggiornare
             Entity enQuote = new Entity(quote.logicalName, quoteid);
