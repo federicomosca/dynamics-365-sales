@@ -23,14 +23,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             #region Trace
+            bool isTrace = true;
+            string traceExample = "L'object passato come secondo argomento viene convertito a stringa";
             void Trace(string key, object value)
             {
-                //flag per attivare/disattivare il trace
-                bool isTrace = false;
                 if (isTrace) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
-            string oggettoEsempio = "L'object passato come secondo argomento viene convertito a stringa";
-            Trace("Esempio", oggettoEsempio);
+            Trace("Esempio", traceExample);
+            crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTrace}");
             #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
@@ -67,10 +67,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                     </link-entity>
                                     </entity>
                                 </fetch>";
-
+            Trace("fetchAggregatiRigheOfferta", fetchAggregatiRigheOfferta);
             EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
 
-            if (aggregatiRigheOfferta.Entities.Count > 0) throw new ApplicationException("Quote entity not found.");
+            if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
 
             Entity aggregatoRigheOfferta = aggregatiRigheOfferta.Entities[0];
             if (aggregatoRigheOfferta == null) throw new ApplicationException("Quote ID needed for fetch is missing");
@@ -91,8 +91,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity enQuote = new Entity(quote.logicalName, quoteid);
 
             //spesa accessoria e aliquota per il calcolo del totale iva
-            decimal spesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m;
-            decimal codiceIvaSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Aliquota")?.Value is Money res_rate ? res_rate.Value : 0m;
+            decimal spesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("spesa_Accessoria", spesaAccessoria);
+            decimal codiceIvaSpesaAccessoria = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("Aliquota")?.Value is Money res_rate ? res_rate.Value : 0m; Trace("codice_Iva_Spesa_Accessoria", codiceIvaSpesaAccessoria);
 
             /**
              * inizio a valorizzare totale iva con l'aliquota applicata alla spesa accessoria
@@ -101,13 +101,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             offertaTotaleIva = spesaAccessoria * (codiceIvaSpesaAccessoria / 100);
 
             //recupero totale imponibile, sconto totale e totale iva di tutte le righe di dettaglio
-            decimal scontoTotale = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("ScontoTotale")?.Value is Money manualdiscountamount ? manualdiscountamount.Value : 0m;
-            decimal totaleImponibile = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleImponibile")?.Value is Money res_taxableamount ? res_taxableamount.Value : 0m;
-            decimal totaleIva = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleIva")?.Value is Money tax ? tax.Value : 0m;
+            decimal scontoTotale = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("ScontoTotale")?.Value is Money manualdiscountamount ? manualdiscountamount.Value : 0m; Trace("sconto_Totale", scontoTotale);
+            decimal totaleImponibile = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleImponibile")?.Value is Money res_taxableamount ? res_taxableamount.Value : 0m; Trace("totale_Imponibile", totaleImponibile);
+            decimal totaleIva = aggregatoRigheOfferta.GetAttributeValue<AliasedValue>("TotaleIva")?.Value is Money tax ? tax.Value : 0m; Trace("totale_Iva", totaleIva);
 
             //calcolo il totale imponibile e l'importo totale
-            offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + spesaAccessoria;
-            offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva;
+            offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + spesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
+            offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva; Trace("offerta_Importo_Totale", offertaImportoTotale);
 
             enQuote[quote.totallineitemamount] = new Money(totaleImponibile);
             enQuote[quote.totaldiscountamount] = new Money(scontoTotale);
