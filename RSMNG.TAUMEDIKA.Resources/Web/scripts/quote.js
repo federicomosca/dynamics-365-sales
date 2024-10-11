@@ -64,8 +64,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             description: "description",
             ///Importo sconto offerta
             discountamount: "discountamount",
-            ///Importo sconto offerta (Base)
-            discountamount_base: "discountamount_base",
             ///Sconto offerta (%)
             discountpercentage: "discountpercentage",
             ///Data inizio validità
@@ -178,20 +176,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             totalamount_base: "totalamount_base",
             ///Totale imponibile
             totalamountlessfreight: "totalamountlessfreight",
-            ///Totale senza spedizione (Base)
-            totalamountlessfreight_base: "totalamountlessfreight_base",
             ///Sconto totale
             totaldiscountamount: "totaldiscountamount",
-            ///Importo totale sconto (Base)
-            totaldiscountamount_base: "totaldiscountamount_base",
             ///Totale righe
             totallineitemamount: "totallineitemamount",
-            ///Totale dettagli (Base)
-            totallineitemamount_base: "totallineitemamount_base",
             ///Importo totale sconto per voce
             totallineitemdiscountamount: "totallineitemdiscountamount",
-            ///Importo totale sconto per voce (Base)
-            totallineitemdiscountamount_base: "totallineitemdiscountamount_base",
             ///Totale IVA
             totaltax: "totaltax",
             ///Totale imposte (Base)
@@ -202,6 +192,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             traversedpath: "traversedpath",
             ///ID univoco descrizione
             uniquedscid: "uniquedscid",
+            /// statuscode
+            statuscode: "statuscode",
             ///Spedizione
             willcall: "willcall",
 
@@ -224,75 +216,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 Persa_StateChiusa: 6
             },
 
-            /// Values for field Condizioni di spedizione
-            freighttermscodeValues: {
-                CFRCostoenolo: 3,
-                CIFCostoassenolo: 4,
-                CIPTraspeasspagatifinoa: 5,
-                CPTTrasportopagatofinoa: 6,
-                DAFResofrontiera: 7,
-                DDPResosdoganato: 10,
-                DDUResononsdoganato: 11,
-                DEQResobanchina: 8,
-                DESResoexship: 9,
-                EXWFrancofabbrica: 12,
-                FASFrancolungobordo: 13,
-                FCAFrancovettore: 14,
-                FOBFrancoabordo: 1,
-                Gratis: 2
-            },
-
-            /// Values for field Condizioni di pagamento
-            paymenttermscodeValues: {
-                _30gg: 1,
-                _60gg: 4,
-                _90gg: 9,
-                Pagamentoincontanti: 10
-            },
-
-            /// Values for field Errore di determinazione dei prezzi 
-            pricingerrorcodeValues: {
-                Attributodelprezzofuoriintervallo: 35,
-                Codicedideterminazionedeiprezzimancante: 8,
-                Codicedideterminazionedeiprezzinonvalido: 9,
-                Costocorrentemancante: 15,
-                Costocorrentenonvalido: 20,
-                Costomediomancante: 16,
-                Costomediononvalido: 21,
-                Dettaglierrore: 1,
-                Erroredicalcolodelprezzo: 25,
-                Importodellistinoprezzimancante: 12,
-                Importodellistinoprezzinonvalido: 17,
-                Lavalutadellatransazionenoneimpostataperlavocedilistinodelprodotto: 38,
-                Listinoprezziinattivo: 3,
-                Listinoprezzimancante: 2,
-                Nessuno: 0,
-                Opzionediarrotondamentononvalida: 23,
-                Overflowdellattributodellavalutadibase: 36,
-                Percentualedellistinoprezzimancante: 13,
-                Percentualedellistinoprezzinonvalida: 18,
-                Precisionedideterminazionedeiprezzinonvalida: 30,
-                Prezzomancante: 14,
-                Prezzononvalido: 19,
-                Prezzounitariomancante: 5,
-                Prodottomancante: 6,
-                Prodottononinclusonellistinoprezzi: 11,
-                Prodottononvalido: 7,
-                Quantitamancante: 4,
-                Quantitanonvalida: 29,
-                Regoladiarrotondamentononvalida: 22,
-                Scontononvalido: 28,
-                Statononvalidotipodisconto: 27,
-                Tipodiscontoinattivo: 33,
-                Tipodiscontononvalido: 26,
-                Underflowdellattributodellavalutadibase: 37,
-                Unitadimisuramancante: 10,
-                Unitadimisurapredefinitadelprodottomancante: 31,
-                Unitadivenditadelprodottomancante: 32,
-                Valorediarrotondamentononvalido: 24,
-                Valutadellistinoprezzinonvalida: 34
-            },
-
             /// Values for field Metodo di creazione
             quotecreationmethodValues: {
                 Revisione: 776160001,
@@ -305,16 +228,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 Si: 1
             },
 
-            /// Values for field Metodo di spedizione
-            shippingmethodcodeValues: {
-                Corriereespresso: 28,
-                SpedizionePostale: 5,
-                Trasportoaereo: 1,
-                Trasportoferroviario: 10,
-                Trasportointermodale: 18,
-                Trasportomarittimo: 11,
-                Trasportostradale: 9
-            },
 
             /// Values for field Condizioni di spedizione per indirizzo spedizione
             shipto_freighttermscodeValues: {
@@ -340,6 +253,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         }
     };
+    // stati che prevedono il blocco di campi 
+    _self.lockFieldStatus = [
+        _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttiva,
+        _self.formModel.fields.statuscodeValues.Approvata_StateAttiva,
+        _self.formModel.fields.statuscodeValues.Nonapprovata_StateChiusa,
+        _self.formModel.fields.statuscodeValues.Acquisita_StateAcquisita,
+        _self.formModel.fields.statuscodeValues.Persa_StateChiusa,
+        _self.formModel.fields.statuscodeValues.Aggiornata_StateChiusa
+    ];
+
 
     //---------------------------------------------------
     _self.setDate = executionContext => {
@@ -498,6 +421,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             "?fetchXml=<fetch aggregate='true'>",
             "  <entity name='quotedetail'>",
             "    <attribute name='tax' alias='totaleiva' aggregate='sum'/>",
+            "    <attribute name='manualdiscountamount' alias='totalesconto' aggregate='sum'/>",
+            "    <attribute name='res_taxableamount' alias='totaleimponibile' aggregate='sum'/>",
             "    <filter>",
             "      <condition attribute='quoteid' operator='eq' value='", fetchData.quoteid, "'/>",
             "    </filter>",
@@ -505,7 +430,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             "</fetch>"
         ].join("");
 
-        let quoteDetails = await Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchXml);
+        var quoteDetails = await Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchXml);
 
         //recupero il totale iva righe offerta
         const totaleIvaRigheOfferta = quoteDetails ? quoteDetails.entities[0].totaleiva != undefined ? quoteDetails.entities[0].totaleiva : 0 : 0;
@@ -545,24 +470,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             /**
              * sottraggo l'eventuale iva della spesa accessoria all'importo totale
              */
-
-            //fetch di tutte le righe offerta per calcolare l'importo totale (totale imponibile + totale iva righe offerta)
-            var fetchData = {
-                "quoteid": formContext.data.entity.getId().replace(/[{}]/g, "")
-            };
-            var fetchXml = [
-                "?fetchXml=<fetch aggregate='true'>",
-                "  <entity name='quotedetail'>",
-                "    <attribute name='manualdiscountamount' alias='totalesconto' aggregate='sum'/>",
-                "    <attribute name='res_taxableamount' alias='totaleimponibile' aggregate='sum'/>",
-                "    <filter>",
-                "      <condition attribute='quoteid' operator='eq' value='", fetchData.quoteid, "'/>",
-                "    </filter>",
-                "  </entity>",
-                "</fetch>"
-            ].join("");
-
-            let quoteDetails = await Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchXml);
             const totaleScontoRigheOfferta = quoteDetails ? quoteDetails.entities[0].totalesconto != undefined ? quoteDetails.entities[0].totalesconto : 0 : 0;
             const totaleImponibileRigheOfferta = quoteDetails ? quoteDetails.entities[0].totaleimponibile != undefined ? quoteDetails.entities[0].totaleimponibile : 0 : 0;
 
@@ -861,11 +768,32 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+        _self.handleVatNumberField(executionContext, false);
+
+        _self.handleWillCallRelatedFields(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
+        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+        _self.handleVatNumberField(executionContext, false);
+
+        _self.handleWillCallRelatedFields(executionContext);
+        _self.setCityRelatedFieldsEditability(executionContext);
+        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
+
+        let statuscodeValue = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+
+        if (_self.lockFieldStatus.includes(statuscodeValue)) {
+
+            formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
+            formContext.getControl("WebResource_postalcode").setVisible(false);
+        }
     };
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = async function (executionContext) {
@@ -873,6 +801,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         var formContext = executionContext.getFormContext();
 
         _self.checkPotentialCustomerData(executionContext);
+
+        let statuscodeValue = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+
+        if (_self.lockFieldStatus.includes(statuscodeValue)) {
+
+            formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
+            formContext.getControl("WebResource_postalcode").setVisible(false);
+        }
     };
     /* 
     Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
@@ -907,11 +844,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.setDate(executionContext);
         _self.setPriceLevelLookup(executionContext);
 
-        _self.handleVatNumberField(executionContext, false);
+        
         _self.setFreightAmountEditability(executionContext);
-        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
-        _self.handleWillCallRelatedFields(executionContext);
-        _self.setCityRelatedFieldsEditability(executionContext);
+        
+       
         _self.setBankVisibility(executionContext);
         _self.checkPotentialCustomerData(executionContext);
         _self.setContextCapIframe(executionContext);

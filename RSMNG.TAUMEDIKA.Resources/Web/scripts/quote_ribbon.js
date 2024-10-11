@@ -66,7 +66,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             let visible = false;
 
             const agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-            console.log(`Agent status: ${agent}`);
 
             switch (status) {
 
@@ -117,28 +116,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             await import('../res_scripts/res_global.js');
 
             const quoteId = formContext.data.entity.getId().replace(/[{}]/g, "");
-            console.log(`Quote ID: ${quoteId}`);
-
             const quoteStatus = formContext.getAttribute("statuscode").getValue();
             const actionName = "UPDATE_QUOTE_STATUS";
 
             switch (status) {
                 case "APPROVAL":
-                    console.log(`case: ${status}`)
-                    console.log(`statuscode: ${quoteStatus}`);
 
+                    
                     Sales.QuoteRibbonActions.Instance.activateQuote();
-
+                    formContext.getControl("WebResource_postalcode").setVisible(false);
                     break;
 
                 case "APPROVED":
                 case "NOT_APPROVED":
-                    console.log(`case: ${status}`);
-                    console.log(`statuscode: ${quoteStatus}`);
-
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientActionFromButton(actionName, quoteId, statecode = status == "APPROVED" ? 1 : 3, statuscode = status == "APPROVED" ? 3 : 5);
-
-                    RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon()
+                    formContext.getControl("WebResource_postalcode").setVisible(false);
+                    RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
                     break;
             }
         }
