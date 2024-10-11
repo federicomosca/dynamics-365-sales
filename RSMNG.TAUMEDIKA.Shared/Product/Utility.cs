@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
+using RSMNG.TAUMEDIKA.DataModel;
 
 namespace RSMNG.TAUMEDIKA.Shared.Product
 {
@@ -23,6 +24,68 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             }
 
             return ret;
+        }
+        public static Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> GetProductFamily(IOrganizationService service)
+        {
+            // Definizione della query FetchXML
+            var fetchData = new
+            {
+                productstructure = (int)product.productstructureValues.Famigliadiprodotti,
+                statecode = $"<value>{(int)product.statecodeValues.Bozza}</value><value>{(int)product.statecodeValues.Attivo}</value>"
+            };
+            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            <fetch>
+              <entity name=""product"">
+                <attribute name=""productnumber"" />
+                <attribute name=""productid"" />
+                <filter>
+                  <condition attribute=""parentproductid"" operator=""null"" />
+                  <condition attribute=""productstructure"" operator=""eq"" value=""{fetchData.productstructure}"" />
+                  <condition attribute=""statecode"" operator=""in"">{fetchData.statecode}</condition>
+                </filter>
+                <order attribute=""name"" descending=""false"" />
+                <link-entity name=""product"" from=""parentproductid"" to=""productid"" link-type=""outer"" alias=""childproduct"">
+                  <attribute name=""productnumber"" />
+                  <attribute name=""productid"" />
+                  <filter>
+                    <condition attribute=""productstructure"" operator=""eq"" value=""{fetchData.productstructure}"" />
+                    <condition attribute=""statecode"" operator=""in"">{fetchData.statecode}</condition>
+                  </filter>
+                  <order attribute=""name"" descending=""false"" />
+                </link-entity>
+              </entity>
+            </fetch>";
+            // Esecuzione della query FetchXML
+            EntityCollection result = service.RetrieveMultiple(new FetchExpression(fetchXml));
+
+            // Dizionario per memorizzare la gerarchia prodotto-genitore-figli
+            Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> productHierarchy = new Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>();
+
+            // Elaborazione dei risultati
+            foreach (var entity in result.Entities)
+            {
+                // Ottieni il numero e l'ID del prodotto genitore
+                string parentProductNumber = entity.GetAttributeValue<string>("productnumber");
+                Guid parentProductId = entity.Id;
+
+                // Chiave del prodotto genitore (numero + ID)
+                var parentKey = new KeyValuePair<string, Guid>(parentProductNumber, parentProductId);
+
+                // Verifica se ci sono figli (dalla link-entity alias 'childproduct')
+                var children = new List<KeyValuePair<string, Guid>>();
+                if (entity.Contains("childproduct.productid"))
+                {
+                    var childProductNumber = entity.GetAttributeValue<AliasedValue>("childproduct.productnumber").Value.ToString();
+                    var childProductId = ((EntityReference)entity.GetAttributeValue<AliasedValue>("childproduct.productid").Value).Id;
+
+                    children.Add(new KeyValuePair<string, Guid>(childProductNumber, childProductId));
+                }
+
+                // Aggiungi il genitore e i figli al dizionario
+                productHierarchy[parentKey] = children;
+            }
+
+            return productHierarchy;
         }
     }
 
