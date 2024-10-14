@@ -25,8 +25,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
-            Guid targetId = target.Id;
-
             var trace = crmServiceProvider.TracingService;
 
             if (target.Contains(salesorderdetail.res_taxableamount))
@@ -47,7 +45,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                         <attribute name=""res_taxableamount"" alias=""TotaleImponibile"" aggregate=""sum"" />
                                         <attribute name=""tax"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData.id}"" />
+                                          <condition attribute=""salesorderid"" operator=""eq"" value=""{fetchData.id}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";
@@ -63,9 +61,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                         Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
 
-                        enSalesOrder[quote.totallineitemamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-                        enSalesOrder[quote.totaldiscountamount] = scontoTotale != 0 ? new Money(scontoTotale) : null;
-                        enSalesOrder[quote.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
+                        enSalesOrder[salesorder.totallineitemamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
+                        enSalesOrder[salesorder.totaldiscountamount] = scontoTotale != 0 ? new Money(scontoTotale) : null;
+                        enSalesOrder[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
 
                         crmServiceProvider.Service.Update(enSalesOrder);
 
