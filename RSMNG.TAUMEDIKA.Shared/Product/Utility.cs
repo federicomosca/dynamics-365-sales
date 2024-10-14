@@ -92,7 +92,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             Entity product = null;
             var fetchData = new
             {
-                productnumber = "aaa"
+                productnumber = productNumber
             };
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
             <fetch>
