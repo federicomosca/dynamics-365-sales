@@ -259,6 +259,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                             eDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, detailMessage);
                             crmServiceProvider.Service.Update(eDataIntegration);
                             #endregion
+
+                            #region Definisco lo status code che viene fuori dalla action
+                            statusCode = integrationsNumber == 0 ? (int)res_dataintegration.statuscodeValues.NonDistribuito_StateInattivo : (int)res_dataintegration.statuscodeValues.Distribuitoparzialmente_StateInattivo;
+                            #endregion
                         }
                         else
                         {
