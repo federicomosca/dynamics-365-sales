@@ -197,13 +197,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
                 var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
-                                  <entity name=""quote"">
-                                    <attribute name=""freightamount"" alias=""ImportoSpesaAccessoria"" />
+                                  <entity name=""{quote.logicalName}"">
+                                    <attribute name=""{quote.freightamount}"" alias=""ImportoSpesaAccessoria"" />
                                     <filter>
-                                      <condition attribute=""quoteid"" operator=""eq"" value=""{quoteId}"" />
+                                      <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{quoteId}"" />
                                     </filter>
-                                    <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                      <attribute name=""res_rate"" alias=""Aliquota"" />
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
+                                      <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
                                     </link-entity>
                                   </entity>
                                 </fetch>";
