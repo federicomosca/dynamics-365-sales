@@ -91,18 +91,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         .FirstOrDefault();
                                     if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                     {
-                                        KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
-                                        productFamilyKeys.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                        Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
+                                        Entity enProductFamily = new Entity(product.logicalName);
                                         enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                         enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                         enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                        UpsertRequest upsertRequestProductFamily = new UpsertRequest()
-                                        {
-                                            Target = enProductFamily
-                                        };
-                                        UpsertResponse upsertResponseProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProductFamily);
-                                        erProductFamily = upsertResponseProductFamily.Target;
+                                        enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                        enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                        erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                         //Inserisco la nuova categoria del dictionary
                                         categoryKey = new KeyValuePair<string, Guid>(importProductDanea.Categoria.Codice, erProductFamily.Id);
@@ -127,19 +122,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         if (foundSubCategory == null)
                                         {
                                             //Creo la sotto categoria legata alla categoria
-                                            KeyAttributeCollection subProductFamilyKeys = new KeyAttributeCollection();
-                                            subProductFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                            Entity enSubProductFamily = new Entity(product.logicalName, subProductFamilyKeys);
+                                            Entity enSubProductFamily = new Entity(product.logicalName);
                                             enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                             enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
-                                            UpsertRequest upsertRequestSubProductFamily = new UpsertRequest()
-                                            {
-                                                Target = enSubProductFamily
-                                            };
-                                            UpsertResponse upsertResponseSubProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestSubProductFamily);
-                                            erProductFamily = upsertResponseSubProductFamily.Target;
+                                            enSubProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                            enSubProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
 
                                             //Inserisco la nuova categoria del dictionary
                                             subCategoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
@@ -159,18 +149,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             .FirstOrDefault();
                                         if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                         {
-                                            KeyAttributeCollection productFamilyKeys = new KeyAttributeCollection();
-                                            productFamilyKeys.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                            Entity enProductFamily = new Entity(product.logicalName, productFamilyKeys);
+                                            Entity enProductFamily = new Entity(product.logicalName);
                                             enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                            UpsertRequest upsertRequestProductFamily = new UpsertRequest()
-                                            {
-                                                Target = enProductFamily
-                                            };
-                                            UpsertResponse upsertResponseProductFamily = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProductFamily);
-                                            erProductFamily = upsertResponseProductFamily.Target;
+                                            enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                            enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                             //Inserisco la nuova categoria del dictionary
                                             categoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
