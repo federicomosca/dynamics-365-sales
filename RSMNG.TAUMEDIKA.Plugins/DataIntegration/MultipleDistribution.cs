@@ -99,8 +99,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                         enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                         enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                        //enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                        //enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                        enProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                         erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                         //Pubblico la categoria
@@ -134,8 +133,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                             enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
-                                            //enSubProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                            //enSubProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            enSubProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
 
                                             //Pubblico la sotto categoria
@@ -163,8 +161,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                            //enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                            //enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            enProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                             //Pubblico la categoria
@@ -207,8 +204,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     enProductUpt.Attributes.Add(product.productstructure, importProductDanea.StrutturaProdotto != null ? new OptionSetValue((int)importProductDanea.StrutturaProdotto.Value) : null);
                                     enProductUpt.Attributes.Add(product.res_manufacturer, importProductDanea.Produttore);
                                     enProductUpt.Attributes.Add(product.suppliername, importProductDanea.Fornitore);
-                                    //enProductUpt.Attributes.Add(product.statecode, new OptionSetValue((int)importProductDanea.Stato.Value));
-                                    //enProductUpt.Attributes.Add(product.statuscode, new OptionSetValue((int)importProductDanea.MotivoStato.Value));
                                     enProductUpt.Attributes.Add(product.res_barcode, importProductDanea.CodiceABarre);
                                     enProductUpt.Attributes.Add(product.res_grossweight, importProductDanea.PesoLordo);
                                     enProductUpt.Attributes.Add(product.stockweight, importProductDanea.PesoNetto);
