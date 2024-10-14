@@ -76,7 +76,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
                 if (entity.Contains("childproduct.productid"))
                 {
                     var childProductNumber = entity.GetAttributeValue<AliasedValue>("childproduct.productnumber").Value.ToString();
-                    var childProductId = ((EntityReference)entity.GetAttributeValue<AliasedValue>("childproduct.productid").Value).Id;
+                    var childProductId = (Guid)entity.GetAttributeValue<AliasedValue>("childproduct.productid").Value;
 
                     children.Add(new KeyValuePair<string, Guid>(childProductNumber, childProductId));
                 }
