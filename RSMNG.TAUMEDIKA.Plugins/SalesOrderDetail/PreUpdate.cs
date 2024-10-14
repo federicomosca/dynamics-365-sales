@@ -50,13 +50,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             // Alla creazione di una riga importo risulta essere 0, poi il sistema effettua calcoli automatici
             // e aggiorna il valore di importo effettuando un update.
             Guid codiceIvaGuid = Guid.Empty;
-            decimal totaleImponibile = 0;
-            decimal totaleIva = 0;
+            decimal totaleImponibile;
+            decimal? totaleIva;
 
             decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m;
-            decimal quantità = postImage.GetAttributeValue<decimal?>(salesorderdetail.quantity) ?? 0m;
             decimal scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m;
-            decimal aliquota = postImage.GetAttributeValue<decimal?>(salesorderdetail.res_vatnumberid) ?? 0m;
+            decimal? aliquota = postImage.GetAttributeValue<decimal?>(salesorderdetail.res_vatnumberid) ?? 0m;
             string productNumber = postImage.GetAttributeValue<string>(salesorderdetail.productnumber);
 
 
@@ -106,17 +105,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
             target[salesorderdetail.res_taxableamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            target[salesorderdetail.tax] = totaleIva != 0 ? new Money(totaleIva) : null;
+            target[salesorderdetail.tax] = totaleIva != 0 ? new Money((decimal)totaleIva) : null;
             target[salesorderdetail.res_itemcode] = productNumber;
-
-            if (aliquota != 0)
-            {
-                target[salesorderdetail.res_vatrate] = aliquota;
-            }
-            else
-            {
-                target[salesorderdetail.res_vatrate] = null;
-            }
+            target[salesorderdetail.res_vatrate] = aliquota != 0 ? aliquota : null;
         }
     }
 }
