@@ -40,7 +40,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #endregion
 
             var service = crmServiceProvider.Service;
-            var trace = crmServiceProvider.TracingService;
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -95,6 +94,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota", aliquota);
                     productNumber = prodotto.GetAttributeValue<string>(product.productnumber);
 
+                    //creo qui entityreference di codice iva prima di passarla al target
                 }
             }
             #endregion
@@ -102,8 +102,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
             totaleIva = totaleImponibile * (aliquota / 100); Trace("totale_iva", totaleIva);
 
+            EntityReference erCodiceIVA = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-            target[salesorderdetail.res_vatnumberid] = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
+            target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
             target[salesorderdetail.res_taxableamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
             target[salesorderdetail.tax] = totaleIva != 0 ? new Money(totaleIva) : null;
             target[salesorderdetail.res_itemcode] = productNumber;
