@@ -666,11 +666,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         let baseAmount = data.importo != undefined ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
         let vatRate = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
+        let totDiscount = _self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]);
+        //let totalDiscountPercentage = disc1 + disc2 + disc3;
 
-        let totalDiscountPercentage = disc1 + disc2 + disc3;
+        if (disc1 >= 100 || disc2 >= 100 || disc3 >= 100) {
 
-        if (totalDiscountPercentage <= 100) {
+            eventSourceControl.setNotification("Lo sconto non pu\u00f2 essere maggiore di 100.");
 
+        }
+        else if (Math.ceil(totDiscount) >= baseAmount){
+            eventSourceControl.setNotification("Lo sconto totale non pu\u00f2 essere uguale o superiore all'importo.");
+        }
+        else {
             formContext.getControl(_self.formModel.fields.res_discountpercent1).clearNotification();
             formContext.getControl(_self.formModel.fields.res_discountpercent2).clearNotification();
             formContext.getControl(_self.formModel.fields.res_discountpercent3).clearNotification();
@@ -680,9 +687,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
             let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: null });
             let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: vatRate });
             _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
-
-        } else {
-            eventSourceControl.setNotification("Lo sconto percentuale complessivo non pu\u00f2 essere maggiore di 100.");
         }
         return manualDiscountAmount;
     };
