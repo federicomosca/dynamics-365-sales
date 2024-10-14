@@ -26,7 +26,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
+                //TRACE TOGGLE
+                bool isTraceActive = false;
+
                 if (isFirstExecute)
                 {
                     crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
@@ -42,14 +44,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             }
             #endregion
 
-            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-            Entity postImage = target.GetPostImage(preImage);
-
-            Guid targetId = target.Id;
 
             //----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
-            decimal parentImportoTotale = 0;                                        //totale imponibile + totale iva
+            decimal parentImportoTotale = 0;                                    //totale imponibile + totale iva
 
             //-------------------------------------< CAMPI PER IL CALCOLO >--------------------------------------//
             decimal parentTotaleImponibile;                                     // totale prodotti + importo spesa accessoria
@@ -65,7 +63,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
             EntityReference erQuote = preImage.GetAttributeValue<EntityReference>(quotedetail.quoteid) ?? null;
-            Trace("entity_reference_quote_exists", erQuote != null ? true : false);
+            Trace("Quote entity reference is not null", erQuote != null ? true : false);
 
             if (erQuote != null)
             {
@@ -87,8 +85,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 {
                     Entity aggregato = aggregatoRigheCollection.Entities[0];
 
-                    parentTotaleProdotti = aggregato.ContainsAliasNotNull("TotaleImponibile") ? aggregato.GetAliasedValue<Money>("TotaleImponibile").Value : 0;
-                    detailsTotaleIVA = aggregato.ContainsAliasNotNull("TotaleIva") ? aggregato.GetAliasedValue<Money>("TotaleIva").Value : 0;
+                    parentTotaleProdotti = aggregato.GetAliasedValue<Money>("TotaleImponibile")?.Value is decimal taxableamount ? taxableamount : 0;
+                    detailsTotaleIVA = aggregato.GetAliasedValue<Money>("TotaleIva")?.Value is decimal totaltax ? totaltax : 0;
 
                     Trace("parentTotaleProdotti", parentTotaleProdotti);
                     Trace("detailsTotaleIVA ", detailsTotaleIVA);
@@ -113,7 +111,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         Entity spesaAccessoria = spesaAccessoriaCollection.Entities[0];
 
                         parentImportoSpesaAccessoria = spesaAccessoria.GetAliasedValue<Money>("ImportoSpesaAccessoria")?.Value is decimal freightamount ? freightamount : 0;
-                        parentAliquota = spesaAccessoria.GetAliasedValue<Money>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
+                        parentAliquota = spesaAccessoria.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0;
 
                         parentIvaSpesaAccessoria = parentImportoSpesaAccessoria * (parentAliquota / 100);
                         parentTotaleIva = detailsTotaleIVA + parentIvaSpesaAccessoria;
@@ -133,6 +131,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 Entity enQuote = new Entity(quote.logicalName, quoteId);
                 enQuote[quote.totalamount] = parentImportoTotale != 0 ? new Money(parentImportoTotale) : null;
+
+                crmServiceProvider.Service.Update(enQuote);
             }
         }
     }
