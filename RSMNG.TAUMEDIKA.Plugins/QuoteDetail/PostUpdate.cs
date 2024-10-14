@@ -109,9 +109,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
                         offertaScontoTotale,            // S [quotedetail] sconto totale
-                        //offertaTotaleImponibile,        // totaleprodotti - sconto totale + importo spesa accessoria
                         offertaTotaleIva;               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
-                        //offertaImportoTotale;           // totale imponibile + totale iva
 
                     Trace("scontoTotale", scontoTotale);
                     Trace("totaleImponibile", totaleImponibile);
@@ -122,17 +120,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     offertaTotaleProdotti = totaleImponibile;                                                       Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
                     offertaScontoTotale = scontoTotale;                                                             Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    //offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + importoSpesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
                     offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));                     Trace("offerta_Totale_Iva", offertaTotaleIva);
-                    //offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva;                              Trace("offerta_Importo_Totale", offertaImportoTotale);
 
                     Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
 
                     enQuote[quote.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
                     enQuote[quote.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
                     enQuote[quote.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
-                    //enQuote[quote.totalamountlessfreight] = offertaTotaleImponibile != 0 ? new Money(offertaTotaleImponibile) : null;
-                    //enQuote[quote.totalamount] = offertaImportoTotale != 0 ? new Money(offertaImportoTotale) : null;
 
                     crmServiceProvider.Service.Update(enQuote);
 
