@@ -99,7 +99,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                         enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                         enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                        enProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                         erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                         //Pubblico la categoria
@@ -133,7 +132,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                             enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
-                                            enSubProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
 
                                             //Pubblico la sotto categoria
@@ -161,7 +159,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                            enProductFamily.Attributes.Add(product.pricelevelid, erPriceLevelERP);
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
                                             //Pubblico la categoria
@@ -209,7 +206,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     enProductUpt.Attributes.Add(product.stockweight, importProductDanea.PesoNetto);
                                     enProductUpt.Attributes.Add(product.stockvolume, importProductDanea.VolumeCm3);
                                     enProductUpt.Attributes.Add(product.res_uomweightid, importProductDanea.UnitaDimisuraPeso != null ? new EntityReference(importProductDanea.UnitaDimisuraPeso.Entity, importProductDanea.UnitaDimisuraPeso.Id) : null);
-                                    enProductUpt.Attributes.Add(product.pricelevelid, erPriceLevelERP);
 
                                     if (enProduct == null)
                                     {
@@ -220,8 +216,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductUpt.Attributes.Add(product.productnumber, importProductDanea.Codice);
                                         Guid enProductUptId = crmServiceProvider.Service.Create(enProductUpt);
 
+                                        //Aggiorno il listino prezzi
+                                        enProductUpt.Attributes.Add(product.pricelevelid, erPriceLevelERP);
+                                        enProductUpt.Id = enProductUptId;
+                                        crmServiceProvider.Service.Update(enProductUpt);
+
                                         //Attivo il prodotto
                                         Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, enProductUptId, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
+
 
                                     }
                                     else
