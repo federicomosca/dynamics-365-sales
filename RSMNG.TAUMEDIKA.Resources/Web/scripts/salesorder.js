@@ -558,6 +558,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);    //spesa accessoria
         const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
         const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
+        const importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount) ?? 0;
 
         /**
          * calcolo la spesa accessoria con applicata l'aliquota
@@ -619,10 +620,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             const totaleScontoRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totalesconto != undefined ? salesorderDetails.entities[0].totalesconto : 0 : 0;
             const totaleImponibileRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totaleimponibile != undefined ? salesorderDetails.entities[0].totaleimponibile : 0 : 0;
 
-            const totaleimponibile = totaleImponibileRigheOfferta - totaleScontoRigheOfferta;
+            const totaleimponibile = totaleImponibileRigheOfferta + importoSpesaAccessoria - totaleScontoRigheOfferta;
             const importototale = totaleimponibile + totaleIvaRigheOrdine;
 
             totalAmountControl.getAttribute().setValue(importototale);
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleimponibile);
         }
     };
     //---------------------------------------------------

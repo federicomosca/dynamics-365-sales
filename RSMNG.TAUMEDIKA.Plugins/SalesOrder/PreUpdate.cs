@@ -50,7 +50,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
                 bool isTrace = false;
 
-
+                
                 //----Importo Spesa Accessoria
                 Money freightamount = target.Contains(salesorder.freightamount) ? target.GetAttributeValue<Money>(salesorder.freightamount) : preImage.GetAttributeValue<Money>(salesorder.freightamount);
                 importoSpesaAccessoria = freightamount != null ? freightamount.Value : 0;
@@ -66,9 +66,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                     freightAmountRate = importoSpesaAccessoria * (aliquotaSpesaAccessoria / 100);
                 }
 
-                // Se target contiene questi tre valori, vuol dire che sono stati calcolati nel Post Update delle righe
-                if (!target.Contains(salesorder.totalamountlessfreight) && !target.Contains(salesorder.totaltax) && !target.Contains(salesorder.totaldiscountamount))
-                {
+
                     var fetchData = new
                     {
                         salesorderid = target.Id,
@@ -90,10 +88,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
                     if (ecSum != null)
                     {
+                        crmServiceProvider.TracingService.Trace("00");
                         totImponibileRighe = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
                         totIvaRighe = ecSum[0].ContainsAliasNotNull("Tax") ? ecSum[0].GetAliasedValue<Money>("Tax").Value : 0;
                         totScontoRighe = ecSum[0].ContainsAliasNotNull("ManualDiscountAmount") ? ecSum[0].GetAliasedValue<Money>("ManualDiscountAmount").Value : 0;
-
+                        crmServiceProvider.TracingService.Trace("01");
                         if (isTrace)
                         {
                             crmServiceProvider.TracingService.Trace("totalDiscountAmount: " + totImponibileRighe.ToString() + "\n" + "taxRowsSum: " + totIvaRighe);
@@ -103,17 +102,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                     scontoTotaleApplicato = totScontoRighe;
                     totaleIva = totIvaRighe + freightAmountRate;
 
-                }
-                else if (target.Contains(salesorder.totalamountlessfreight) && target.Contains(salesorder.totaltax) && target.Contains(salesorder.totaldiscountamount))
-                {
-                    // prendo valori presenti nel target passati dal post update delle righe
-                    scontoTotaleApplicato = target.ContainsAttributeNotNull(salesorder.totaldiscountamount) ? target.GetAttributeValue<decimal>(salesorder.totaldiscountamount) : 0;
-                    totaleIva = target.ContainsAttributeNotNull(salesorder.totaltax) ? target.GetAttributeValue<Money>(salesorder.totaltax).Value : 0;
-                    totImponibileRighe = target.ContainsAttributeNotNull(salesorder.totallineitemamount) ? target.GetAttributeValue<Money>(salesorder.totallineitemamount).Value : 0;
-
-
-
-                }
+                
 
                 totaleImponibile = totImponibileRighe - scontoTotaleApplicato + importoSpesaAccessoria;
                 importoTotale = totaleImponibile + totaleIva;
