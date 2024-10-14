@@ -184,15 +184,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 )
             {
                 decimal totaleIva,
-                    scontoTotale,
                     totaleProdotti;
 
                 totaleIva = postImage.GetAttributeValue<Money>(quote.totaltax)?.Value ?? 0;
-                scontoTotale = postImage.GetAttributeValue<Money>(quote.totaldiscountamount)?.Value ?? 0;
                 totaleProdotti = postImage.GetAttributeValue<Money>(quote.totallineitemamount)?.Value ?? 0;
 
                 Trace("totale_prodotti", totaleProdotti);
-                Trace("sconto_totale", scontoTotale);
                 Trace("totale_iva", totaleIva);
 
                 decimal totaleImponibile, importoTotale;
@@ -219,16 +216,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
                     decimal importoSpesaAccessoria = enQuote.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
                     decimal aliquota = enQuote.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
+                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria != 0 && aliquota != 0 ? importoSpesaAccessoria * (aliquota / 100) : 0;
 
-
-                    totaleImponibile = totaleProdotti != 0 ? totaleProdotti - scontoTotale + importoSpesaAccessoria : importoSpesaAccessoria;
+                    totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
+                    totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
                     Trace("totale_imponibile", totaleImponibile);
                     Trace("importo_totale", importoTotale);
 
-                    target[quote.totalamount] = importoTotale != 0 ? new Money(importoTotale) : null;
+                    target[quote.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
                     target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
+                    target[quote.totalamount] = importoTotale != 0 ? new Money(importoTotale) : null;
                 }
             }
             #endregion
