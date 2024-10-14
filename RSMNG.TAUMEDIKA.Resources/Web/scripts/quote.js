@@ -776,18 +776,79 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     };
     //---------------------------------------------------
     _self.onChangeFreightAmount = function (executionContext) {
-        var formContext = executionContext.getFormContext();
+        const formContext = executionContext.getFormContext();
 
         let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue() ?? 0;
-        let totaleProdotti = formContext.getAttribute(_self.formModel.fields.totallineitemamount).getValue() ?? 0;
-        let scontoTotale = formContext.getAttribute(_self.formModel.fields.totaldiscountamount).getValue() ?? 0;
+        let totaleProdotti;
+        let righeTotaleIva;
 
-        let totaleImponibile = totaleProdotti + importoSpesaAccessoria;
-        let totIva = formContext.getAttribute(_self.formModel.fields.totaltax).getValue() ?? 0;
+        var fetchAggregatiRighe = [
+            "?fetchXml=<fetch aggregate='true'>",
+            "  <entity name='quotedetail'>",
+            "    <attribute name='res_taxableamount' alias='TotaleImponibile' aggregate='sum'/>",
+            "    <attribute name='tax' alias='TotaleIva' aggregate='sum'/>",
+            "    <filter>",
+            "      <condition attribute='quoteid' operator='eq' value='", formContext.data.entity.getId(), "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+        console.log(`fetchAggregatiRighe: ${fetchAggregatiRighe}`);
+
+        Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchAggregatiRighe).then(
+            results => {
+                console.log(results);
+                if (results.entities.length > 0) {
+                    totaleProdotti = results.entities[0]["TotaleImponibile@OData.Community.Display.V1.FormattedValue"] ?? 0;
+                    righeTotaleIva = results.entities[0]["TotaleIva@OData.Community.Display.V1.FormattedValue"] ?? 0;
+                }
+
+                let totaleImponibile = totaleProdotti + importoSpesaAccessoria;
+
+                const vatNumberId = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue()[0].id;
+
+                let aliquota;
+                var fetchCodiceIVASpesaAccessoria = [
+                    "?fetchXml=<fetch>",
+                    "  <entity name='res_vatnumber'>",
+                    "    <attribute name='res_rate'/>",
+                    "    <filter>",
+                    "      <condition attribute='statecode' operator='eq' value='0'/>",
+                    "      <condition attribute='res_vatnumberid' operator='eq' value='", vatNumberId, "'/>",
+                    "    </filter>",
+                    "  </entity>",
+                    "</fetch>"
+                ].join("");
+                console.log(`fetchCodiceIVASpesaAccessoria: ${fetchCodiceIVASpesaAccessoria}`);
+
+                Xrm.WebApi.retrieveMultipleRecords("res_vatnumber", fetchCodiceIVASpesaAccessoria).then(
+                    results => {
+                        if (results.entities.length > 0) {
+                            console.log(results);
+                            aliquota = results.entities[0].res_rate ?? 0;
 
 
-        formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + importoSpesaAccessoria);
-        formContext.getAttribute(_self.formModel.fields.totalamount).setValue(totaleImponibile + totIva);
+
+
+
+                            //verificare res_rate, che valore arriva per fare calcolo
+
+
+
+
+
+                        }
+
+                        let totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
+
+                        formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + importoSpesaAccessoria);      // totale imponibile
+                        formContext.getAttribute(_self.formModel.fields.totalamount).setValue(totaleImponibile + totaleIva);                            // importo totale
+                    },
+                    error => { console.error(error.message); }
+                );
+            },
+            error => { console.error(error.message); }
+        );
     }
     //---------------------------------------------------
     /*
