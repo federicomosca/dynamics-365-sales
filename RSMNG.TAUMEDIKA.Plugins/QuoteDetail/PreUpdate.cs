@@ -43,7 +43,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             Guid targetId = target.Id;
 
-
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
@@ -52,21 +51,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             #region Valorizzo il campo Codice Articolo
             PluginRegion = "Valorizzo il campo Codice Articolo";
-
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
-
-            if (erProduct == null) throw new ApplicationException("Product entity reference not found");
-
-            Entity prodotto = crmServiceProvider.Service.Retrieve(product.logicalName, erProduct.Id, new ColumnSet(product.productnumber));
-            prodotto.TryGetAttributeValue<string>(product.productnumber, out string productNumber);
-
-            target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
+            if (target.Contains(quotedetail.productid))
+            {
+                target.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erTargetProduct);
+                if (erTargetProduct != null)
+                {
+                    Entity prodotto = crmServiceProvider.Service.Retrieve(product.logicalName, erTargetProduct.Id, new ColumnSet(product.productnumber));
+                    prodotto.TryGetAttributeValue<string>(product.productnumber, out string productNumber);
+                    target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
+                }
+            }
             #endregion
 
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
-
-            var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
+            if (erProduct != null)
+            {
+                var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
                                         <filter>
@@ -80,40 +82,38 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                       </entity>
                                     </fetch>";
 
-            Trace("fetch", fetchProdotto);
-            EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
-            if (collection.Entities.Count > 0)
-            {
-                prodotto = collection.Entities[0];
-                //---------------------------- Riga Offerta ----------------------------//
+                Trace("fetch", fetchProdotto);
+                EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
+                if (collection.Entities.Count > 0)
+                {
+                    Entity prodotto = collection.Entities[0];
 
-                //dalla fetch
-                Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota_iva", codiceIvaAliquota);
+                    //dalla fetch
+                    Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                    decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota_iva", codiceIvaAliquota);
 
-                //dal target
-                decimal prezzoUnitario = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("prezzo_unitario", prezzoUnitario);
-                decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("quantità", quantità);
-                decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("sconto_totale", scontoTotale);
+                    //dal target
+                    decimal importo = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; Trace("prezzo_unitario", importo);
+                    decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); Trace("quantità", quantità);
+                    decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; Trace("sconto_totale", scontoTotale);
 
-                if (codiceIvaGuid == Guid.Empty) throw new ApplicationException("Vat Number not found");
+                    if (codiceIvaGuid != Guid.Empty)
+                    {
+                        EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
-                EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
+                        //calcolo il totale imponibile [riga offerta]
+                        decimal totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
 
-                //calcolo l'importo [riga offerta]
-                decimal importo = prezzoUnitario * quantità; Trace("importo", importo);
+                        //calcolo il totale iva [riga offerta]
+                        decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); Trace("totale_iva", totaleIva);
 
-                //calcolo il totale imponibile [riga offerta]
-                decimal totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
-
-                //calcolo il totale iva [riga offerta]
-                decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); Trace("totale_iva", totaleIva);
-
-                //aggiorno i campi di riga offerta
-                target[quotedetail.res_vatnumberid] = erCodiceIVA;
-                target[quotedetail.res_vatrate] = codiceIvaAliquota;
-                target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-                target[quotedetail.tax] = new Money(totaleIva);
+                        //aggiorno i campi di riga offerta
+                        target[quotedetail.res_vatnumberid] = erCodiceIVA;
+                        target[quotedetail.res_vatrate] = codiceIvaAliquota;
+                        target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
+                        target[quotedetail.tax] = new Money(totaleIva);
+                    }
+                }
             }
             #endregion
         }
