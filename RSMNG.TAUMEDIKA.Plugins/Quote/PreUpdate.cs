@@ -176,37 +176,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
             Trace("Check", "Ricalcolo di Totale imponibile, Importo totale, Totale IVA");
 
-            if (!target.Contains(quote.totalamountlessfreight) &&
-                !target.Contains(quote.totaltax) &&
-                !target.Contains(quote.totalamount) &&
-                !target.Contains(quote.totaldiscountamount) &&
-                !target.Contains(quote.totallineitemamount)
-                ) { return; }
+            if (target.Contains(quote.totalamountlessfreight) &&
+                target.Contains(quote.totaltax) &&
+                target.Contains(quote.totalamount) &&
+                target.Contains(quote.totaldiscountamount) &&
+                target.Contains(quote.totallineitemamount)
+                )
+            {
+                decimal totaleIva,
+                    scontoTotale,
+                    totaleProdotti;
 
-            Money totaleIva,
-                scontoTotale,
-                totaleProdotti;
+                totaleIva = postImage.GetAttributeValue<Money>(quote.totaltax)?.Value ?? 0;
+                scontoTotale = postImage.GetAttributeValue<Money>(quote.totaldiscountamount)?.Value ?? 0;
+                totaleProdotti = postImage.GetAttributeValue<Money>(quote.totallineitemamount)?.Value ?? 0;
 
-            postImage.TryGetAttributeValue<Money>(quote.totaltax, out totaleIva);
-            postImage.TryGetAttributeValue<Money>(quote.totaldiscountamount, out scontoTotale);
-            postImage.TryGetAttributeValue<Money>(quote.totallineitemamount, out totaleProdotti);
+                Trace("totale_prodotti", totaleProdotti);
+                Trace("sconto_totale", scontoTotale);
+                Trace("totale_iva", totaleIva);
 
-            Trace("totale_prodotti", totaleProdotti.Value);
-            Trace("sconto_totale", scontoTotale.Value);
-            Trace("totale_iva", totaleIva.Value);
+                decimal totaleImponibile, importoTotale;
 
-            decimal totaleImponibile, importoTotale;
 
-            //si rompe perché cerca di accedere a totale iva che è 0, bisogna rimpostare, salvare direttamente in una variabile i decimal
-            //e fare controllo sul valore
-
-            totaleImponibile = totaleProdotti.Value - scontoTotale.Value;
-            importoTotale = totaleImponibile + totaleIva.Value;
-
-            target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            target[quote.totalamount] = importoTotale != 0 ? new Money(importoTotale) : null;
-
-            var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
                                   <entity name=""quote"">
                                     <attribute name=""freightamount"" alias=""ImportoSpesaAccessoria"" />
@@ -218,11 +210,27 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                                     </link-entity>
                                   </entity>
                                 </fetch>";
-            Trace("fetch_quote", fetchQuote);
-            EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+                Trace("fetch_quote", fetchQuote);
+                EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
-            //bisogna valorizzare recuperare l'aliquota per calcolare importo spesa accessoria e calcolare il totale imponibile
+                if (quoteCollection.Entities.Count > 0)
+                {
+                    Entity enQuote = quoteCollection.Entities[0];
 
+                    decimal importoSpesaAccessoria = enQuote.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
+                    decimal aliquota = enQuote.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
+
+
+                    totaleImponibile = totaleProdotti != 0 ? totaleProdotti - scontoTotale + importoSpesaAccessoria : importoSpesaAccessoria;
+                    importoTotale = totaleImponibile + totaleIva;
+
+                    Trace("totale_imponibile", totaleImponibile);
+                    Trace("importo_totale", importoTotale);
+
+                    target[quote.totalamount] = importoTotale != 0 ? new Money(importoTotale) : null;
+                    target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
+                }
+            }
             #endregion
         }
     }
