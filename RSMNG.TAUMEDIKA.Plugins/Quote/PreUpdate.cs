@@ -32,9 +32,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
                 if (isFirstExecute)
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+                        isFirstExecute = false;
+                    }
                 }
                 if (isTraceActive)
                 {

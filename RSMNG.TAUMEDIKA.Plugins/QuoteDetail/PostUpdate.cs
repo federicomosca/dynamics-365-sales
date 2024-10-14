@@ -26,14 +26,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
+                //TRACE TOGGLE
+                bool isTraceActive = false;
+
                 if (isFirstExecute)
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
+                        isFirstExecute = false;
+                    }
                 }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
+                if (isTraceActive)
+                {
+                    key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                    value = value.ToString();
+                    crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                }
             }
             #endregion
 
