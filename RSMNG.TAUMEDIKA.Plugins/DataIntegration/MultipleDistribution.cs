@@ -188,47 +188,49 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 #region Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti
                                 try
                                 {
-                                    KeyAttributeCollection productKeys = new KeyAttributeCollection();
-                                    productKeys.Add(product.productnumber, importProductDanea.Codice);
+                                    //Cerco il prodotto
+                                    Entity enProduct = Shared.Product.Utility.GetProduct(crmServiceProvider.Service, importProductDanea.Codice);
+
+                                    Entity enProductUpt = new Entity(product.logicalName);
+                                    enProductUpt.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
+                                    enProductUpt.Attributes.Add(product.name, importProductDanea.Nome);
                                     if (erProductFamily != null)
                                     {
-                                        productKeys.Add(product.parentproductid, erProductFamily);
-                                    }
-                                    Entity enProduct = new Entity(product.logicalName);
-                                    enProduct.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
-                                    enProduct.Attributes.Add(product.name, importProductDanea.Nome);
-                                    enProduct.Attributes.Add(product.productnumber, importProductDanea.Codice);
-                                    if (erProductFamily != null)
-                                    {
-                                        enProduct.Attributes.Add(product.parentproductid, erProductFamily);
+                                        enProductUpt.Attributes.Add(product.parentproductid, erProductFamily);
                                     }
                                     if (!categoryKey.Equals(default(KeyValuePair<string, Guid>)))
                                     {
-                                        enProduct.Attributes.Add(product.res_parentcategoryid, new EntityReference(product.logicalName, categoryKey.Value));
+                                        enProductUpt.Attributes.Add(product.res_parentcategoryid, new EntityReference(product.logicalName, categoryKey.Value));
                                     }
-                                    enProduct.Attributes.Add(product.description, importProductDanea.Descrizione);
-                                    enProduct.Attributes.Add(product.defaultuomscheduleid, new EntityReference(importProductDanea.UnitaDiVendita.Entity, importProductDanea.UnitaDiVendita.Id));
-                                    enProduct.Attributes.Add(product.defaultuomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
-                                    enProduct.Attributes.Add(product.quantitydecimal, importProductDanea.DecimaliSupportati);
-                                    enProduct.Attributes.Add(product.res_vatnumberid, importProductDanea.CodiceIVA != null ? new EntityReference(importProductDanea.CodiceIVA.Entity, importProductDanea.CodiceIVA.Id) : null);
-                                    enProduct.Attributes.Add(product.price, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : null);
+                                    enProductUpt.Attributes.Add(product.description, importProductDanea.Descrizione);
+                                    enProductUpt.Attributes.Add(product.defaultuomscheduleid, new EntityReference(importProductDanea.UnitaDiVendita.Entity, importProductDanea.UnitaDiVendita.Id));
+                                    enProductUpt.Attributes.Add(product.defaultuomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
+                                    enProductUpt.Attributes.Add(product.quantitydecimal, importProductDanea.DecimaliSupportati);
+                                    enProductUpt.Attributes.Add(product.res_vatnumberid, importProductDanea.CodiceIVA != null ? new EntityReference(importProductDanea.CodiceIVA.Entity, importProductDanea.CodiceIVA.Id) : null);
+                                    enProductUpt.Attributes.Add(product.price, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : null);
                                     OptionMetadata producttypecode = Helper.GetOptionSetUserLocalized(crmServiceProvider.Service, product.logicalName, product.producttypecode, importProductDanea.Tipologia.ExternalValue);
-                                    enProduct.Attributes.Add(product.producttypecode, producttypecode != null ? new OptionSetValue((int)producttypecode.Value) : null);
-                                    enProduct.Attributes.Add(product.productstructure, importProductDanea.StrutturaProdotto != null ? new OptionSetValue((int)importProductDanea.StrutturaProdotto.Value) : null);
-                                    enProduct.Attributes.Add(product.res_manufacturer, importProductDanea.Produttore);
-                                    enProduct.Attributes.Add(product.suppliername, importProductDanea.Fornitore);
-                                    enProduct.Attributes.Add(product.statecode, new OptionSetValue((int)importProductDanea.Stato.Value));
-                                    enProduct.Attributes.Add(product.statuscode, new OptionSetValue((int)importProductDanea.MotivoStato.Value));
-                                    enProduct.Attributes.Add(product.res_barcode, importProductDanea.CodiceABarre);
-                                    enProduct.Attributes.Add(product.res_grossweight, importProductDanea.PesoLordo);
-                                    enProduct.Attributes.Add(product.stockweight, importProductDanea.PesoNetto);
-                                    enProduct.Attributes.Add(product.stockvolume, importProductDanea.VolumeCm3);
-                                    enProduct.Attributes.Add(product.res_uomweightid, importProductDanea.UnitaDimisuraPeso != null ? new EntityReference(importProductDanea.UnitaDimisuraPeso.Entity, importProductDanea.UnitaDimisuraPeso.Id) : null);
-                                    UpsertRequest upsertRequestProduct = new UpsertRequest()
+                                    enProductUpt.Attributes.Add(product.producttypecode, producttypecode != null ? new OptionSetValue((int)producttypecode.Value) : null);
+                                    enProductUpt.Attributes.Add(product.productstructure, importProductDanea.StrutturaProdotto != null ? new OptionSetValue((int)importProductDanea.StrutturaProdotto.Value) : null);
+                                    enProductUpt.Attributes.Add(product.res_manufacturer, importProductDanea.Produttore);
+                                    enProductUpt.Attributes.Add(product.suppliername, importProductDanea.Fornitore);
+                                    enProductUpt.Attributes.Add(product.statecode, new OptionSetValue((int)importProductDanea.Stato.Value));
+                                    enProductUpt.Attributes.Add(product.statuscode, new OptionSetValue((int)importProductDanea.MotivoStato.Value));
+                                    enProductUpt.Attributes.Add(product.res_barcode, importProductDanea.CodiceABarre);
+                                    enProductUpt.Attributes.Add(product.res_grossweight, importProductDanea.PesoLordo);
+                                    enProductUpt.Attributes.Add(product.stockweight, importProductDanea.PesoNetto);
+                                    enProductUpt.Attributes.Add(product.stockvolume, importProductDanea.VolumeCm3);
+                                    enProductUpt.Attributes.Add(product.res_uomweightid, importProductDanea.UnitaDimisuraPeso != null ? new EntityReference(importProductDanea.UnitaDimisuraPeso.Entity, importProductDanea.UnitaDimisuraPeso.Id) : null);
+
+                                    if (enProduct == null)
                                     {
-                                        Target = enProduct
-                                    };
-                                    UpsertResponse upsertResponseProduct = (UpsertResponse)crmServiceProvider.Service.Execute(upsertRequestProduct);
+                                        enProductUpt.Attributes.Add(product.productnumber, importProductDanea.Codice);
+                                        crmServiceProvider.Service.Create(enProductUpt);
+                                    }
+                                    else
+                                    {
+                                        enProductUpt.Id = enProduct.Id;
+                                        crmServiceProvider.Service.Update(enProductUpt);
+                                    }
                                     integrationsNumber++;
 
                                     #region Aggiorno lo stato del DataIntegrationDetail in distribuito

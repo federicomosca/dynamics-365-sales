@@ -35,23 +35,23 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             };
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
             <fetch>
-              <entity name=""product"">
-                <attribute name=""productnumber"" />
-                <attribute name=""productid"" />
+              <entity name=""{product.logicalName}"">
+                <attribute name=""{product.productnumber}"" />
+                <attribute name=""{product.productid}"" />
                 <filter>
-                  <condition attribute=""parentproductid"" operator=""null"" />
-                  <condition attribute=""productstructure"" operator=""eq"" value=""{fetchData.productstructure}"" />
-                  <condition attribute=""statecode"" operator=""in"">{fetchData.statecode}</condition>
+                  <condition attribute=""{product.parentproductid}"" operator=""null"" />
+                  <condition attribute=""{product.productstructure}"" operator=""eq"" value=""{fetchData.productstructure}"" />
+                  <condition attribute=""{product.statecode}"" operator=""in"">{fetchData.statecode}</condition>
                 </filter>
-                <order attribute=""name"" descending=""false"" />
-                <link-entity name=""product"" from=""parentproductid"" to=""productid"" link-type=""outer"" alias=""childproduct"">
-                  <attribute name=""productnumber"" />
-                  <attribute name=""productid"" />
+                <order attribute=""{product.name}"" descending=""false"" />
+                <link-entity name=""{product.logicalName}"" from=""{product.parentproductid}"" to=""{product.productid}"" link-type=""outer"" alias=""childproduct"">
+                  <attribute name=""{product.productnumber}"" />
+                  <attribute name=""{product.productid}"" />
                   <filter>
-                    <condition attribute=""productstructure"" operator=""eq"" value=""{fetchData.productstructure}"" />
-                    <condition attribute=""statecode"" operator=""in"">{fetchData.statecode}</condition>
+                    <condition attribute=""{product.productstructure}"" operator=""eq"" value=""{fetchData.productstructure}"" />
+                    <condition attribute=""{product.statecode}"" operator=""in"">{fetchData.statecode}</condition>
                   </filter>
-                  <order attribute=""name"" descending=""false"" />
+                  <order attribute=""{product.name}"" descending=""false"" />
                 </link-entity>
               </entity>
             </fetch>";
@@ -65,7 +65,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             foreach (var entity in result.Entities)
             {
                 // Ottieni il numero e l'ID del prodotto genitore
-                string parentProductNumber = entity.GetAttributeValue<string>("productnumber");
+                string parentProductNumber = entity.GetAttributeValue<string>(product.productnumber);
                 Guid parentProductId = entity.Id;
 
                 // Chiave del prodotto genitore (numero + ID)
@@ -73,10 +73,10 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
 
                 // Verifica se ci sono figli (dalla link-entity alias 'childproduct')
                 var children = new List<KeyValuePair<string, Guid>>();
-                if (entity.Contains("childproduct.productid"))
+                if (entity.Contains($"childproduct.{product.productid}"))
                 {
-                    var childProductNumber = entity.GetAttributeValue<AliasedValue>("childproduct.productnumber").Value.ToString();
-                    var childProductId = (Guid)entity.GetAttributeValue<AliasedValue>("childproduct.productid").Value;
+                    var childProductNumber = entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productnumber}").Value.ToString();
+                    var childProductId = (Guid)entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productid}").Value;
 
                     children.Add(new KeyValuePair<string, Guid>(childProductNumber, childProductId));
                 }
@@ -86,6 +86,31 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             }
 
             return productHierarchy;
+        }
+        public static Entity GetProduct(IOrganizationService service, string productNumber)
+        {
+            Entity product = null;
+            var fetchData = new
+            {
+                productnumber = "aaa"
+            };
+            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            <fetch>
+              <entity name=""product"">
+                <attribute name=""productid"" />
+                <attribute name=""name"" />
+                <filter>
+                  <condition attribute=""productnumber"" operator=""eq"" value=""{fetchData.productnumber/*aaa*/}"" />
+                </filter>
+              </entity>
+            </fetch>";
+            // Esecuzione della query FetchXML
+            EntityCollection result = service.RetrieveMultiple(new FetchExpression(fetchXml));
+            if (result?.Entities?.Count > 0)
+            {
+                product=result.Entities[0];
+            }
+            return product;
         }
     }
 
