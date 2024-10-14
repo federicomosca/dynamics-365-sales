@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using RSMNG.TAUMEDIKA.DataModel;
 using System.Linq;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
 
 
 namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
@@ -87,6 +88,31 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
             }
 
 
+        }
+        public static EntityReference GetPriceLevelERP(IOrganizationService service)
+        {
+            EntityReference erPriceLevel = null;
+            var fetchData = new
+            {
+                res_iserpimport = "1"
+            };
+            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            <fetch>
+              <entity name=""pricelevel"">
+                <attribute name=""pricelevelid"" />
+                <attribute name=""name"" />
+                <filter>
+                  <condition attribute=""res_iserpimport"" operator=""eq"" value=""{fetchData.res_iserpimport/*1*/}"" />
+                </filter>
+              </entity>
+            </fetch>";
+            EntityCollection ecPriceLevel = service.RetrieveMultiple(new FetchExpression(fetchXml));
+            if (ecPriceLevel?.Entities?.Count() > 0)
+            {
+                erPriceLevel=ecPriceLevel.Entities[0].ToEntityReference();
+            }
+
+            return erPriceLevel;
         }
     }
     namespace Model

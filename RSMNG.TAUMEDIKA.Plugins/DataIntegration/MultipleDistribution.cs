@@ -61,6 +61,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                 Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
                 #endregion
 
+                #region recupero il listino prezzi predefinito
+                EntityReference erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
+                #endregion
+
                 #region Controllo il tipo di distribuzione da fare in base all'azione
                 PluginRegion = "Controllo il tipo di distribuzione da fare in base all'azione";
                 switch (eDataIntegration.GetAttributeValue<OptionSetValue>(res_dataintegration.res_integrationaction).Value)
@@ -95,9 +99,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                         enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                         enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                        enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                        enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                        //enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                        //enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
                                         erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
+
+                                        //Pubblico la categoria
+                                        Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
 
                                         //Inserisco la nuova categoria del dictionary
                                         categoryKey = new KeyValuePair<string, Guid>(importProductDanea.Categoria.Codice, erProductFamily.Id);
@@ -127,9 +134,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                             enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
-                                            enSubProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                            enSubProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            //enSubProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                            //enSubProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
+
+                                            //Pubblico la sotto categoria
+                                            Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
 
                                             //Inserisco la nuova categoria del dictionary
                                             subCategoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
@@ -153,9 +163,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                            enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
-                                            enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
+                                            //enProductFamily.Attributes.Add(product.statecode, new OptionSetValue((int)product.statecodeValues.Attivo));
+                                            //enProductFamily.Attributes.Add(product.statuscode, new OptionSetValue((int)product.statuscodeValues.Attivo_StateAttivo));
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
+
+                                            //Pubblico la categoria
+                                            Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
 
                                             //Inserisco la nuova categoria del dictionary
                                             categoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
@@ -179,10 +192,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     Entity enProductUpt = new Entity(product.logicalName);
                                     enProductUpt.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                     enProductUpt.Attributes.Add(product.name, importProductDanea.Nome);
-                                    if (erProductFamily != null)
-                                    {
-                                        enProductUpt.Attributes.Add(product.parentproductid, erProductFamily);
-                                    }
                                     if (!categoryKey.Equals(default(KeyValuePair<string, Guid>)))
                                     {
                                         enProductUpt.Attributes.Add(product.res_parentcategoryid, new EntityReference(product.logicalName, categoryKey.Value));
@@ -198,18 +207,27 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     enProductUpt.Attributes.Add(product.productstructure, importProductDanea.StrutturaProdotto != null ? new OptionSetValue((int)importProductDanea.StrutturaProdotto.Value) : null);
                                     enProductUpt.Attributes.Add(product.res_manufacturer, importProductDanea.Produttore);
                                     enProductUpt.Attributes.Add(product.suppliername, importProductDanea.Fornitore);
-                                    enProductUpt.Attributes.Add(product.statecode, new OptionSetValue((int)importProductDanea.Stato.Value));
-                                    enProductUpt.Attributes.Add(product.statuscode, new OptionSetValue((int)importProductDanea.MotivoStato.Value));
+                                    //enProductUpt.Attributes.Add(product.statecode, new OptionSetValue((int)importProductDanea.Stato.Value));
+                                    //enProductUpt.Attributes.Add(product.statuscode, new OptionSetValue((int)importProductDanea.MotivoStato.Value));
                                     enProductUpt.Attributes.Add(product.res_barcode, importProductDanea.CodiceABarre);
                                     enProductUpt.Attributes.Add(product.res_grossweight, importProductDanea.PesoLordo);
                                     enProductUpt.Attributes.Add(product.stockweight, importProductDanea.PesoNetto);
                                     enProductUpt.Attributes.Add(product.stockvolume, importProductDanea.VolumeCm3);
                                     enProductUpt.Attributes.Add(product.res_uomweightid, importProductDanea.UnitaDimisuraPeso != null ? new EntityReference(importProductDanea.UnitaDimisuraPeso.Entity, importProductDanea.UnitaDimisuraPeso.Id) : null);
+                                    enProductUpt.Attributes.Add(product.pricelevelid, erPriceLevelERP);
 
                                     if (enProduct == null)
                                     {
+                                        if (erProductFamily != null)
+                                        {
+                                            enProductUpt.Attributes.Add(product.parentproductid, erProductFamily);
+                                        }
                                         enProductUpt.Attributes.Add(product.productnumber, importProductDanea.Codice);
-                                        crmServiceProvider.Service.Create(enProductUpt);
+                                        Guid enProductUptId = crmServiceProvider.Service.Create(enProductUpt);
+
+                                        //Attivo il prodotto
+                                        Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, enProductUptId, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
+
                                     }
                                     else
                                     {
@@ -239,14 +257,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 #endregion
                             }
                             #endregion
+
+                            #region Definisco lo status code che viene fuori dalla action e aggiorno lo stato
+                            statusCode = integrationsNumber == 0 ? (int)res_dataintegration.statuscodeValues.NonDistribuito_StateInattivo : integrationsNumber.Equals(ecDataIntegrationDetail.Entities.Count) ? (int)res_dataintegration.statuscodeValues.Distribuito_StateInattivo : (int)res_dataintegration.statuscodeValues.Distribuitoparzialmente_StateInattivo;
+                            eDataIntegration.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegration.statecodeValues.Inattivo));
+                            eDataIntegration.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue(statusCode));
+                            #endregion
+
                             #region Aggiorno il numero di integrazioni e dettaglio
                             eDataIntegration.AddWithRemove(res_dataintegration.res_integrationsnumber, integrationsNumber);
                             eDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, detailMessage);
                             crmServiceProvider.Service.Update(eDataIntegration);
-                            #endregion
-
-                            #region Definisco lo status code che viene fuori dalla action
-                            statusCode = integrationsNumber == 0 ? (int)res_dataintegration.statuscodeValues.NonDistribuito_StateInattivo : (int)res_dataintegration.statuscodeValues.Distribuitoparzialmente_StateInattivo;
                             #endregion
                         }
                         else
