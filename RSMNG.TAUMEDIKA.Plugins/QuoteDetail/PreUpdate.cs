@@ -22,7 +22,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
@@ -36,7 +35,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     }
                 }
             }
-            #endregion
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -52,7 +50,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             #region Valorizzo il campo Codice Articolo
             PluginRegion = "Valorizzo il campo Codice Articolo";
-            if (target.Contains(quotedetail.productid))
+            if (target.Contains(quotedetail.priceperunit))
             {
                 target.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erTargetProduct);
                 if (erTargetProduct != null)
