@@ -32,6 +32,8 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_documenttotal_base: "res_documenttotal_base",
 	///Tipo Documento
 	res_documenttypecode: "res_documenttypecode",
+	///Anno Documento
+	res_documentyear: "res_documentyear",
 	///Escluso da calcolo provvigioni
 	res_isexcludedfromcalculation: "res_isexcludedfromcalculation",
 	///Ancora da saldare

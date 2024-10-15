@@ -120,6 +120,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_documenttypecode => "res_documenttypecode";
 
 		/// <summary>
+		/// Display Name: Anno Documento,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_documentyear => "res_documentyear";
+
+		/// <summary>
 		/// Display Name: Escluso da calcolo provvigioni,
 		/// Type: Boolean,
 		/// Values:

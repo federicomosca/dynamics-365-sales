@@ -311,6 +311,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 CodCliente = sCodCliente,
                                 Cliente = eCliente != null ? new Shared.Document.LookUp() { Entity = eCliente.LogicalName, Id = eCliente.Id, Text = eCliente.GetAttributeValue<string>(account.name) } : null,
                                 Data = date != null ? date?.ToString("yyyy-MM-dd") : null,
+                                Anno = date != null ? date?.Year.ToString() : null,
                                 NDoc = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.NDoc)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.NDoc)).position] : null,
                                 DaSaldare = isPendingPayment,
                                 TotNettoIva = netTotalExcludingVat,

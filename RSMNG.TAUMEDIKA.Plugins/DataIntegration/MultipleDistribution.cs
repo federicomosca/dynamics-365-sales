@@ -270,10 +270,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 #region Creo la ricevuta
                                 try
                                 {
+                                    PluginRegion = "Controllo gli elemanti della chiave necessari per l'integrazione";
+                                    if (string.IsNullOrEmpty(importReceiptDanea.NDoc))
+                                    {
+                                        throw new Exception("Il N.Documento è obbligatorio.");
+                                    }
+                                    if (string.IsNullOrEmpty(importReceiptDanea.Anno))
+                                    {
+                                        throw new Exception("L'anno del Documento è obbligatorio.");
+                                    }
+
                                     PluginRegion = "Creo la ricevuta";
                                     KeyAttributeCollection idx_DocumentReceipt = new KeyAttributeCollection {
                                     new KeyValuePair<string, object> (res_document.res_documenttypecode,importReceiptDanea.TipoDoc.Value),
-                                    new KeyValuePair<string, object> (res_document.res_documentnumber,importReceiptDanea.NDoc)
+                                    new KeyValuePair<string, object> (res_document.res_documentnumber,importReceiptDanea.NDoc),
+                                    new KeyValuePair<string, object> (res_document.res_documentyear,importReceiptDanea.Anno)
                                     };
                                     Entity eDocumentReceiptUpt = new Entity(res_document.logicalName, idx_DocumentReceipt);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importReceiptDanea.TipoDoc.Value));
@@ -287,6 +298,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         eDocumentReceiptUpt.Attributes.Add(res_document.res_date, null);
                                     }
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documentnumber, importReceiptDanea.NDoc);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_documentyear, importReceiptDanea.Anno);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_agent, importReceiptDanea.CodAgente);
                                     if (importReceiptDanea.Agente != null)
@@ -344,10 +356,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 #region Creo la fattura
                                 try
                                 {
+                                    PluginRegion = "Controllo gli elemanti della chiave necessari per l'integrazione";
+                                    if (string.IsNullOrEmpty(importInvoiceDanea.NDoc))
+                                    {
+                                        throw new Exception("Il N.Documento è obbligatorio.");
+                                    }
+                                    if (string.IsNullOrEmpty(importInvoiceDanea.Anno))
+                                    {
+                                        throw new Exception("L'anno del Documento è obbligatorio.");
+                                    }
+
                                     PluginRegion = "Creo la fattura";
                                     KeyAttributeCollection idx_DocumentInvoice = new KeyAttributeCollection {
                                     new KeyValuePair<string, object> (res_document.res_documenttypecode,importInvoiceDanea.TipoDoc.Value),
-                                    new KeyValuePair<string, object> (res_document.res_documentnumber,importInvoiceDanea.NDoc)
+                                    new KeyValuePair<string, object> (res_document.res_documentnumber,importInvoiceDanea.NDoc),
+                                    new KeyValuePair<string, object> (res_document.res_documentyear,importInvoiceDanea.Anno)
                                 };
                                     Entity eDocumentInvoiceUpt = new Entity(res_document.logicalName, idx_DocumentInvoice);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importInvoiceDanea.TipoDoc.Value));
@@ -361,6 +384,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, null);
                                     }
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentnumber, importInvoiceDanea.NDoc);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentyear, importInvoiceDanea.Anno);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_customernumber, importInvoiceDanea.CodCliente);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_agent, importInvoiceDanea.CodAgente);
                                     if (importInvoiceDanea.Agente != null)

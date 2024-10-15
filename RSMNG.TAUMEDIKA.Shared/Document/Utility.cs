@@ -16,6 +16,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Document
         [DataMember] public string CodCliente { get; set; }
         [DataMember] public LookUp Cliente { get; set; }
         [DataMember] public string Data { get; set; }
+        [DataMember] public string Anno { get; set; }
         [DataMember] public string NDoc { get; set; }
         [DataMember] public decimal? DaSaldare { get; set; }
         [DataMember] public decimal? TotNettoIva { get; set; }
@@ -36,6 +37,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Document
         [DataMember] public string CodCliente { get; set; }
         [DataMember] public LookUp Cliente { get; set; }
         [DataMember] public string Data { get; set; }
+        [DataMember] public string Anno { get; set; }
         [DataMember] public string NDoc { get; set; }
         [DataMember] public decimal? DaSaldare { get; set; }
         [DataMember] public decimal? TotNettoIva { get; set; }
