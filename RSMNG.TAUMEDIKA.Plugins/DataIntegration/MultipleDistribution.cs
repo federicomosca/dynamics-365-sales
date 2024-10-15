@@ -70,13 +70,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                     #endregion
 
                     #region Definisco dei dati a seconda dell'azione di integrazione che sto affrontando
-                    #region recupero il listino prezzi predefinito
-                    erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
-                    #endregion
+                    if (integrationAction== (int)res_dataintegration.res_integrationactionValues.Articoli)
+                    {
+                        #region recupero il listino prezzi predefinito
+                        erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
+                        #endregion
 
-                    #region Recupero le categorie/sottocategorie
-                    dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
-                    #endregion
+                        #region Recupero le categorie/sottocategorie
+                        dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
+                        #endregion
+                    }
                     #endregion
 
                     #region Ciclo i DataIntegrationDetail trovati
@@ -232,8 +235,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
 
                                         //Attivo il prodotto
                                         Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, enProductUptId, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
-
-
                                     }
                                     else
                                     {
@@ -267,51 +268,66 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 Shared.Document.ImportReceiptDanea importReceiptDanea = RSMNG.Plugins.Controller.Deserialize<Shared.Document.ImportReceiptDanea>(res_integrationrow);
 
                                 #region Creo la ricevuta
-                                PluginRegion = "Creo la ricevuta";
-                                KeyAttributeCollection idx_DocumentReceipt = new KeyAttributeCollection {
+                                try
+                                {
+                                    PluginRegion = "Creo la ricevuta";
+                                    KeyAttributeCollection idx_DocumentReceipt = new KeyAttributeCollection {
                                     new KeyValuePair<string, object> (res_document.res_documenttypecode,importReceiptDanea.TipoDoc.Value),
                                     new KeyValuePair<string, object> (res_document.res_documentnumber,importReceiptDanea.NDoc)
-                                };
-                                Entity eDocumentReceiptUpt = new Entity(res_document.logicalName, idx_DocumentReceipt);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importReceiptDanea.TipoDoc.Value));
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_customerid, importReceiptDanea.Cliente != null ? new EntityReference(importReceiptDanea.Cliente.Entity, importReceiptDanea.Cliente.Id) : null);
-                                if (importReceiptDanea.Data != null)
-                                {
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importReceiptDanea.Data));
-                                }
-                                else
-                                {
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_date, null);
-                                }
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_documentnumber, importReceiptDanea.NDoc);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_agent, importReceiptDanea.CodAgente);
-                                if (importReceiptDanea.Agente != null)
-                                {
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.ownerid, new EntityReference(importReceiptDanea.Agente.Entity, importReceiptDanea.Agente.Id));
-                                }
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_nettotalexcludingvat, importReceiptDanea.TotNettoIva != null ? new Money((decimal)importReceiptDanea.TotNettoIva) : null);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_vat, importReceiptDanea.Iva != null ? new Money((decimal)importReceiptDanea.Iva) : null);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttotal, importReceiptDanea.TotDoc != null ? new Money((decimal)importReceiptDanea.TotDoc) : null);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_ispendingpayment, importReceiptDanea.DaSaldare != null ? new Money((decimal)importReceiptDanea.DaSaldare) : null);
-                                if (importReceiptDanea.DataUltimoPag != null)
-                                {
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_lastpaymentdate, Convert.ToDateTime(importReceiptDanea.DataUltimoPag));
-                                }
-                                else
-                                {
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_lastpaymentdate, null);
-                                }
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_paymenttermid, importReceiptDanea.Pagamento != null ? new EntityReference(importReceiptDanea.Pagamento.Entity, importReceiptDanea.Pagamento.Id) : null);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_bankdetailsid, importReceiptDanea.CoordBancarie != null ? new EntityReference(importReceiptDanea.CoordBancarie.Entity, importReceiptDanea.CoordBancarie.Id) : null);
-                                eDocumentReceiptUpt.Attributes.Add(res_document.res_note, importReceiptDanea.Commento);
+                                    };
+                                    Entity eDocumentReceiptUpt = new Entity(res_document.logicalName, idx_DocumentReceipt);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importReceiptDanea.TipoDoc.Value));
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_customerid, importReceiptDanea.Cliente != null ? new EntityReference(importReceiptDanea.Cliente.Entity, importReceiptDanea.Cliente.Id) : null);
+                                    if (importReceiptDanea.Data != null)
+                                    {
+                                        eDocumentReceiptUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importReceiptDanea.Data));
+                                    }
+                                    else
+                                    {
+                                        eDocumentReceiptUpt.Attributes.Add(res_document.res_date, null);
+                                    }
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_documentnumber, importReceiptDanea.NDoc);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_agent, importReceiptDanea.CodAgente);
+                                    if (importReceiptDanea.Agente != null)
+                                    {
+                                        eDocumentReceiptUpt.Attributes.Add(res_document.ownerid, new EntityReference(importReceiptDanea.Agente.Entity, importReceiptDanea.Agente.Id));
+                                    }
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_nettotalexcludingvat, importReceiptDanea.TotNettoIva != null ? new Money((decimal)importReceiptDanea.TotNettoIva) : null);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_vat, importReceiptDanea.Iva != null ? new Money((decimal)importReceiptDanea.Iva) : null);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttotal, importReceiptDanea.TotDoc != null ? new Money((decimal)importReceiptDanea.TotDoc) : null);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_ispendingpayment, importReceiptDanea.DaSaldare != null ? new Money((decimal)importReceiptDanea.DaSaldare) : null);
+                                    if (importReceiptDanea.DataUltimoPag != null)
+                                    {
+                                        eDocumentReceiptUpt.Attributes.Add(res_document.res_lastpaymentdate, Convert.ToDateTime(importReceiptDanea.DataUltimoPag));
+                                    }
+                                    else
+                                    {
+                                        eDocumentReceiptUpt.Attributes.Add(res_document.res_lastpaymentdate, null);
+                                    }
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_paymenttermid, importReceiptDanea.Pagamento != null ? new EntityReference(importReceiptDanea.Pagamento.Entity, importReceiptDanea.Pagamento.Id) : null);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_bankdetailsid, importReceiptDanea.CoordBancarie != null ? new EntityReference(importReceiptDanea.CoordBancarie.Entity, importReceiptDanea.CoordBancarie.Id) : null);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_note, importReceiptDanea.Commento);
 
-                                //Effettuo l'upsert del documento - Ricevute
-                                UpsertRequest requestDocumentReceiptUpt = new UpsertRequest()
+                                    //Effettuo l'upsert del documento - Ricevute
+                                    UpsertRequest requestDocumentReceiptUpt = new UpsertRequest()
+                                    {
+                                        Target = eDocumentReceiptUpt
+                                    };
+                                    UpsertResponse responseDocumentReceiptUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentReceiptUpt);
+                                    integrationsNumber++;
+                                }
+                                catch (Exception e)
                                 {
-                                    Target = eDocumentReceiptUpt
-                                };
-                                UpsertResponse responseDocumentReceiptUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentReceiptUpt);
+                                    #region Aggiorno lo stato del DataIntegrationDetail in non distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.NotDistribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, $@"Errore: {e.Message}");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
+
+                                    detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
+                                }
                                 #endregion
                                 break;
                             case (int)res_dataintegration.res_integrationactionValues.DocumentiFatture:
@@ -319,51 +335,65 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 Shared.Document.ImportInvoiceDanea importInvoiceDanea = RSMNG.Plugins.Controller.Deserialize<Shared.Document.ImportInvoiceDanea>(res_integrationrow);
 
                                 #region Creo la fattura
-                                PluginRegion = "Creo la fattura";
-                                KeyAttributeCollection idx_DocumentInvoice = new KeyAttributeCollection {
+                                try
+                                {
+                                    PluginRegion = "Creo la fattura";
+                                    KeyAttributeCollection idx_DocumentInvoice = new KeyAttributeCollection {
                                     new KeyValuePair<string, object> (res_document.res_documenttypecode,importInvoiceDanea.TipoDoc.Value),
                                     new KeyValuePair<string, object> (res_document.res_documentnumber,importInvoiceDanea.NDoc)
                                 };
-                                Entity eDocumentInvoiceUpt = new Entity(res_document.logicalName, idx_DocumentInvoice);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importInvoiceDanea.TipoDoc.Value));
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_customerid, importInvoiceDanea.Cliente != null ? new EntityReference(importInvoiceDanea.Cliente.Entity, importInvoiceDanea.Cliente.Id) : null);
-                                if (importInvoiceDanea.Data != null)
-                                {
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importInvoiceDanea.Data));
-                                }
-                                else
-                                {
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, null);
-                                }
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentnumber, importInvoiceDanea.NDoc);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_customernumber, importInvoiceDanea.CodCliente);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_agent, importInvoiceDanea.CodAgente);
-                                if (importInvoiceDanea.Agente != null)
-                                {
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.ownerid, new EntityReference(importInvoiceDanea.Agente.Entity, importInvoiceDanea.Agente.Id));
-                                }
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_nettotalexcludingvat, importInvoiceDanea.TotNettoIva != null ? new Money((decimal)importInvoiceDanea.TotNettoIva) : null);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_vat, importInvoiceDanea.Iva != null ? new Money((decimal)importInvoiceDanea.Iva) : null);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttotal, importInvoiceDanea.TotDoc != null ? new Money((decimal)importInvoiceDanea.TotDoc) : null);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_ispendingpayment, importInvoiceDanea.DaSaldare != null ? new Money((decimal)importInvoiceDanea.DaSaldare) : null);
-                                if (importInvoiceDanea.DataUltimoPag != null)
-                                {
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_lastpaymentdate, Convert.ToDateTime(importInvoiceDanea.DataUltimoPag));
-                                }
-                                else
-                                {
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_lastpaymentdate, null);
-                                }
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_paymenttermid, importInvoiceDanea.Pagamento != null ? new EntityReference(importInvoiceDanea.Pagamento.Entity, importInvoiceDanea.Pagamento.Id) : null);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_bankdetailsid, importInvoiceDanea.CoordBancarie != null ? new EntityReference(importInvoiceDanea.CoordBancarie.Entity, importInvoiceDanea.CoordBancarie.Id) : null);
-                                eDocumentInvoiceUpt.Attributes.Add(res_document.res_note, importInvoiceDanea.Commento);
+                                    Entity eDocumentInvoiceUpt = new Entity(res_document.logicalName, idx_DocumentInvoice);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importInvoiceDanea.TipoDoc.Value));
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_customerid, importInvoiceDanea.Cliente != null ? new EntityReference(importInvoiceDanea.Cliente.Entity, importInvoiceDanea.Cliente.Id) : null);
+                                    if (importInvoiceDanea.Data != null)
+                                    {
+                                        eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importInvoiceDanea.Data));
+                                    }
+                                    else
+                                    {
+                                        eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, null);
+                                    }
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentnumber, importInvoiceDanea.NDoc);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_customernumber, importInvoiceDanea.CodCliente);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_agent, importInvoiceDanea.CodAgente);
+                                    if (importInvoiceDanea.Agente != null)
+                                    {
+                                        eDocumentInvoiceUpt.Attributes.Add(res_document.ownerid, new EntityReference(importInvoiceDanea.Agente.Entity, importInvoiceDanea.Agente.Id));
+                                    }
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_nettotalexcludingvat, importInvoiceDanea.TotNettoIva != null ? new Money((decimal)importInvoiceDanea.TotNettoIva) : null);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_vat, importInvoiceDanea.Iva != null ? new Money((decimal)importInvoiceDanea.Iva) : null);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttotal, importInvoiceDanea.TotDoc != null ? new Money((decimal)importInvoiceDanea.TotDoc) : null);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_ispendingpayment, importInvoiceDanea.DaSaldare != null ? new Money((decimal)importInvoiceDanea.DaSaldare) : null);
+                                    if (importInvoiceDanea.DataUltimoPag != null)
+                                    {
+                                        eDocumentInvoiceUpt.Attributes.Add(res_document.res_lastpaymentdate, Convert.ToDateTime(importInvoiceDanea.DataUltimoPag));
+                                    }
+                                    else
+                                    {
+                                        eDocumentInvoiceUpt.Attributes.Add(res_document.res_lastpaymentdate, null);
+                                    }
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_paymenttermid, importInvoiceDanea.Pagamento != null ? new EntityReference(importInvoiceDanea.Pagamento.Entity, importInvoiceDanea.Pagamento.Id) : null);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_bankdetailsid, importInvoiceDanea.CoordBancarie != null ? new EntityReference(importInvoiceDanea.CoordBancarie.Entity, importInvoiceDanea.CoordBancarie.Id) : null);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_note, importInvoiceDanea.Commento);
 
-                                //Effettuo l'upsert del documento - Fatture
-                                UpsertRequest requestDocumentInvoiceUpt = new UpsertRequest()
+                                    //Effettuo l'upsert del documento - Fatture
+                                    UpsertRequest requestDocumentInvoiceUpt = new UpsertRequest()
+                                    {
+                                        Target = eDocumentInvoiceUpt
+                                    };
+                                    UpsertResponse responseDocumentInvoiceUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentInvoiceUpt);
+                                }
+                                catch (Exception e)
                                 {
-                                    Target = eDocumentInvoiceUpt
-                                };
-                                UpsertResponse responseDocumentInvoiceUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentInvoiceUpt);
+                                    #region Aggiorno lo stato del DataIntegrationDetail in non distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.NotDistribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, $@"Errore: {e.Message}");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
+
+                                    detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
+                                }
                                 #endregion
                                 break;
                         }

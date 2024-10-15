@@ -266,7 +266,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             Entity eBankDetails = null;
                             if (!string.IsNullOrEmpty(sBankDetails))
                             {
-                                eBankDetails = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_bankdetails.res_name) == sBankDetails);
+                                eBankDetails = lBankDetails.FirstOrDefault(u => u.GetAttributeValue<string>(res_bankdetails.res_name) == sBankDetails);
                                 if (eBankDetails == null)
                                 {
                                     eBankDetails = new Entity(res_bankdetails.logicalName);
