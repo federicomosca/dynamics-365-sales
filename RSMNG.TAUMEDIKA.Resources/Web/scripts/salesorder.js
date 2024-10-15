@@ -319,12 +319,15 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         var formContext = executionContext.getFormContext();
 
         let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+        formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(false);
+        formContext.getControl(_self.formModel.fields.freightamount).setDisabled(false);
+
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
 
         if (additionlExpenseId !== null) {
 
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("required");
-            
+
 
             Xrm.WebApi.retrieveRecord("res_additionalexpense", additionlExpenseId[0].id, "?$select=res_amount").then(
                 function success(result) {
@@ -340,7 +343,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("none");
             formContext.getAttribute(_self.formModel.fields.freightamount).setValue(null);
-            
+
         }
 
 
@@ -403,7 +406,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         if (shipToLine1 !== null) {
 
-            _self.setContextCapIframe(executionContext); 
+            _self.setContextCapIframe(executionContext);
         } else {
 
             formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
@@ -477,7 +480,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         var formContext = executionContext.getFormContext();
         console.log("on change customer");
         let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
-        let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue(); 
+        let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
 
         if (customerLookup !== null) { // willcall è un bool. richiede == per fare la conversione implicita
 
@@ -485,7 +488,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             if (addresses != null && addresses.entities.length > 0) {
 
-                
+
 
                 let address = addresses.entities[0];
 
@@ -510,7 +513,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                     formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
                     formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
 
-                   
+
                 }
 
                 _self.updateAddressFieldsRequirements(executionContext);
@@ -531,7 +534,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     _self.updateAddressFieldsRequirements = function (executionContext) {
         var formContext = executionContext.getFormContext();
 
-       
+
         _self.onChangeShipToLine1(executionContext);
 
         let cap = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
@@ -543,9 +546,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     };
     //---------------------------------------------------
-    _self.disableCityRelated = function(executionContext, isDisable){
+    _self.disableCityRelated = function (executionContext, isDisable) {
         var formContext = executionContext.getFormContext();
-       
+
         formContext.getControl(_self.formModel.fields.res_location).setDisabled(isDisable);
         formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(isDisable);
         formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
@@ -687,7 +690,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             }
         );
     };
-    
+
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
 
@@ -701,7 +704,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
         }
-                
+
         //----------------------------------------------
         _self.onChangeWillCall(executionContext, false);
         _self.onChangeShipToLine1(executionContext);
@@ -711,7 +714,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
 
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel(additionlExpenseId !== null ? "required" : "none");
-        
+
         //-----
 
         let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
@@ -738,7 +741,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     };
     //---------------------------------------------------
-    
+
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
