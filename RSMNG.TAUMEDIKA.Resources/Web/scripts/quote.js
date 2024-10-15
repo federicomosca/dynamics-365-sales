@@ -799,15 +799,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             results => {
                 console.log(results);
                 if (results.entities.length > 0) {
-                    totaleProdotti = results.entities[0]["TotaleImponibile@OData.Community.Display.V1.FormattedValue"] ?? 0;
-                    righeTotaleIva = results.entities[0]["TotaleIva@OData.Community.Display.V1.FormattedValue"] ?? 0;
+                    totaleProdotti = results.entities[0].TotaleImponibile ?? 0;
+                    righeTotaleIva = results.entities[0].TotaleIva ?? 0;
                 }
 
                 let totaleImponibile = totaleProdotti + importoSpesaAccessoria;
 
                 const vatNumberId = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue()[0].id;
 
-                let aliquota;
                 var fetchCodiceIVASpesaAccessoria = [
                     "?fetchXml=<fetch>",
                     "  <entity name='res_vatnumber'>",
@@ -825,24 +824,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                     results => {
                         if (results.entities.length > 0) {
                             console.log(results);
-                            aliquota = results.entities[0].res_rate ?? 0;
+                            const aliquota = results.entities[0].res_rate ?? 0;
 
-
-
-
-
-                            //verificare res_rate, che valore arriva per fare calcolo
-
-
-
-
-
+                            const totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
+                            formContext.getAttribute(_self.formModel.fields.totaltax).setValue(totaleIva);                                                  // totale iva
+                            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + importoSpesaAccessoria);      // totale imponibile
+                            formContext.getAttribute(_self.formModel.fields.totalamount).setValue(totaleImponibile + totaleIva);                            // importo totale
                         }
-
-                        let totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
-
-                        formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + importoSpesaAccessoria);      // totale imponibile
-                        formContext.getAttribute(_self.formModel.fields.totalamount).setValue(totaleImponibile + totaleIva);                            // importo totale
                     },
                     error => { console.error(error.message); }
                 );
