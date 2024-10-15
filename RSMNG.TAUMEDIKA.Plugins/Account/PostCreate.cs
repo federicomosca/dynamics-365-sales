@@ -30,15 +30,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
              * se almeno uno è valorizzato viene creato un nuovo indirizzo con i valori dei suddetti campi 
              * e viene settato come indirizzo di default
              */
-            target.TryGetAttributeValue<string>(DataModel.account.address1_line1, out string address);
+            target.TryGetAttributeValue<string>(DataModel.account.address1_name, out string address);
             target.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
             target.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string postalcode);
 
-            if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
+            if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(city) && !string.IsNullOrEmpty(postalcode))
             {
-                crmServiceProvider.TracingService.Trace($"Address: {address}");
-                crmServiceProvider.TracingService.Trace($"City: {city}");
-                crmServiceProvider.TracingService.Trace($"Postal Code: {postalcode}");
                 /**
                  * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
                  */

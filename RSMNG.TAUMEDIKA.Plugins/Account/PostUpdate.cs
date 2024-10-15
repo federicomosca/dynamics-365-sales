@@ -36,14 +36,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     PluginRegion = "Crea indirizzo di default";
 
                     /**
-                     * controllo che i campi Indirizzo, Città e CAP siano valorizzati
-                     * se almeno uno è valorizzato chiamo il metodo per controllare la presenza di altri address
-                     * se non ve ne sono, viene creato un nuovo indirizzo con i valori dei suddetti campi 
-                     * e viene settato come indirizzo di default
+                     * se Indirizzo o Città o Cap sono valorizzati
+                     * creo un nuovo indirizzo di default con i nuovi valori
+                     * 
                      */
-                    postImage.TryGetAttributeValue<string>(DataModel.account.address1_line1, out string address);
-                    postImage.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
-                    postImage.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string postalcode);
+                    target.TryGetAttributeValue<string>(DataModel.account.address1_name, out string address);
+                    target.TryGetAttributeValue<string>(DataModel.account.address1_city, out string city);
+                    target.TryGetAttributeValue<string>(DataModel.account.address1_postalcode, out string postalcode);
+
 
                     if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
                     {
@@ -58,11 +58,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                                 crmServiceProvider.Service.Update(duplicate);
                             }
                         }
+
+                        /**
+                         * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
+                         */
                         Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
-                        address ?? preImage.GetAttributeValue<string>(DataModel.account.address1_name),
-                        city ?? preImage.GetAttributeValue<string>(DataModel.account.address1_city),
-                        postalcode ?? preImage.GetAttributeValue<string>(DataModel.account.address1_postalcode)
-                        );
+                            address ?? preImage.GetAttributeValue<string>(DataModel.account.address1_name),
+                            city ?? preImage.GetAttributeValue<string>(DataModel.account.address1_city),
+                            postalcode ?? preImage.GetAttributeValue<string>(DataModel.account.address1_postalcode)
+                            );
                     }
                     #endregion
                 }
