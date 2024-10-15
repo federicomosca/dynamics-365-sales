@@ -614,17 +614,17 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
     //    });
     //};
     //---------------------------------------------------
-    _self.onChageDiscountPercent1 = function (executionContext) {
+    _self.onChangeDiscountPercent1 = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
-    _self.onChageDiscountPercent2 = function (executionContext) {
+    _self.onChangeDiscountPercent2 = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
-    _self.onChageDiscountPercent3 = function (executionContext) {
+    _self.onChangeDiscountPercent3 = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
@@ -642,7 +642,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
 
         //-----------------------
-        if (disc1 == 0) {
+        if (disc1 == 0 || disc1 == 100) {
             formContext.getControl(_self.formModel.fields.res_discountpercent2).setDisabled(true);
             formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(true);
 
@@ -652,7 +652,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
             disc3 = 0;
         }
         else {
-            if (disc2 == 0) {
+            if (disc2 == 0 || disc2 == 100) {
                 formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(true);
                 formContext.getAttribute(_self.formModel.fields.res_discountpercent3).setValue(null);
                 disc3 = 0;
@@ -667,27 +667,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         let baseAmount = data.importo != undefined ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
         let vatRate = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
         let totDiscount = _self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]);
-        //let totalDiscountPercentage = disc1 + disc2 + disc3;
 
-        if (disc1 >= 100 || disc2 >= 100 || disc3 >= 100) {
 
-            eventSourceControl.setNotification("Lo sconto non pu\u00f2 essere maggiore di 100.");
+        formContext.getControl(_self.formModel.fields.res_discountpercent1).clearNotification();
+        formContext.getControl(_self.formModel.fields.res_discountpercent2).clearNotification();
+        formContext.getControl(_self.formModel.fields.res_discountpercent3).clearNotification();
 
-        }
-        else if (Math.ceil(totDiscount) >= baseAmount){
-            eventSourceControl.setNotification("Lo sconto totale non pu\u00f2 essere uguale o superiore all'importo.");
-        }
-        else {
-            formContext.getControl(_self.formModel.fields.res_discountpercent1).clearNotification();
-            formContext.getControl(_self.formModel.fields.res_discountpercent2).clearNotification();
-            formContext.getControl(_self.formModel.fields.res_discountpercent3).clearNotification();
+        formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]));
 
-            formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]));
+        let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: null });
+        let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: vatRate });
+        _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
 
-            let imponibileTot = _self.setTaxableAmount(executionContext, { importo: baseAmount, scontoTot: null });
-            let totIva = _self.setTax(executionContext, { imponibile: imponibileTot, aliquota: vatRate });
-            _self.setExtendedAmount(executionContext, { imponibile: imponibileTot, totaleIva: totIva });
-        }
         return manualDiscountAmount;
     };
 
@@ -818,10 +809,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.productid).addOnChange(_self.onChangeProduct);
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeVatNumber);
         formContext.getAttribute(_self.formModel.fields.uomid).addOnChange(_self.onChangeUomId);
-        
-        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).addOnChange(_self.onChageDiscountPercent1);
-        formContext.getAttribute(_self.formModel.fields.res_discountpercent2).addOnChange(_self.onChageDiscountPercent2);
-        formContext.getAttribute(_self.formModel.fields.res_discountpercent3).addOnChange(_self.onChageDiscountPercent3);
+
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).addOnChange(_self.onChangeDiscountPercent1);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent2).addOnChange(_self.onChangeDiscountPercent2);
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent3).addOnChange(_self.onChangeDiscountPercent3);
         formContext.getAttribute(_self.formModel.fields.res_ishomage).addOnChange(_self.onChangeIsHomage);
 
         //Init function
