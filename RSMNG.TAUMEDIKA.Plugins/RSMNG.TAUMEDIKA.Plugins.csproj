@@ -132,6 +132,7 @@
     <Compile Include="Quote\PreCreate.cs" />
     <Compile Include="Quote\PrevCreate.cs" />
     <Compile Include="Address\PreCreate.cs" />
+    <Compile Include="SalesOrderDetail\PostDelete.cs" />
     <Compile Include="SalesOrderDetail\PostUpdate.cs" />
     <Compile Include="SalesOrderDetail\PreUpdate.cs" />
     <Compile Include="SalesOrderDetail\PreCreate.cs" />

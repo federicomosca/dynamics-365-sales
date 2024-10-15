@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
+namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 {
     public class PostDelete : RSMNG.BaseClass
     {
@@ -16,12 +16,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         {
             PluginStage = Stage.POST;
             PluginMessage = "Delete";
-            PluginPrimaryEntityName = quotedetail.logicalName;
+            PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            #region Trace Activation Method
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
@@ -35,6 +36,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     }
                 }
             }
+            #endregion
 
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
@@ -54,19 +56,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-            EntityReference erParent = preImage.GetAttributeValue<EntityReference>(quotedetail.quoteid) ?? null;
+            EntityReference erParent = preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) ?? null;
             Trace("Parent entity reference is not null", erParent != null ? true : false);
 
             if (erParent != null)
             {
-                Guid quoteId = erParent.Id;
+                Guid parentId = erParent.Id;
                 var fetchAggregatoRighe = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch aggregate=""true"">
-                                      <entity name=""{quotedetail.logicalName}"">
-                                        <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
-                                        <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
+                                      <entity name=""{salesorderdetail.logicalName}"">
+                                        <attribute name=""{salesorderdetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""{salesorderdetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""{quotedetail.quoteid}"" operator=""eq"" value=""{quoteId}"" />
+                                          <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{parentId}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";
@@ -85,10 +87,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     var fetchSpesaAccessoria = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
-                                  <entity name=""{quote.logicalName}"">
-                                    <attribute name=""{quote.freightamount}"" alias=""ImportoSpesaAccessoria"" />
+                                  <entity name=""{salesorder.logicalName}"">
+                                    <attribute name=""{salesorder.freightamount}"" alias=""ImportoSpesaAccessoria"" />
                                     <filter>
-                                      <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{quoteId}"" />
+                                      <condition attribute=""{salesorder.salesorderid}"" operator=""eq"" value=""{parentId}"" />
                                     </filter>
                                     <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
                                       <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
@@ -121,8 +123,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 }
                 //----------------------------------------< AGGIORNAMENTO >-----------------------------------------//
 
-                Entity enParent = new Entity(quote.logicalName, quoteId);
-                enParent[quote.totalamount] = parentImportoTotale != 0 ? new Money(parentImportoTotale) : null;
+                Entity enParent = new Entity(salesorder.logicalName, parentId);
+                enParent[salesorder.totalamount] = parentImportoTotale != 0 ? new Money(parentImportoTotale) : null;
 
                 crmServiceProvider.Service.Update(enParent);
             }
