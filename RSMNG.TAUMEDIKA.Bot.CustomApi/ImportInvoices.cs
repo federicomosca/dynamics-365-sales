@@ -320,7 +320,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 Iva = vat,
                                 TotDoc = documentoTotal,
                                 Pagamento = ePaymentTerm != null ? new Shared.Document.LookUp() { Entity = ePaymentTerm.LogicalName, Id = ePaymentTerm.Id, Text = ePaymentTerm.GetAttributeValue<string>(res_paymentterm.res_name) } : null,
-                                CoordBancarie = eBankDetails != null ? new Shared.Document.LookUp() { Entity = eBankDetails.LogicalName, Id = eBankDetails.Id, Text = eCliente.GetAttributeValue<string>(res_bankdetails.res_name) } : null,
+                                CoordBancarie = eBankDetails != null ? new Shared.Document.LookUp() { Entity = eBankDetails.LogicalName, Id = eBankDetails.Id, Text = eBankDetails.GetAttributeValue<string>(res_bankdetails.res_name) } : null,
                                 Commento = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.Commento)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.Commento)).position] : null
                             };
                             invoicesDanea.Add(invoiceDanea);
