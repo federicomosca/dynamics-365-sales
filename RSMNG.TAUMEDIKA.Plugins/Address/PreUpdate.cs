@@ -62,7 +62,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 addressStreet = postImage.GetAttributeValue<string>(DataModel.res_address.res_addressField) ?? string.Empty;
                 addressCity = postImage.GetAttributeValue<string>(DataModel.res_address.res_city) ?? string.Empty;
 
-                addressName = $"{customerName} {addressCity} {addressStreet}";
+                addressName = $"{customerName} - {addressCity} - {addressStreet}";
 
                 target[DataModel.res_address.res_name] = addressName;
                 #endregion
