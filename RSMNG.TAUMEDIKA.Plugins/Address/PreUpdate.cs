@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
@@ -67,6 +68,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 target[DataModel.res_address.res_name] = addressName;
                 #endregion
 
+                #region Gestione Indirizzo Default
+                PluginRegion = "Gestione Indirizzo Default";
+
+                target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+
+                if (isDefault)
+                {  //controllo se c'è già un indirizzo di default
+                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+
+                    if (addresses.Entities.Count > 0)
+                    {
+                        foreach (var duplicate in addresses.Entities)
+                        {
+                            duplicate[DataModel.res_address.res_isdefault] = false;
+                            crmServiceProvider.Service.Update(duplicate);
+                        }
+                    }
+                }
+                #endregion
             }
         }
     }
