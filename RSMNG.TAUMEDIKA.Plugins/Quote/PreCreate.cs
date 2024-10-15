@@ -57,10 +57,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
             #region Valorizzo il campo Nazione (testo)
             PluginRegion = "Valorizzo il campo Nazione (testo)";
-            target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
-            string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
+            if (target.Contains(quote.res_countryid))
+            {
+                target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
+                string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
-            target[DataModel.contact.address1_country] = countryName;
+                target[DataModel.contact.address1_country] = countryName;
+            }
             #endregion
 
             #region Controllo anagrafica del potenziale cliente [DISABLED]

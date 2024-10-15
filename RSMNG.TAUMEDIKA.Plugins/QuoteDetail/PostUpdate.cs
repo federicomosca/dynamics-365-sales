@@ -61,19 +61,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 };
                 var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch aggregate=""true"">
-                                      <entity name=""quotedetail"">
-                                        <attribute name=""manualdiscountamount"" alias=""ScontoTotale"" aggregate=""sum"" />
-                                        <attribute name=""res_taxableamount"" alias=""TotaleImponibile"" aggregate=""sum"" />
-                                        <attribute name=""tax"" alias=""TotaleIva"" aggregate=""sum"" />
+                                      <entity name=""{quotedetail.logicalName}"">
+                                        <attribute name=""{quotedetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData.quoteid}"" />
+                                          <condition attribute=""{quotedetail.quoteid}"" operator=""eq"" value=""{fetchData.quoteid}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";
 
                 EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-                if (aggregatiRigheOfferta.Entities.Count  > 0)
+                if (aggregatiRigheOfferta.Entities.Count > 0)
                 {
 
                     scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
@@ -87,13 +87,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     // Recupero Importo Spesa Accessoria  e Aliquota
                     var fetchXml2 = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
-                                  <entity name=""quote"">
-                                    <attribute name=""freightamount"" />
+                                  <entity name=""{quote.logicalName}"">
+                                    <attribute name=""{quote.freightamount}"" />
                                     <filter>
-                                      <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData2.quoteid}"" />
+                                      <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{fetchData2.quoteid}"" />
                                     </filter>
-                                    <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
-                                      <attribute name=""res_rate"" alias=""Aliquota"" />
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
+                                      <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
                                     </link-entity>
                                   </entity>
                                 </fetch>";
@@ -119,9 +119,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     Trace("TotaleIva", totaleIva);
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                    offertaTotaleProdotti = totaleImponibile;                                                       Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-                    offertaScontoTotale = scontoTotale;                                                             Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));                     Trace("offerta_Totale_Iva", offertaTotaleIva);
+                    offertaTotaleProdotti = totaleImponibile; Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    offertaScontoTotale = scontoTotale; Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); Trace("offerta_Totale_Iva", offertaTotaleIva);
 
                     Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
 
@@ -131,8 +131,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     crmServiceProvider.Service.Update(enQuote);
 
-                }  
-                
+                }
+
             }
 
 
@@ -170,12 +170,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             //EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
 
 
-            
+
 
             //if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
             //Entity aggregato = aggregatiRigheOfferta.Entities[0];
 
-           
+
 
             //------------------------------------< LOGICA RELATIVA ALL'IVA >------------------------------------//
 
@@ -184,9 +184,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             //decimal offertaImportoSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("offerta_importo_Spesa_Accessoria", offertaImportoSpesaAccessoria);
             //decimal offertaAliquotaSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0m; Trace("offerta_Aliquota_Spesa_Accessoria", offertaAliquotaSpesaAccessoria);
 
-            
 
-           
+
+
             //#endregion
         }
     }
