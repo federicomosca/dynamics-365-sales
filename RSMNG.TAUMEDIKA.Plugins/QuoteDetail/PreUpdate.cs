@@ -42,24 +42,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             Guid targetId = target.Id;
 
+            //traccio quali attributi vengono modificati alla "creazione" della riga
+            foreach (var attribute in target.Attributes)
+            {
+                string column = attribute.Key;
+                Trace(column, column);
+            }
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
-            #endregion
-
-            #region Valorizzo il campo Codice Articolo
-            PluginRegion = "Valorizzo il campo Codice Articolo";
-            if (target.Contains(quotedetail.priceperunit))
-            {
-                target.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erTargetProduct);
-                if (erTargetProduct != null)
-                {
-                    Entity prodotto = crmServiceProvider.Service.Retrieve(product.logicalName, erTargetProduct.Id, new ColumnSet(product.productnumber));
-                    prodotto.TryGetAttributeValue<string>(product.productnumber, out string productNumber);
-                    target[quotedetail.res_itemcode] = productNumber != null ? productNumber : string.Empty;
-                }
-            }
             #endregion
 
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
@@ -70,6 +63,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
+                                        <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
                                         <filter>
                                           <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
                                           <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
@@ -86,6 +80,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 if (collection.Entities.Count > 0)
                 {
                     Entity prodotto = collection.Entities[0];
+
+                    #region Valorizzo Codice Articolo
+                    PluginRegion = "Valorizzo Codice Articolo";
+
+                    string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
+                    target[quotedetail.res_itemcode] = codiceArticolo;
+                    #endregion
 
                     //dalla fetch
                     Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
