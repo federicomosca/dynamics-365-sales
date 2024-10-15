@@ -43,9 +43,10 @@ RSMNG.TAUMEDIKA.DataModel.res_dataintegration = {
 	res_integrationactionValues: {
 		Articoli: 100000002,
 		Clienti: 100000000,
-		Documenti: 100000003,
+		DocumentiFatture: 100000004,
+		DocumentiRicevute: 100000003,
 		Ordini: 100000001,
-		Pagamenti: 100000004
+		Pagamenti: 100000005
 	},
 
 	/// Values for field Tipo di Integrazione

@@ -69,7 +69,6 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         #region Prelevo la variabile d'ambiente che mi indica le colonne da considerare
                         PluginRegion = "Prelevo la variabile d'ambiente che mi indica le colonne da considerare";
                         string res_ImportReceipts_Configuration = RSMNG.Plugins.Data.GetEnviromentVariable(crmServiceProvider.Service, "res_ImportReceipts_Configuration");
-                        string res_ImportReceipts_Name = "Ricevute";
                         #endregion
 
                         #region Deserializzo la configurazione delle colonne
@@ -349,8 +348,8 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         PluginRegion = "Creo il log DataIntegration";
                         Entity enDataIntegration = new Entity(res_dataintegration.logicalName);
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationtype, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationtypeValues.Import));
-                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationaction, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationactionValues.Documenti));
-                        enDataIntegration.AddWithRemove(res_dataintegration.res_name, $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Import.ToString()} - {GlobalOptionSetConstants.res_opt_integrationactionValues.Documenti.ToString()} - {res_ImportReceipts_Name} - {localTime.ToString("dd/MM/yyyy HH:mm:ss")}");
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_integrationaction, new OptionSetValue((int)GlobalOptionSetConstants.res_opt_integrationactionValues.DocumentiRicevute));
+                        enDataIntegration.AddWithRemove(res_dataintegration.res_name, $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Import.ToString()} - {GlobalOptionSetConstants.res_opt_integrationactionValues.DocumentiRicevute.ToString()} - {localTime.ToString("dd/MM/yyyy HH:mm:ss")}");
                         enDataIntegration.AddWithRemove(res_dataintegration.res_integrationresult, "Importazione in fase di validazione");
                         Guid enDataIntegrationId = crmServiceProvider.Service.Create(enDataIntegration);
                         #endregion
@@ -374,7 +373,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         RSMNG.TAUMEDIKA.Model.UploadFile_Input uploadFile_Input_Json = new RSMNG.TAUMEDIKA.Model.UploadFile_Input()
                         {
                             MimeType = "text/json",
-                            FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Import.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.Documenti.ToString()}_{res_ImportReceipts_Name}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.json",
+                            FileName = $"{GlobalOptionSetConstants.res_opt_integrationtypeValues.Import.ToString()}_{GlobalOptionSetConstants.res_opt_integrationactionValues.DocumentiRicevute.ToString()}_{localTime.ToString("dd_MM_yyyy_HH_mm_ss")}.json",
                             Id = enDataIntegrationId.ToString(),
                             FileSize = jsonBytes.Length,
                             Content = base64Json

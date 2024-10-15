@@ -1184,6 +1184,14 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Conversazione: 617690000
 		},
 
+		/// Stato invito constants.
+		msdyn_invitestatusValues: {
+			Creato: 357891000,
+			Inviato: 357891001,
+			Nonvalido: 357891003,
+			Risposto: 357891002
+		},
+
 		/// Aggregazione IoT constants.
 		msdyn_iotaggregationValues: {
 			Conteggio: 192350005,
@@ -1255,6 +1263,13 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Datadicreazione: 192350001,
 			Predefinito: 192350000,
 			SkillIdentified: 192350005
+		},
+
+		/// Stato del bot constants.
+		msdyn_mcsbotstatusValues: {
+			Disconnesso: 357890002,
+			Incorso: 357890000,
+			Pronto: 357890001
 		},
 
 		/// Tipo di modello ML constants.
@@ -2564,9 +2579,10 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 		res_opt_integrationactionValues: {
 			Articoli: 100000002,
 			Clienti: 100000000,
-			Documenti: 100000003,
+			DocumentiFatture: 100000004,
+			DocumentiRicevute: 100000003,
 			Ordini: 100000001,
-			Pagamenti: 100000004
+			Pagamenti: 100000005
 		},
 
 		/// OPT_IntegrationType constants.

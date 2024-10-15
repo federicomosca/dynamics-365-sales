@@ -1492,6 +1492,17 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
+		/// Stato invito constants.
+		/// </summary>
+		public enum msdyn_invitestatusValues
+		{
+			Creato = 357891000,
+			Inviato = 357891001,
+			Nonvalido = 357891003,
+			Risposto = 357891002
+		}
+
+		/// <summary>
 		/// Aggregazione IoT constants.
 		/// </summary>
 		public enum msdyn_iotaggregationValues
@@ -1592,6 +1603,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Datadicreazione = 192350001,
 			Predefinito = 192350000,
 			SkillIdentified = 192350005
+		}
+
+		/// <summary>
+		/// Stato del bot constants.
+		/// </summary>
+		public enum msdyn_mcsbotstatusValues
+		{
+			Disconnesso = 357890002,
+			Incorso = 357890000,
+			Pronto = 357890001
 		}
 
 		/// <summary>
@@ -3258,9 +3279,10 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Articoli = 100000002,
 			Clienti = 100000000,
-			Documenti = 100000003,
+			DocumentiFatture = 100000004,
+			DocumentiRicevute = 100000003,
 			Ordini = 100000001,
-			Pagamenti = 100000004
+			Pagamenti = 100000005
 		}
 
 		/// <summary>

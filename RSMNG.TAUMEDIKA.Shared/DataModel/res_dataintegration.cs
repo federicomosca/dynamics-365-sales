@@ -37,8 +37,9 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// Clienti: 100000000,
 		/// Ordini: 100000001,
 		/// Articoli: 100000002,
-		/// Documenti: 100000003,
-		/// Pagamenti: 100000004,
+		/// Documenti(Ricevute): 100000003,
+		/// Documenti(Fatture): 100000004,
+		/// Pagamenti: 100000005,
 		/// Description: 
 		/// </summary>
 		public static string res_integrationaction => "res_integrationaction";
@@ -118,9 +119,10 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Articoli = 100000002,
 			Clienti = 100000000,
-			Documenti = 100000003,
+			DocumentiFatture = 100000004,
+			DocumentiRicevute = 100000003,
 			Ordini = 100000001,
-			Pagamenti = 100000004
+			Pagamenti = 100000005
 		}
 
 		/// <summary>
