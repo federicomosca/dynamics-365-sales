@@ -39,6 +39,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Document
         [DataMember] public string NDoc { get; set; }
         [DataMember] public decimal? DaSaldare { get; set; }
         [DataMember] public decimal? TotNettoIva { get; set; }
+        [DataMember] public string CodAgente { get; set; }
         [DataMember] public LookUp Agente { get; set; }
         [DataMember] public string DataUltimoPag { get; set; }
         [DataMember] public decimal? Iva { get; set; }

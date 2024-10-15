@@ -76,11 +76,12 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         Configuration configuration = RSMNG.Plugins.Controller.Deserialize<Configuration>(res_ImportReceipts_Configuration);
                         #endregion
 
-
                         #region Depuro il file csv
                         PluginRegion = "Depuro il file csv";
                         // Decodifica Base64 in byte[]
                         byte[] csvBytes = Convert.FromBase64String(file.GetAttributeValue<string>(FileIn.content));
+
+                        crmServiceProvider.TracingService.Trace($"Lunghezza CSV:{csvBytes.Length}");
 
                         // Converte i byte[] in stringa (contenuto del CSV)
                         string csvContent = Encoding.UTF8.GetString(csvBytes);
@@ -150,7 +151,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         PluginRegion = "Carico gli Agenti";
                         var fetchDataSU = new
                         {
-                            statecode = "0"
+                            isdisabled = "0"
                         };
                         var fetchXmlSU = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
@@ -159,7 +160,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             <attribute name=""{systemuser.systemuserid}"" />
                             <attribute name=""{systemuser.res_agentnumber}"" />
                             <filter>
-                              <condition attribute=""{systemuser.statecode}"" operator=""eq"" value=""{fetchDataSU.statecode}"" />
+                              <condition attribute=""{systemuser.isdisabled}"" operator=""eq"" value=""{fetchDataSU.isdisabled}"" />
                             </filter>
                           </entity>
                         </fetch>";
@@ -226,14 +227,6 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         foreach (List<string> row in rows)
                         {
 
-                            //Definisco il prezzo da saldare
-                            PluginRegion = "Definisco il prezzo da saldare";
-                            string daSaldare = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.DaSaldare)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.DaSaldare)).position] : "0";
-
-                            string cleanedPriceList = daSaldare.Replace("€", "").Trim();
-
-                            decimal priceListOk = Decimal.Parse(cleanedPriceList, NumberStyles.Number, new CultureInfo("it-IT"));
-
                             //Definisco il Cliente
                             PluginRegion = "Definisco il cliente";
                             string sCodCliente = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.CodCliente)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.CodCliente)).position] : null;
@@ -285,6 +278,11 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 }
                             }
 
+                            //Definisco il prezzo da saldare
+                            PluginRegion = "Definisco il prezzo da saldare";
+                            string daSaldare = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.DaSaldare)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.DaSaldare)).position] : "0";
+                            decimal? isPendingPayment = Helper.ValidateMoney(daSaldare);
+
                             //Definisco il totale netto iva
                             PluginRegion = "Definisco il totale netto iva";
                             string totNettoIva = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.TotNettoIva)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.TotNettoIva)).position] : "0";
@@ -316,6 +314,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 Cliente = eCliente != null ? new Shared.Document.LookUp() { Entity = eCliente.LogicalName, Id = eCliente.Id, Text = eCliente.GetAttributeValue<string>(account.name) } : null,
                                 Data = date != null ? date?.ToString("yyyy-MM-dd") : null,
                                 NDoc = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.NDoc)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.NDoc)).position] : null,
+                                DaSaldare = isPendingPayment,
                                 TotNettoIva = netTotalExcludingVat,
                                 CodAgente = sCodAgente,
                                 Agente = eAgente != null ? new Shared.Document.LookUp() { Entity = eAgente.LogicalName, Id = eAgente.Id, Text = eAgente.GetAttributeValue<string>(systemuser.fullname) } : null,

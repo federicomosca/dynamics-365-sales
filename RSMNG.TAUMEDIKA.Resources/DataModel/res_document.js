@@ -36,6 +36,8 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_isexcludedfromcalculation: "res_isexcludedfromcalculation",
 	///Ancora da saldare
 	res_ispendingpayment: "res_ispendingpayment",
+	///Ancora da saldare (base)
+	res_ispendingpayment_base: "res_ispendingpayment_base",
 	///Data ultimo pagamento
 	res_lastpaymentdate: "res_lastpaymentdate",
 	///Tot. Netto IVA
@@ -75,12 +77,6 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 
 	/// Values for field Escluso da calcolo provvigioni
 	res_isexcludedfromcalculationValues: {
-		No: 0,
-		Si: 1
-	},
-
-	/// Values for field Ancora da saldare
-	res_ispendingpaymentValues: {
 		No: 0,
 		Si: 1
 	}

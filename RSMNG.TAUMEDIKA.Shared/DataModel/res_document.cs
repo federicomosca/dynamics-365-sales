@@ -131,13 +131,17 @@ namespace RSMNG.TAUMEDIKA.DataModel
 
 		/// <summary>
 		/// Display Name: Ancora da saldare,
-		/// Type: Boolean,
-		/// Values:
-		/// Sì: 1,
-		/// No: 0,
+		/// Type: Money,
 		/// Description: 
 		/// </summary>
 		public static string res_ispendingpayment => "res_ispendingpayment";
+
+		/// <summary>
+		/// Display Name: Ancora da saldare (base),
+		/// Type: Money,
+		/// Description: Valore di Ancora da saldare nella valuta di base.
+		/// </summary>
+		public static string res_ispendingpayment_base => "res_ispendingpayment_base";
 
 		/// <summary>
 		/// Display Name: Data ultimo pagamento,
@@ -236,15 +240,6 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// Values for field Escluso da calcolo provvigioni
 		/// <summary>
 		public enum res_isexcludedfromcalculationValues
-		{
-			No = 0,
-			Si = 1
-		}
-
-		/// <summary>
-		/// Values for field Ancora da saldare
-		/// <summary>
-		public enum res_ispendingpaymentValues
 		{
 			No = 0,
 			Si = 1
