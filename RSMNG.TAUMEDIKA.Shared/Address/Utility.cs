@@ -14,10 +14,10 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
     public class Utility
     {
         public static List<string> mandatoryFields = new List<string> {
-                DataModel.res_address.res_customerid,
-                DataModel.res_address.res_addressField,
-                DataModel.res_address.res_postalcode,
-                DataModel.res_address.res_city
+                res_address.res_customerid,
+                res_address.res_addressField,
+                res_address.res_postalcode,
+                res_address.res_city
             };
 
         /**
@@ -29,13 +29,12 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         {
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
-                              <entity name=""{DataModel.res_address.logicalName}"">
-                                <attribute name=""{DataModel.res_address.res_isdefault}"" />
+                              <entity name=""{res_address.logicalName}"">
+                                <attribute name=""{res_address.res_isdefault}"" />
                                 <filter type=""and"">
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
-                                  <condition attribute=""{DataModel.res_address.res_addressid}"" operator=""ne"" value=""{newDefaultAddressId.ToString()}"" />
-                                  <condition attribute=""{DataModel.res_address.res_customerid}"" operator=""eq"" value=""{customerIdString.ToString()}"" />
-                                  <condition attribute=""{DataModel.res_address.res_isdefault}"" operator=""eq"" value=""1"" />
+                                  <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
+                                  <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
                             </fetch>";
@@ -44,15 +43,15 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         }
         public static Guid CreateNewDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
         {
-            Entity enAddress = new Entity(DataModel.res_address.logicalName);
-            enAddress[DataModel.res_address.res_addressField] = address;
-            enAddress[DataModel.res_address.res_city] = city;
-            enAddress[DataModel.res_address.res_postalcode] = postalcode;
+            Entity enAddress = new Entity(res_address.logicalName);
+            enAddress[res_address.res_addressField] = address;
+            enAddress[res_address.res_city] = city;
+            enAddress[res_address.res_postalcode] = postalcode;
 
-            enAddress[DataModel.res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+            enAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
 
-            enAddress[DataModel.res_address.res_isdefault] = true;
-            enAddress[DataModel.res_address.res_iscustomeraddress] = true;
+            enAddress[res_address.res_isdefault] = true;
+            enAddress[res_address.res_iscustomeraddress] = true;
 
             Guid addressId = service.Create(enAddress);
             return addressId;
