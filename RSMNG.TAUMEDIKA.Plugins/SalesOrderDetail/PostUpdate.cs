@@ -40,12 +40,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     };
                     var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch aggregate=""true"">
-                                      <entity name=""salesorderdetail"">
-                                        <attribute name=""manualdiscountamount"" alias=""ScontoTotale"" aggregate=""sum"" />
-                                        <attribute name=""res_taxableamount"" alias=""TotaleImponibile"" aggregate=""sum"" />
-                                        <attribute name=""tax"" alias=""TotaleIva"" aggregate=""sum"" />
+                                      <entity name=""{salesorderdetail.logicalName}"">
+                                        <attribute name=""{salesorderdetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+                                        <attribute name=""{salesorderdetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""{salesorderdetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""salesorderid"" operator=""eq"" value=""{fetchData.id}"" />
+                                          <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{fetchData.id}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";

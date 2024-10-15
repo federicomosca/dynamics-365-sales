@@ -23,17 +23,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             #region Trace Activation Method
-            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
-                if (isFirstExecute)
+                //TRACE TOGGLE
+                bool isTraceActive = false;
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
                 }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
             #endregion
 
@@ -60,19 +61,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 };
                 var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch aggregate=""true"">
-                                      <entity name=""quotedetail"">
-                                        <attribute name=""manualdiscountamount"" alias=""ScontoTotale"" aggregate=""sum"" />
-                                        <attribute name=""res_taxableamount"" alias=""TotaleImponibile"" aggregate=""sum"" />
-                                        <attribute name=""tax"" alias=""TotaleIva"" aggregate=""sum"" />
+                                      <entity name=""{quotedetail.logicalName}"">
+                                        <attribute name=""{quotedetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+                                        <attribute name=""{quotedetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData.quoteid}"" />
+                                          <condition attribute=""{quotedetail.quoteid}"" operator=""eq"" value=""{fetchData.quoteid}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";
 
                 EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-                if (aggregatiRigheOfferta.Entities.Count  > 0)
+                if (aggregatiRigheOfferta.Entities.Count > 0)
                 {
 
                     scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
@@ -86,13 +87,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     // Recupero Importo Spesa Accessoria  e Aliquota
                     var fetchXml2 = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
-                                  <entity name=""quote"">
-                                    <attribute name=""freightamount"" />
+                                  <entity name=""{quote.logicalName}"">
+                                    <attribute name=""{quote.freightamount}"" />
                                     <filter>
-                                      <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData2.quoteid}"" />
+                                      <condition attribute=""{quote.quoteid}"" operator=""eq"" value=""{fetchData2.quoteid}"" />
                                     </filter>
-                                    <link-entity name=""res_vatnumber"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
-                                      <attribute name=""res_rate"" alias=""Aliquota"" />
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
+                                      <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
                                     </link-entity>
                                   </entity>
                                 </fetch>";
@@ -109,9 +110,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                     decimal offertaTotaleProdotti,      // S [quotedetail] totale imponibile
                         offertaScontoTotale,            // S [quotedetail] sconto totale
-                        //offertaTotaleImponibile,        // totaleprodotti - sconto totale + importo spesa accessoria
                         offertaTotaleIva;               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
-                        //offertaImportoTotale;           // totale imponibile + totale iva
 
                     Trace("scontoTotale", scontoTotale);
                     Trace("totaleImponibile", totaleImponibile);
@@ -120,24 +119,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     Trace("TotaleIva", totaleIva);
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                    offertaTotaleProdotti = totaleImponibile;                                                       Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-                    offertaScontoTotale = scontoTotale;                                                             Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    //offertaTotaleImponibile = offertaTotaleProdotti - offertaScontoTotale + importoSpesaAccessoria; Trace("offerta_Totale_Imponibile", offertaTotaleImponibile);
-                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));                     Trace("offerta_Totale_Iva", offertaTotaleIva);
-                    //offertaImportoTotale = offertaTotaleImponibile + offertaTotaleIva;                              Trace("offerta_Importo_Totale", offertaImportoTotale);
+                    offertaTotaleProdotti = totaleImponibile; Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    offertaScontoTotale = scontoTotale; Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); Trace("offerta_Totale_Iva", offertaTotaleIva);
 
                     Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
 
                     enQuote[quote.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
                     enQuote[quote.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
                     enQuote[quote.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
-                    //enQuote[quote.totalamountlessfreight] = offertaTotaleImponibile != 0 ? new Money(offertaTotaleImponibile) : null;
-                    //enQuote[quote.totalamount] = offertaImportoTotale != 0 ? new Money(offertaImportoTotale) : null;
 
                     crmServiceProvider.Service.Update(enQuote);
 
-                }  
-                
+                }
+
             }
 
 
@@ -175,12 +170,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             //EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatiRigheOfferta));
 
 
-            
+
 
             //if (aggregatiRigheOfferta.Entities.Count <= 0) throw new ApplicationException("Quote entity not found.");
             //Entity aggregato = aggregatiRigheOfferta.Entities[0];
 
-           
+
 
             //------------------------------------< LOGICA RELATIVA ALL'IVA >------------------------------------//
 
@@ -189,9 +184,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             //decimal offertaImportoSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Importo")?.Value is Money res_amount ? res_amount.Value : 0m; Trace("offerta_importo_Spesa_Accessoria", offertaImportoSpesaAccessoria);
             //decimal offertaAliquotaSpesaAccessoria = aggregato.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0m; Trace("offerta_Aliquota_Spesa_Accessoria", offertaAliquotaSpesaAccessoria);
 
-            
 
-           
+
+
             //#endregion
         }
     }

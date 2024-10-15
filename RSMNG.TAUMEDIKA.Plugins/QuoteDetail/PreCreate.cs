@@ -22,21 +22,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            bool isFirstExecute = true;
-            void Trace(string key, object value)
-            {
-                bool isTraceActive = true;
-                if (isFirstExecute)
-                {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
-                }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
-            }
-            #endregion
-
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Guid targetId = target.Id;
 

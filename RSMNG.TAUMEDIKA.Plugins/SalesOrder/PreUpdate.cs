@@ -23,17 +23,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             #region Trace Activation Method
-            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
-                if (isFirstExecute)
+                //TRACE TOGGLE
+                bool isTraceActive = false;
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
                 }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
             #endregion
 

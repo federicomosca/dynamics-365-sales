@@ -25,22 +25,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             #region Trace Activation Method
-            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
-                if (isFirstExecute)
+                //TRACE TOGGLE
+                bool isTraceActive = false;
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
                 }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
             #endregion
 
             var service = crmServiceProvider.Service;
-            var trace = crmServiceProvider.TracingService;
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -51,13 +51,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             // Alla creazione di una riga importo risulta essere 0, poi il sistema effettua calcoli automatici
             // e aggiorna il valore di importo effettuando un update.
             Guid codiceIvaGuid = Guid.Empty;
-            decimal totaleImponibile = 0;
-            decimal totaleIva = 0;
-
+            decimal totaleImponibile;
+            decimal? totaleIva;
+            Trace("01", 01);
             decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m;
-            decimal quantità = postImage.GetAttributeValue<decimal?>(salesorderdetail.quantity) ?? 0m;
+            Trace("02", 02);
             decimal scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m;
-            decimal aliquota = postImage.GetAttributeValue<decimal?>(salesorderdetail.res_vatnumberid) ?? 0m;
+            Trace("03", 03);
+            decimal? aliquota = postImage.GetAttributeValue<decimal?>(salesorderdetail.res_vatrate) ?? 0m;
+            Trace("031", 031);
             string productNumber = postImage.GetAttributeValue<string>(salesorderdetail.productnumber);
 
 
@@ -65,6 +67,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             #region Recupera dati product
             PluginRegion = "Recupera dati product";
+            //if (target.Contains(salesorderdetail.productid)) qui non entra anche se modifico il prodotto dal modulo della riga ordine
+            //{
 
             if (erProduct != null)
             {
@@ -90,32 +94,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 if (results.Entities.Count > 0)
                 {
                     Entity prodotto = results.Entities[0];
-
+                    Trace("041", 041);
                     codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                    Trace("04", 04);
                     aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota", aliquota);
+                    Trace("05", 05);
                     productNumber = prodotto.GetAttributeValue<string>(product.productnumber);
 
+                    //creo qui entityreference di codice iva prima di passarla al target
                 }
             }
+
+            //}
             #endregion
 
             totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
             totaleIva = totaleImponibile * (aliquota / 100); Trace("totale_iva", totaleIva);
 
-
-            target[salesorderdetail.res_vatnumberid] = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
+            EntityReference erCodiceIVA = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
+            Trace("06", 06);
+            target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
             target[salesorderdetail.res_taxableamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            target[salesorderdetail.tax] = totaleIva != 0 ? new Money(totaleIva) : null;
+            target[salesorderdetail.tax] = totaleIva != 0 ? new Money((decimal)totaleIva) : null;
             target[salesorderdetail.res_itemcode] = productNumber;
-
-            if (aliquota != 0)
-            {
-                target[salesorderdetail.res_vatrate] = aliquota;
-            }
-            else
-            {
-                target[salesorderdetail.res_vatrate] = null;
-            }
+            target[salesorderdetail.res_vatrate] = aliquota != 0 ? aliquota : null;
         }
     }
 }

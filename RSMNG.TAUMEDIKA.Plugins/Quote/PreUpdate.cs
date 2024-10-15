@@ -24,17 +24,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             #region Trace Activation Method
-            bool isFirstExecute = true;
             void Trace(string key, object value)
             {
-                bool isTraceActive = true;
-                if (isFirstExecute)
+                //TRACE TOGGLE
+                bool isTraceActive = false;
                 {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
                 }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
             }
             #endregion
 
@@ -216,9 +217,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
 
                     decimal importoSpesaAccessoria = enQuote.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
                     decimal aliquota = enQuote.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
-                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria != 0 && aliquota != 0 ? importoSpesaAccessoria * (aliquota / 100) : 0;
+                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * (aliquota / 100);
 
-                    totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
+                    totaleIva += aliquotaImportoSpesaAccessoria;
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
