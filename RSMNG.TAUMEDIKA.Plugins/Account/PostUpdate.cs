@@ -47,14 +47,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
                     if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
                     {
-                        Guid addressId = Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
-                        address ?? preImage.GetAttributeValue<string>(DataModel.account.address1_name),
-                        city ?? preImage.GetAttributeValue<string>(DataModel.account.address1_city),
-                        postalcode ?? preImage.GetAttributeValue<string>(DataModel.account.address1_postalcode)
-                        );
-
                         //controllo se c'è già un indirizzo di default
-                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id, addressId);
+                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
 
                         if (addresses.Entities.Count > 0)
                         {
@@ -64,8 +58,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                                 crmServiceProvider.Service.Update(duplicate);
                             }
                         }
-                        #endregion
+                        Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
+                        address ?? preImage.GetAttributeValue<string>(DataModel.account.address1_name),
+                        city ?? preImage.GetAttributeValue<string>(DataModel.account.address1_city),
+                        postalcode ?? preImage.GetAttributeValue<string>(DataModel.account.address1_postalcode)
+                        );
                     }
+                    #endregion
                 }
             }
         }
