@@ -230,6 +230,199 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         _self.formModel.fields.quoteid
     ];
 
+    //---------------------< CAMPI SPESA ACCESSORIA >---------------------
+    //
+    //
+    //
+    //
+    //------------------------< SPESA ACCESSORIA >------------------------ 
+    _self.onChangeAdditionalExpenseId = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        //svuoto il campo Codice IVA Spesa Accessoria
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
+
+        const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+
+        if (spesaAccessoria !== null) {
+
+            const result = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoria[0].id, "?$select=res_amount");
+            const importoSpesaAccessoria = result.res_amount;
+
+            //rendo modificabili i campi Codice IVA Spesa Accessoria e Importo spesa accessoria
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(false);
+            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(false);
+
+            //rendo obbligatorio il campo Codice IVA Spesa Accessoria
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("required");
+
+            //valorizzo il campo importo spesa accessoria e invoco il metodo per gestire i campi correlati al cambio dell'importo
+            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(importoSpesaAccessoria);
+            _self.onChangeFreightAmount(executionContext);
+
+        } else {
+            //se ho svuotato Spesa accessoria...
+
+            //rendo facoltativo il codice iva e svuoto il campo importo spesa accessoria
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("none");
+            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(null);
+
+            //e li rendo non editabili
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(true);
+        }
+    };
+
+    //------------------< RETRIEVE ALIQUOTA CODICE IVA >------------------   
+    _self.retrieveAliquotaCodiceIVA = async codiceIvaId => {
+
+        const fetchCodiceIVASpesaAccessoria = [
+            "?fetchXml=<fetch>",
+            "  <entity name='res_vatnumber'>",
+            "    <attribute name='res_rate'/>",
+            "    <filter>",
+            "      <condition attribute='statecode' operator='eq' value='0'/>",
+            "      <condition attribute='res_vatnumberid' operator='eq' value='", codiceIvaId, "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        try {
+            const result = await Xrm.WebApi.retrieveMultipleRecords("res_vatnumber", fetchCodiceIVASpesaAccessoria);
+            return result.entities[0].res_rate;
+        } catch (error) {
+            console.error("Errore nel recupero dell'aliquota codice IVA", error);
+        }
+    };
+
+    //--------------------< RETRIEVE AGGREGATI RIGHE >--------------------   
+    _self.retrieveAggregatiRighe = async parentId => {
+
+        const fetchAggregati = [
+            "?fetchXml=<fetch aggregate='true'>",
+            "  <entity name='salesorder'>",
+            "    <filter>",
+            "      <condition attribute='salesorderid' operator='eq' value='", parentId, "'/>",
+            "    </filter>",
+            "    <link-entity name='salesorderdetail' from='salesorderid' to='salesorderid' link-type='inner' alias='RigaDettaglio'>",
+            "      <attribute name='res_taxableamount' alias='TotaleImponibile' aggregate='sum'/>",
+            "      <attribute name='tax' alias='TotaleIVA' aggregate='sum'/>",
+            "    </link-entity>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        try {
+            const result = await Xrm.WebApi.retrieveMultipleRecords("salesorder", fetchAggregati);
+            const aggregati = result.entities[0];
+
+            // ritorno un oggetto JSON con i valori aggregati
+            return {
+                righeTotaleImponibile: aggregati.TotaleImponibile,
+                righeTotaleIva: aggregati.TotaleIVA
+            }
+        } catch (error) {
+            console.error("Errore nel recupero degli aggregati:", error);
+        }
+    };
+
+    //------------------< CODICE IVA SPESA ACCESSORIA >-------------------
+    _self.onChangeVatNumber = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                    //codice iva spesa accessoria
+        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);    //spesa accessoria
+        const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
+        const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
+        const importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount) ?? 0;
+
+        /**
+         * calcolo la spesa accessoria con applicata l'aliquota
+         * recupero il totale iva di tutte le righe offerta associate
+         * e imposto il risultato nel campo totale iva dell'offerta
+         */
+        const vatNumberLookup = vatNumberControl.getAttribute().getValue();
+        const additionalExpenseLookup = additionalExpenseControl.getAttribute().getValue();
+
+        const codiceIvaId = vatNumberLookup ? vatNumberLookup[0].id : null;
+        const additionalExpenseId = additionalExpenseLookup ? additionalExpenseLookup[0].id.replace(/[{}]/g, "") : null;
+
+        //retrieve della somma del Totale IVA di tutte le righe offerta
+        const parentId = formContext.data.entity.getId();
+
+        const { righeTotaleImponibile, righeTotaleIva } = await _self.retrieveAggregatiRighe(parentId);
+
+        //se è stato selezionato il codice iva spesa accessoria
+        if (codiceIvaId) {
+            const codiceIvaSpesaAccessoria = await Xrm.WebApi.retrieveRecord("res_vatnumber", codiceIvaId, "?$select=res_rate");
+            const aliquotaCodiceIVA = codiceIvaSpesaAccessoria ? codiceIvaSpesaAccessoria.res_rate : 0;
+
+            let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue();
+
+            if (!importoSpesaAccessoria) {
+                let additionalExpense = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseId, "?$select=res_amount")
+                importoSpesaAccessoria = additionalExpense ? additionalExpense.res_amount : 0;
+            }
+
+            //calcolo l'iva sulla spesa accessoria
+            const ivaSpesaAccessoria = importoSpesaAccessoria ? importoSpesaAccessoria * (aliquotaCodiceIVA ? aliquotaCodiceIVA / 100 : 0) : 0;
+
+            const totaleIVA = righeTotaleIva + ivaSpesaAccessoria;
+            const totaleImponibile = righeTotaleImponibile + importoSpesaAccessoria;
+            const importoTotale = totaleImponibile + totaleIVA;
+
+            totalTaxControl.getAttribute().setValue(totaleIVA);
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile);
+            totalAmountControl.getAttribute().setValue(importoTotale);
+
+        } else {
+
+            totalTaxControl.getAttribute().setValue(totaleIvaRigheOrdine);
+
+            const totaleScontoRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totalesconto != undefined ? salesorderDetails.entities[0].totalesconto : 0 : 0;
+            const totaleImponibileRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totaleimponibile != undefined ? salesorderDetails.entities[0].totaleimponibile : 0 : 0;
+
+            const totaleimponibile = totaleImponibileRigheOfferta + importoSpesaAccessoria - totaleScontoRigheOfferta;
+            const importototale = totaleimponibile + totaleIvaRigheOrdine;
+
+            totalAmountControl.getAttribute().setValue(importototale);
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleimponibile);
+
+        }
+    };
+
+    //--------------------< IMPORTO SPESA ACCESSORIA >--------------------
+    _self.onChangeFreightAmount = async (executionContext) => {
+
+        const formContext = executionContext.getFormContext();
+        const importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue();
+
+        //--------------------------------< RECUPERO I VALORI PER CALCOLARE IL TOTALE IMPONIBILE >--------------------------------//
+        const parentId = formContext.data.entity.getId();
+        const { righeTotaleImponibile, righeTotaleIva } = await _self.retrieveAggregatiRighe(parentId);
+
+        //--------------------------------< RECUPERO L'ALIQUOTA DEL CODICE IVA SPESA ACCESSORIA >--------------------------------//
+        const codiceIVASpesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue(); //Codice IVA Spesa Accessoria
+        if (codiceIVASpesaAccessoria) {
+
+            const codiceIvaId = codiceIVASpesaAccessoria[0].id;
+
+            const aliquota = await _self.retrieveAliquotaCodiceIVA(codiceIvaId);
+            const totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
+            const totaleImponibile = righeTotaleImponibile + importoSpesaAccessoria;
+            const importoTotale = totaleImponibile + totaleIva;
+
+            formContext.getAttribute(_self.formModel.fields.totaltax).setValue(totaleIva);
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile);
+            formContext.getAttribute(_self.formModel.fields.totalamount).setValue(importoTotale);
+        }
+    };
+    //
+    //
+    //
+    //
+    //
     //-----------Listino-prezzi-Custom-View--------------   
     _self.addPriceLevelCustomView = function (executionContext) {
 
@@ -276,7 +469,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         formContext.getAttribute(_self.formModel.fields.res_date).setValue(new Date());
     };
-
     //-----------Condizione_di_pagamento-----------------
     _self.onChangePaymentTermId = function (executionContext) {
 
@@ -311,33 +503,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
 
 
-    };
-
-    //-----------Spesa-accessoria------------------------
-    _self.onChangeAdditionalExpenseId = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
-        const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
-
-        //svuoto il campo Codice IVA Spesa Accessoria
-        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
-
-        if (spesaAccessoria !== null) {
-
-            //rendo modificabili i campi Codice IVA Spesa Accessoria e Importo spesa accessoria
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(false);
-            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(false);
-
-            //rendo obbligatorio il campo Codice IVA Spesa Accessoria
-            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("required");
-
-            _self.onChangeFreightAmount(executionContext);
-        } else {
-            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("none");
-            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(null);
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
-            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(true);
-        }
     };
 
     //-----------Spedizione------------------------------
@@ -384,7 +549,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         }
     };
-
     //-----------Indirizzo-Spedizione--------------------
     _self.onChangeShipToLine1 = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -403,7 +567,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
 
     };
-
     //-----------CAP-Spedizione--------------------------
     _self.onChangeShipToPostalCode = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -413,7 +576,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(shipToPostalCode !== null ? false : true);
 
     };
-
     //----------Citta-Spedizione-------------------------
     _self.onChangeShipToCity = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -429,6 +591,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         _self.onChangeShipToPostalCode(executionContext);
         _self.onChangeShipToCity(executionContext);
     };
+    //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
@@ -544,152 +707,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
     };
     //---------------------------------------------------
-    _self.onChangeVatNumber = async executionContext => {
-        const formContext = executionContext.getFormContext();
-
-        const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                    //codice iva spesa accessoria
-        const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);    //spesa accessoria
-        const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
-        const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
-        const importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount) ?? 0;
-
-        /**
-         * calcolo la spesa accessoria con applicata l'aliquota
-         * recupero il totale iva di tutte le righe offerta associate
-         * e imposto il risultato nel campo totale iva dell'offerta
-         */
-        const vatNumberLookup = vatNumberControl.getAttribute().getValue();
-        const additionalExpenseLookup = additionalExpenseControl.getAttribute().getValue();
-
-        const vatNumberId = vatNumberLookup ? vatNumberLookup[0].id.replace(/[{}]/g, "") : null;
-        const additionalExpenseId = additionalExpenseLookup ? additionalExpenseLookup[0].id.replace(/[{}]/g, "") : null;
-
-        //retrieve della somma del Totale IVA di tutte le righe offerta
-        var fetchData = {
-            "salesorderid": formContext.data.entity.getId().replace(/[{}]/g, "")
-        };
-        var fetchXml = [
-            "?fetchXml=<fetch aggregate='true'>",
-            "  <entity name='salesorderdetail'>",
-            "    <attribute name='tax' alias='totaleiva' aggregate='sum'/>",
-            "    <attribute name='manualdiscountamount' alias='totalesconto' aggregate='sum'/>",
-            "    <attribute name='res_taxableamount' alias='totaleimponibile' aggregate='sum'/>",
-            "    <filter>",
-            "      <condition attribute='salesorderid' operator='eq' value='", fetchData.salesorderid, "'/>",
-            "    </filter>",
-            "  </entity>",
-            "</fetch>"
-        ].join("");
-
-        var salesorderDetails = await Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchXml);
-
-        const totaleIvaRigheOrdine = salesorderDetails ? salesorderDetails.entities[0].totaleiva != undefined ? salesorderDetails.entities[0].totaleiva : 0 : 0;
-
-        //se è stato selezionato il codice iva spesa accessoria
-        if (vatNumberId) {
-            let vatNumber = await Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberId, "?$select=res_rate")
-
-            const aliquotaCodiceIVA = vatNumber ? vatNumber.res_rate : 0;
-
-            let additionalExpense = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseId, "?$select=res_amount")
-            const importoSpesaAccessoria = additionalExpense ? additionalExpense.res_amount : 0;
-
-            //calcolo l'iva sulla spesa accessoria
-            if (importoSpesaAccessoria && aliquotaCodiceIVA) {
-                const ivaSpesaAccessoria = importoSpesaAccessoria ? importoSpesaAccessoria * (aliquotaCodiceIVA / 100) : 0;
-
-                let totaleIVA = totaleIvaRigheOrdine + ivaSpesaAccessoria;
-
-                totalTaxControl.getAttribute().setValue(totaleIVA);
-
-                const totalamount = totalAmountControl.getAttribute().getValue();
-                totalAmountControl.getAttribute().setValue(totalamount ? totalamount + ivaSpesaAccessoria : ivaSpesaAccessoria);
-
-            } else throw console.error("additional expense amount or vat number are missing");
-        } else {
-
-            totalTaxControl.getAttribute().setValue(totaleIvaRigheOrdine);
-
-            const totaleScontoRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totalesconto != undefined ? salesorderDetails.entities[0].totalesconto : 0 : 0;
-            const totaleImponibileRigheOfferta = salesorderDetails ? salesorderDetails.entities[0].totaleimponibile != undefined ? salesorderDetails.entities[0].totaleimponibile : 0 : 0;
-
-            const totaleimponibile = totaleImponibileRigheOfferta + importoSpesaAccessoria - totaleScontoRigheOfferta;
-            const importototale = totaleimponibile + totaleIvaRigheOrdine;
-
-            totalAmountControl.getAttribute().setValue(importototale);
-            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleimponibile);
-        }
-    };
-    //---------------------------------------------------
-    _self.onChangeFreightAmount = async function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
-        let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue() ?? null;
-
-        //--------------------------------< VALORIZZO IL CAMPO IMPORTO SPESA ACCESSORIA >--------------------------------//
-        if (!importoSpesaAccessoria) {
-            const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
-
-            const promise = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoria[0].id, "?$select=res_amount");
-            importoSpesaAccessoria = promise.res_amount;
-            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(importoSpesaAccessoria);
-        }
-        //--------------------------------< RECUPERO I VALORI PER CALCOLARE IL TOTALE IMPONIBILE >--------------------------------//
-        var fetchAggregatiRighe = [
-            "?fetchXml=<fetch aggregate='true'>",
-            "  <entity name='salesorderdetail'>",
-            "    <attribute name='res_taxableamount' alias='TotaleImponibile' aggregate='sum'/>",
-            "    <attribute name='tax' alias='TotaleIva' aggregate='sum'/>",
-            "    <filter>",
-            "      <condition attribute='salesorderid' operator='eq' value='", formContext.data.entity.getId(), "'/>",
-            "    </filter>",
-            "  </entity>",
-            "</fetch>"
-        ].join("");
-
-        Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchAggregatiRighe).then(
-            results => {
-                if (results.entities.length > 0) {
-                    const totaleProdotti = results.entities[0].TotaleImponibile ?? 0;
-                    const righeTotaleIva = results.entities[0].TotaleIva ?? 0;
-
-                    //--------------------------------< RECUPERO L'ALIQUOTA DEL CODICE IVA SPESA ACCESSORIA >--------------------------------//
-                    const vatNumberId = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue()[0].id; //Codice IVA Spesa Accessoria
-
-                    var fetchCodiceIVASpesaAccessoria = [
-                        "?fetchXml=<fetch>",
-                        "  <entity name='res_vatnumber'>",
-                        "    <attribute name='res_rate'/>",
-                        "    <filter>",
-                        "      <condition attribute='statecode' operator='eq' value='0'/>",
-                        "      <condition attribute='res_vatnumberid' operator='eq' value='", vatNumberId, "'/>",
-                        "    </filter>",
-                        "  </entity>",
-                        "</fetch>"
-                    ].join("");
-
-                    Xrm.WebApi.retrieveMultipleRecords("res_vatnumber", fetchCodiceIVASpesaAccessoria).then(
-                        results => {
-                            if (results.entities.length > 0) {
-                                const aliquota = results.entities[0].res_rate ?? 0;
-
-                                const totaleImponibile = totaleProdotti + importoSpesaAccessoria;
-                                const totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
-                                const importoTotale = totaleImponibile + totaleIva;
-
-                                formContext.getAttribute(_self.formModel.fields.totaltax).setValue(totaleIva);
-                                formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile);
-                                formContext.getAttribute(_self.formModel.fields.totalamount).setValue(importoTotale);
-                            }
-                        },
-                        error => { console.error(error.message); }
-                    );
-                }
-            },
-            error => { console.error(error.message); }
-        );
-    }
-    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -771,6 +788,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel(additionlExpenseId !== null ? "required" : "none");
 
+        const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+        formContext.getControl(_self.formModel.fields.freightamount).setDisabled(spesaAccessoria ? false : true);
+        formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(spesaAccessoria ? false : true);
         //-----
 
         let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
