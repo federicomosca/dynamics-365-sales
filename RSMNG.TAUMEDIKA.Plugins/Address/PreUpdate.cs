@@ -28,8 +28,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-
                 Entity postImage = target.GetPostImage(preImage);
+
+                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
 
                 #region Controllo campi obbligatori
                 PluginRegion = "Controllo campi obbligatori";
@@ -43,8 +44,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 string customerName = string.Empty;
                 string addressCity = string.Empty;
                 string addressStreet = string.Empty;
-
-                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
 
                 if (erCustomer != null)
                 {
@@ -75,14 +74,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
                 if (isDefault)
                 {  //controllo se c'è già un indirizzo di default
-                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                    Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
 
-                    if (addresses.Entities.Count > 0)
+                    if (customerId != Guid.Empty)
                     {
-                        foreach (var duplicate in addresses.Entities)
+                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
+
+                        if (addresses.Entities.Count > 0)
                         {
-                            duplicate[DataModel.res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(duplicate);
+                            foreach (var duplicate in addresses.Entities)
+                            {
+                                duplicate[res_address.res_isdefault] = false;
+                                crmServiceProvider.Service.Update(duplicate);
+                            }
                         }
                     }
                 }
