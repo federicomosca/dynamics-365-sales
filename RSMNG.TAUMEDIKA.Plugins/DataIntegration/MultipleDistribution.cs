@@ -57,19 +57,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                 }
                 #endregion
 
-                #region Recupero le categorie/sottocategorie
-                Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
-                #endregion
-
-                #region recupero il listino prezzi predefinito
-                EntityReference erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
-                #endregion
-
                 #region Controllo il tipo di distribuzione da fare in base all'azione
                 PluginRegion = "Controllo il tipo di distribuzione da fare in base all'azione";
                 switch (eDataIntegration.GetAttributeValue<OptionSetValue>(res_dataintegration.res_integrationaction).Value)
                 {
                     case (int)res_dataintegration.res_integrationactionValues.Articoli:
+
+                        #region recupero il listino prezzi predefinito
+                        EntityReference erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
+                        #endregion
+
+                        #region Recupero le categorie/sottocategorie
+                        Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> dCategory = Shared.Product.Utility.GetProductFamily(crmServiceProvider.Service);
+                        #endregion
+
                         #region Distribuisco gli articoli
                         PluginRegion = "Prelevo i DataIntegrationdetail da distribuire";
                         ecDataIntegrationDetail = Shared.DataIntegrationDetail.Utility.GetDataIntegrationDetails(crmServiceProvider.Service, erDataIntegration.Id, numberRows, (int)res_dataintegrationdetail.statuscodeValues.Creato_StateAttivo);

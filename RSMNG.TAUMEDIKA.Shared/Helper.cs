@@ -13,6 +13,8 @@ using RSMNG.TAUMEDIKA.DataModel;
 using static RSMNG.TAUMEDIKA.Model;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace RSMNG.TAUMEDIKA
 {
@@ -230,7 +232,40 @@ namespace RSMNG.TAUMEDIKA
 
             return option;
         }
+        public static decimal? ValidateMoney(string stringMoney)
+        {
 
+            string cleanedStringMoney = stringMoney.Replace("€", "").Trim();
+
+            if (Decimal.TryParse(cleanedStringMoney, NumberStyles.Number, new CultureInfo("it-IT"),out decimal stringMoneyOk)){
+                return stringMoneyOk;
+            } else
+            {
+                return null;
+            }
+        }
+        public static DateTime? ValidateDateTime(string stringDateTime)
+        {
+
+                // Pattern per il formato gg/mm/aaaa o gg-mm-aaaa
+                string pattern1 = @"^\d{2}[/-]\d{2}[/-]\d{4}$";
+
+                // Verifica se la stringa corrisponde al primo pattern
+                if (Regex.IsMatch(stringDateTime, pattern1))
+                {
+                    DateTime data;
+                    // Prova a convertire la data nei formati dd/mm/yyyy o dd-mm-yyyy
+                    if (DateTime.TryParseExact(stringDateTime, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out data) ||
+                        DateTime.TryParseExact(stringDateTime, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out data))
+                    {
+                        return data;
+                    }
+                    return null;
+                }
+
+                // Se la stringa non corrisponde a nessuno dei pattern, la data non è valida
+                return null;
+        }
     }
     public class CustomStringWriter : StringWriter
     {

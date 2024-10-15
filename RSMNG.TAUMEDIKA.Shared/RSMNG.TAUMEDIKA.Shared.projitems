@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\systemuser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uom.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\uomschedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Document\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataIntegration\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaymentTerm\Utility.cs" />
