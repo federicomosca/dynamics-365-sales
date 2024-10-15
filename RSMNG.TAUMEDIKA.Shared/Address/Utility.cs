@@ -25,12 +25,11 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         * se non esiste nessun address, creo un nuovo record address e lo valorizzo con i values passati come argomenti al metodo
         * metto Default a true
         */
-        public static EntityCollection GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid newDefaultAddressId)
+        public static EntityCollection GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString)
         {
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
                               <entity name=""{res_address.logicalName}"">
-                                <attribute name=""{res_address.res_isdefault}"" />
                                 <filter type=""and"">
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
@@ -41,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
         }
-        public static Guid CreateNewDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
+        public static void CreateNewDefaultAddress(Entity target, IOrganizationService service, string address = "", string city = "", string postalcode = "")
         {
             Entity enAddress = new Entity(res_address.logicalName);
             enAddress[res_address.res_addressField] = address;
@@ -53,8 +52,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             enAddress[res_address.res_isdefault] = true;
             enAddress[res_address.res_iscustomeraddress] = true;
 
-            Guid addressId = service.Create(enAddress);
-            return addressId;
+            service.Create(enAddress);
         }
     }
 }
