@@ -316,6 +316,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     };
                                     UpsertResponse responseDocumentReceiptUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentReceiptUpt);
                                     integrationsNumber++;
+
+                                    #region Aggiorno lo stato del DataIntegrationDetail in distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.Distribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, "Ok, distribuito correttamente");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
                                 }
                                 catch (Exception e)
                                 {
@@ -382,6 +389,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         Target = eDocumentInvoiceUpt
                                     };
                                     UpsertResponse responseDocumentInvoiceUpt = (UpsertResponse)crmServiceProvider.Service.Execute(requestDocumentInvoiceUpt);
+                                    integrationsNumber++;
+
+                                    #region Aggiorno lo stato del DataIntegrationDetail in distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.Distribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, "Ok, distribuito correttamente");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
                                 }
                                 catch (Exception e)
                                 {
