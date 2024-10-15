@@ -507,45 +507,42 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
     _self.setManualDiscountAmount = (executionContext, data) => {
         const formContext = executionContext.getFormContext();
         let eventSourceAttribute = executionContext.getEventSource();
-        let eventSourceControl = formContext.getControl(eventSourceAttribute.getName());
         let manualDiscountAmount = null;
 
-        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercent1).getValue() ?? 0;
-        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercent2).getValue() ?? 0;
-        let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercent3).getValue() ?? 0;
+        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
+        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
+        let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).getValue() ?? 0;
 
 
         //-----------------------
         if (disc1 == 0 || disc1 == 100) {
-            formContext.getControl(_self.formModel.fields.res_discountpercent2).setDisabled(true);
-            formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
 
-            formContext.getAttribute(_self.formModel.fields.res_discountpercent2).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.res_discountpercent3).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
             disc2 = 0;
             disc3 = 0;
         }
         else {
             if (disc2 == 0 || disc2 == 100) {
-                formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(true);
-                formContext.getAttribute(_self.formModel.fields.res_discountpercent3).setValue(null);
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+                formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
                 disc3 = 0;
             }
             else {
-                formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(false);
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(false);
             }
-            formContext.getControl(_self.formModel.fields.res_discountpercent2).setDisabled(false);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
         }
         //----------------------
 
         let baseAmount = data.importo != undefined ? data.importo : formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
         let vatRate = data.aliquota != undefined ? data.aliquota : formContext.getAttribute(_self.formModel.fields.res_vatrate).getValue();
-        let totDiscount = _self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]);
 
-
-        formContext.getControl(_self.formModel.fields.res_discountpercent1).clearNotification();
-        formContext.getControl(_self.formModel.fields.res_discountpercent2).clearNotification();
-        formContext.getControl(_self.formModel.fields.res_discountpercent3).clearNotification();
+        formContext.getControl(_self.formModel.fields.res_discountpercentage1).clearNotification();
+        formContext.getControl(_self.formModel.fields.res_discountpercentage2).clearNotification();
+        formContext.getControl(_self.formModel.fields.res_discountpercentage3).clearNotification();
 
         formContext.getAttribute(_self.formModel.fields.manualdiscountamount).setValue(_self.getManualDiscountAmount(baseAmount, [disc1, disc2, disc3]));
 
