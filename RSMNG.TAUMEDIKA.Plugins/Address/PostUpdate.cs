@@ -24,40 +24,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+            Entity postImage = target.GetPostImage(preImage);
 
-            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
+            #region Gestione Indirizzo Default
+            PluginRegion = "Gestione Indirizzo Default";
+
+            postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
+            target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+
+            if (isDefault)
             {
-                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-                Entity postImage = target.GetPostImage(preImage);
+                Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
 
-                #region Gestione Indirizzo Default
-                PluginRegion = "Gestione Indirizzo Default";
-
-                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
-                target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
-
-                if (isDefault)
+                if (customerId != Guid.Empty)
                 {
-                    Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
+                    //controllo se c'è già un indirizzo di default
+                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
 
-                    if (customerId != Guid.Empty)
+                    //se c'è
+                    if (addresses.Entities.Count > 0)
                     {
-                        //controllo se c'è già un indirizzo di default
-                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
-
-                        //se c'è
-                        if (addresses.Entities.Count > 0)
+                        foreach (var duplicate in addresses.Entities)
                         {
-                            foreach (var duplicate in addresses.Entities)
-                            {
-                                duplicate[res_address.res_isdefault] = false;
-                                crmServiceProvider.Service.Update(duplicate);
-                            }
+                            duplicate[res_address.res_isdefault] = false;
+                            crmServiceProvider.Service.Update(duplicate);
                         }
                     }
                 }
-                #endregion
             }
+            #endregion
         }
     }
 }
