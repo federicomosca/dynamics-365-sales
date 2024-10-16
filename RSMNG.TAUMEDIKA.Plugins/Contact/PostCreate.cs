@@ -52,10 +52,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
 
                 //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
 
                 //se non trovo nemmeno un indirizzo
-                if (defaultAddress == null)
+                if (defaultAddressesCollection.Entities.Count < 0)
                 {
                     Trace("Check", "Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 

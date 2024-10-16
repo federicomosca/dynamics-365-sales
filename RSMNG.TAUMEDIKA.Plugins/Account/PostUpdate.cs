@@ -60,10 +60,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     if (isAddressUpdated)
                     {
                         //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                        Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                        EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
 
                         //se non trovo nemmeno un indirizzo
-                        if (defaultAddress == null)
+                        if (defaultAddressesCollection.Entities.Count < 0)
                         {
                             //recupero Indirizzo, Città e CAP
                             target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
@@ -98,6 +98,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                             target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
                             target.TryGetAttributeValue<string>(account.res_location, out string località);
                             target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
+
+                            Entity defaultAddress = defaultAddressesCollection.Entities[0];
 
                             defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
                             defaultAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);

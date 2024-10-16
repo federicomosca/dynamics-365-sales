@@ -22,7 +22,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             };
 
         //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
-        public static Entity GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
+        public static EntityCollection GetDefaultAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
             void Trace(string key, object value)
             {
@@ -38,9 +38,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 }
             }
 
-            Trace("Check", "Sono nella funzione GetDefaultAddress"); /** <------------< TRACE >------------ */
+            Trace("Check", "Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
 
-            var fetchDefaultAddress = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchDefaultAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
                               <entity name=""{res_address.logicalName}"">
                                 <filter type=""and"">
@@ -51,16 +51,11 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                 </filter>
                               </entity>
                             </fetch>";
-            Trace("fetchDefaultAddress", fetchDefaultAddress);
+            Trace("fetchDefaultAddresses", fetchDefaultAddresses);
 
-            EntityCollection defaultAddressCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddress));
-
-            if (defaultAddressCollection.Entities.Count > 0)
-            {
-                return defaultAddressCollection.Entities[0];
-            }
-            return null;
+            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
         }
+
         public static void CreateNewDefaultAddress(Entity target, CrmServiceProvider crmServiceProvider,
             string indirizzo,
             string città,
