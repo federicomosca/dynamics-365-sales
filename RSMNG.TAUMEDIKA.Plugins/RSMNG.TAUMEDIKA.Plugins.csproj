@@ -123,6 +123,8 @@
     <Compile Include="DataIntegration\MultipleDistribution.cs" />
     <Compile Include="PriceLevel\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreCreate.cs" />
+    <Compile Include="Product\PreCreate.cs" />
+    <Compile Include="Product\PreUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuoteDetail\PostDelete.cs" />
     <Compile Include="QuoteDetail\PostUpdate.cs" />
