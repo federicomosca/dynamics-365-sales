@@ -41,12 +41,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            #region Controllo campo Indirizzo scheda cliente
+            #region Controllo campo Indirizzo scheda cliente [DISABLED]
             //PluginRegion = "Controllo campo Indirizzo scheda cliente";
 
             //target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddressModified);
 
-            
+
 
             //if (isCustomerAddressModified)
             //{
@@ -56,16 +56,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             //}
             #endregion
 
-            #region Controllo campo Nome
-            PluginRegion = "Controllo campo Nome";
+            #region Controllo campo Nome [DISABLED]
+            //PluginRegion = "Controllo campo Nome";
 
-            target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
-            if (nome != null)
-            {
-                Trace("Check", "Il campo Nome è stato modificato"); /** <------------< TRACE >------------ */
+            //target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
+            //if (nome != null)
+            //{
+            //    Trace("Check", "Il campo Nome è stato modificato"); /** <------------< TRACE >------------ */
+            //    Trace("nome", nome); /** <------------< TRACE >------------ */
 
-                throw new ApplicationException("Il campo nome non è modificabile dall'utente");
-            }
+            //    throw new ApplicationException("Il campo nome non è modificabile dall'utente");
+            //}
             #endregion
 
             #region Controllo Indirizzo scheda cliente
