@@ -27,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = false;
+                bool isTraceActive = true;
                 {
                     if (isTraceActive)
                     {
@@ -52,7 +52,6 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                               </entity>
                             </fetch>";
             Trace("fetchDefaultAddresses", fetchDefaultAddresses);
-
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
         }
 
