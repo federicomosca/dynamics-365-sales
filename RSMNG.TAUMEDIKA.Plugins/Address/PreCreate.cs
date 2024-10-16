@@ -89,15 +89,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
                 if (customerId != Guid.Empty)
                 {
-                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
+                    Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, customerId);
 
-                    if (addresses.Entities.Count > 0)
+                    if (defaultAddress != null)
                     {
-                        foreach (var duplicate in addresses.Entities)
-                        {
-                            duplicate[res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(duplicate);
-                        }
+                        defaultAddress[res_address.res_isdefault] = false;
+                        crmServiceProvider.Service.Update(defaultAddress);
                     }
                 }
             }

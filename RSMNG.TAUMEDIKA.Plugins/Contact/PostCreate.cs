@@ -50,11 +50,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             {
                 Trace("Check", "Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
 
-                //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                EntityCollection defaultAddressCollection = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                ////recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                //EntityCollection defaultAddressCollection = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
 
                 //se non trovo nemmeno un indirizzo
-                if (defaultAddressCollection.Entities.Count < 0)
+                Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                if (defaultAddress == null)
                 {
                     Trace("Check", "Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 

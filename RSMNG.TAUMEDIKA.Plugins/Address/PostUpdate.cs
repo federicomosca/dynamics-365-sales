@@ -54,18 +54,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 if (customerId != Guid.Empty)
                 {
                     //controllo se c'è già un indirizzo di default
-                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
+                    Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, customerId);
 
                     //se c'è
-                    if (addresses.Entities.Count > 0)
+                    if (defaultAddress != null)
                     {
                         Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
-                        foreach (var duplicate in addresses.Entities)
-                        {
-                            duplicate[res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(duplicate);
-                        }
+                        defaultAddress[res_address.res_isdefault] = false;
+                        crmServiceProvider.Service.Update(defaultAddress);
                     }
                 }
             }
