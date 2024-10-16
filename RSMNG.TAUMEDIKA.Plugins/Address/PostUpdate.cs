@@ -57,7 +57,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     Entity defaultAddress = Utility.GetDefaultAddress(crmServiceProvider, customerId);
 
                     //se c'è
-                    if (defaultAddress == null)
+                    if (defaultAddress != null)
                     {
                         Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
