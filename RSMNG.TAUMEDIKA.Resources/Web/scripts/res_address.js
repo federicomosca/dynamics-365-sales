@@ -58,10 +58,20 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
     _self.isCustomerAddress = executionContext => {
         const formContext = executionContext.getFormContext();
 
+        const {
+            avvisoIndirizzoSchedaCliente = "Per poter modificare l'indirizzo aggiornare i dati direttamente nella scheda del cliente",
+            notificationLevel = "INFO",
+            notificationUniqueId = "01"
+        } = {};
+
+        formContext.ui.clearFormNotification(notificationUniqueId);
+
         const isCustomerAddressAttribute = formContext.getAttribute(_self.formModel.fields.res_iscustomeraddress);
         const isCustomerAddress = isCustomerAddressAttribute ? isCustomerAddressAttribute.getValue() : null;
 
         if (isCustomerAddress) {
+            formContext.ui.setFormNotification(avvisoIndirizzoSchedaCliente, notificationLevel, notificationUniqueId);
+
             Object.values(_self.formModel.fields).forEach(field => {
                 const control = formContext.getControl(_self.formModel.fields[field]);
 
