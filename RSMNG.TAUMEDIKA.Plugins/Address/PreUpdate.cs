@@ -27,10 +27,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+            #region Controllo campo Indirizzo scheda cliente
+            PluginRegion = "Controllo campo Indirizzo scheda cliente";
+
+            target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddressModified);
+            if (isCustomerAddressModified) throw new ApplicationException("Il campo Indirizzo scheda cliente non è modificabile dall'utente");
+            #endregion
+
+            #region Controllo campo Nome
+            PluginRegion = "Controllo campo Nome";
+
+            target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
+            if (nome != null) throw new ApplicationException("Il campo nome non è modificabile dall'utente");
+            #endregion
+
             #region Controllo Indirizzo scheda cliente
             PluginRegion = "Controllo Indirizzo scheda cliente";
 
-            postImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+            preImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
 
             //se è un indirizzo scheda cliente
             if (isCustomerAddress)
@@ -49,19 +63,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
                 foreach (string campoModificato in campiSchedaCliente)
                 {
-                    if (target.Contains(campoModificato))
-                    {
+                    if (target.Contains(campoModificato) && target.GetAttributeValue<object>(campoModificato) != null)
                         throw new ApplicationException("I record con il campo Indirizzo scheda cliente = SI non sono modificabili a eccezione del campo Default");
-                    }
                 }
             }
-            #endregion
-
-            #region Controllo campo Nome
-            PluginRegion = "Controllo campo Nome";
-
-            target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
-            if (nome != null) throw new ApplicationException("Il campo nome non è modificabile dall'utente");
             #endregion
 
             #region Controllo campi obbligatori
