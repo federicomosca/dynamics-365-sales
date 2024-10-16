@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
+using RSMNG.Plugins;
 using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                     #endregion
 
                     #region Definisco dei dati a seconda dell'azione di integrazione che sto affrontando
-                    if (integrationAction== (int)res_dataintegration.res_integrationactionValues.Articoli)
+                    if (integrationAction == (int)res_dataintegration.res_integrationactionValues.Articoli)
                     {
                         #region recupero il listino prezzi predefinito
                         erPriceLevelERP = Shared.PriceLevel.Utility.GetPriceLevelERP(crmServiceProvider.Service);
@@ -289,14 +290,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     Entity eDocumentReceiptUpt = new Entity(res_document.logicalName, idx_DocumentReceipt);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importReceiptDanea.TipoDoc.Value));
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customerid, importReceiptDanea.Cliente != null ? new EntityReference(importReceiptDanea.Cliente.Entity, importReceiptDanea.Cliente.Id) : null);
+                                    string formattedData = string.Empty;
                                     if (importReceiptDanea.Data != null)
                                     {
                                         eDocumentReceiptUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importReceiptDanea.Data));
+                                        DateTime parsedDate = DateTime.ParseExact(importReceiptDanea.Data, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                                        formattedData = parsedDate.ToString("dd/MM/yyyy");
                                     }
                                     else
                                     {
                                         eDocumentReceiptUpt.Attributes.Add(res_document.res_date, null);
                                     }
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_nome, $"{importReceiptDanea.CodCliente}{(importReceiptDanea.Cliente != null ? $" - {importReceiptDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importReceiptDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documentnumber, importReceiptDanea.NDoc);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documentyear, importReceiptDanea.Anno);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
@@ -375,14 +380,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     Entity eDocumentInvoiceUpt = new Entity(res_document.logicalName, idx_DocumentInvoice);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documenttypecode, new OptionSetValue((int)importInvoiceDanea.TipoDoc.Value));
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_customerid, importInvoiceDanea.Cliente != null ? new EntityReference(importInvoiceDanea.Cliente.Entity, importInvoiceDanea.Cliente.Id) : null);
+                                    string formattedData = string.Empty;
                                     if (importInvoiceDanea.Data != null)
                                     {
                                         eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, Convert.ToDateTime(importInvoiceDanea.Data));
+                                        DateTime parsedDate = DateTime.ParseExact(importInvoiceDanea.Data, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                                        formattedData = parsedDate.ToString("dd/MM/yyyy");
                                     }
                                     else
                                     {
                                         eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, null);
                                     }
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_nome, $"{importInvoiceDanea.CodCliente}{(importInvoiceDanea.Cliente != null ? $" - {importInvoiceDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importInvoiceDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentnumber, importInvoiceDanea.NDoc);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentyear, importInvoiceDanea.Anno);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_customernumber, importInvoiceDanea.CodCliente);

@@ -111,11 +111,13 @@
     <Compile Include="ExportCustomers.cs" />
     <Compile Include="ExportSalesOrders.cs" />
     <Compile Include="ImportInvoices.cs" />
+    <Compile Include="ImportPayments.cs" />
     <Compile Include="ImportProducts.cs" />
     <Compile Include="ImportReceipts.cs" />
     <Compile Include="Model\exportcustomersparameter.cs" />
     <Compile Include="Model\exportsalesordersparameter.cs" />
     <Compile Include="Model\importinvoicesparameter.cs" />
+    <Compile Include="Model\importpaymentsparameter.cs" />
     <Compile Include="Model\importproductsparameter.cs" />
     <Compile Include="Model\importreceiptsparameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
