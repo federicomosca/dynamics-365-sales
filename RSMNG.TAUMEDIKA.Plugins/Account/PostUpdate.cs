@@ -37,25 +37,44 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     #region Creazione/aggiornamento indirizzo di default
                     PluginRegion = "Creazione/aggiornamento indirizzo di default";
 
-                    //recupero Indirizzo, Città e CAP
-                    target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
-                    target.TryGetAttributeValue<string>(account.address1_city, out string città);
-                    target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+                    List<string> campiIndirizzo = new List<string>{
+                        contact.address1_name,
+                        contact.address1_city,
+                        contact.address1_postalcode,
+                        contact.address1_stateorprovince,
+                        contact.res_location,
+                        contact.res_countryid
+                    };
 
-                    //se uno dei tre è stato modificato...
-                    if (!string.IsNullOrEmpty(indirizzo) || !string.IsNullOrEmpty(città) || !string.IsNullOrEmpty(CAP))
+                    bool isAddressUpdated = false;
+                    foreach(string campoModificato in campiIndirizzo)
                     {
-                        //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
-                        target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
-                        target.TryGetAttributeValue<string>(account.res_location, out string località);
-                        target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
+                        if (target.Contains(campoModificato))
+                        {
+                            isAddressUpdated = true;
+                            break;
+                        }
+                    }
 
+                    //se almeno uno dei valori è stato modificato...
+                    if (isAddressUpdated)
+                    {
                         //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
                         EntityCollection defaultAddressCollection = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
 
                         //se non trovo nemmeno un indirizzo
                         if (defaultAddressCollection.Entities.Count < 0)
                         {
+                            //recupero Indirizzo, Città e CAP
+                            target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
+                            target.TryGetAttributeValue<string>(account.address1_city, out string città);
+                            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+
+                            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
+                            target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
+                            target.TryGetAttributeValue<string>(account.res_location, out string località);
+                            target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
+
                             //creo il nuovo indirizzo di default
                             Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
                                 !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_name),
@@ -69,6 +88,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         else
                         {
                             //se l'indirizzo di default già esiste lo aggiorno
+
+                            //recupero Indirizzo, Città e CAP
+                            target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
+                            target.TryGetAttributeValue<string>(account.address1_city, out string città);
+                            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+
+                            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
+                            target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
+                            target.TryGetAttributeValue<string>(account.res_location, out string località);
+                            target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
 
                             Entity defaultAddress = defaultAddressCollection.Entities[0];
 
