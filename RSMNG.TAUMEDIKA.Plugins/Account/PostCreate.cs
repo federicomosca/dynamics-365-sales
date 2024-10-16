@@ -41,7 +41,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             PluginRegion = "Creo indirizzo di default";
 
             //recupero Indirizzo, Città e CAP
-            target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
+            target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
             target.TryGetAttributeValue<string>(account.address1_city, out string città);
             target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
 
