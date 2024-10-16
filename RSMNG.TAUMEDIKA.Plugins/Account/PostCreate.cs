@@ -27,9 +27,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             PluginRegion = "Creo indirizzo di default";
 
             //recupero Indirizzo, Città e CAP
-            target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
-            target.TryGetAttributeValue<string>(contact.address1_city, out string città);
-            target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
+            target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
+            target.TryGetAttributeValue<string>(account.address1_city, out string città);
+            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
 
             //se sono stati valorizzati tutti e 3...
             if (!string.IsNullOrEmpty(indirizzo) && !string.IsNullOrEmpty(città) && !string.IsNullOrEmpty(CAP))
@@ -41,14 +41,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 if (defaultAddressCollection.Entities.Count < 0)
                 {
                     //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
-                    target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
-                    target.TryGetAttributeValue<string>(contact.res_location, out string località);
-                    target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
+                    target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
+                    target.TryGetAttributeValue<string>(account.res_location, out string località);
+                    target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
 
                     //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
                     Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, indirizzo, città, CAP, provincia, località, nazione);
                 }
             }
+            else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");
             #endregion
         }
     }

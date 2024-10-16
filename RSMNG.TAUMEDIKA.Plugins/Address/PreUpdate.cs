@@ -32,6 +32,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
                 postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
 
+                #region Controllo Indirizzo Scheda Cliente
+                PluginRegion = "Controllo Indirizzo Scheda Cliente";
+
+                target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+                if (isCustomerAddress)
+                {
+                    throw new ApplicationException("Gli indirizzi col campo Indirizzo Scheda Cliente = SI non sono modificabili");
+                }
+                #endregion
+
                 #region Controllo campi obbligatori
                 PluginRegion = "Controllo campi obbligatori";
                 crmServiceProvider.VerifyMandatoryField(Utility.mandatoryFields);
@@ -73,13 +83,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
                 if (isDefault)
-                {  //controllo se c'è già un indirizzo di default
+                {
                     Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
 
                     if (customerId != Guid.Empty)
                     {
+                        //controllo se c'è già un indirizzo di default
                         EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
 
+                        //se c'è
                         if (addresses.Entities.Count > 0)
                         {
                             foreach (var duplicate in addresses.Entities)
