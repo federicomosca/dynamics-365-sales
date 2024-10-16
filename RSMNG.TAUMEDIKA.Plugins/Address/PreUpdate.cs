@@ -110,6 +110,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             #region Genera nome
             PluginRegion = "Genera nome";
+
             if (target.Contains(res_address.res_customerid) || target.Contains(res_address.res_city) || target.Contains(res_address.res_addressField))
             {
 
