@@ -24,6 +24,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            void Trace(string key, object value)
+            {
+                //TRACE TOGGLE
+                bool isTraceActive = true;
+                {
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
+                }
+            }
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Valorizzo il campo Categoria principale
@@ -34,11 +48,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
 
             if (originCode == dynamics)
             {
+                Trace("originCode", originCode);
                 target.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erParentProduct);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
                 if (erParentProduct != null)
                 {
+                    Trace("erParentProduct", erParentProduct);
                     target[product.res_parentcategoryid] = erParentProduct;
                 }
             }
