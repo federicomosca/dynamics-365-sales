@@ -70,7 +70,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                         target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
 
                         //creo il nuovo indirizzo di default
-                        Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
+                        Utility.CreateNewDefaultAddress(target, crmServiceProvider,
                             !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name),
                             !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city),
                             !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode),
