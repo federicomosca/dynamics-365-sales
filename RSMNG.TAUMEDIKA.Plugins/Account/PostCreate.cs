@@ -24,7 +24,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = true;
+                bool isTraceActive = false;
                 {
                     if (isTraceActive)
                     {

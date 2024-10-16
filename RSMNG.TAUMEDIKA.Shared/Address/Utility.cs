@@ -27,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = true;
+                bool isTraceActive = false;
                 {
                     if (isTraceActive)
                     {
@@ -72,7 +72,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = true;
+                bool isTraceActive = false;
                 {
                     if (isTraceActive)
                     {
