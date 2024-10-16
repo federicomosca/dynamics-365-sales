@@ -37,7 +37,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
                     }
                 }
             }
-
+            Trace("Check", "Trace attivo.");
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Valorizzo il campo Categoria principale
