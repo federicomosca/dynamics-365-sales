@@ -30,12 +30,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
                 Entity postImage = target.GetPostImage(preImage);
 
-                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
-
                 #region Controllo Indirizzo Scheda Cliente
                 PluginRegion = "Controllo Indirizzo Scheda Cliente";
 
-                target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+                postImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
                 if (isCustomerAddress)
                 {
                     throw new ApplicationException("Gli indirizzi col campo Indirizzo Scheda Cliente = SI non sono modificabili");
@@ -54,6 +52,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 string customerName = string.Empty;
                 string addressCity = string.Empty;
                 string addressStreet = string.Empty;
+
+                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
 
                 if (erCustomer != null)
                 {
@@ -75,33 +75,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 addressName = $"{customerName} - {addressCity} - {addressStreet}";
 
                 target[DataModel.res_address.res_name] = addressName;
-                #endregion
-
-                #region Gestione Indirizzo Default
-                PluginRegion = "Gestione Indirizzo Default";
-
-                target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
-
-                if (isDefault)
-                {
-                    Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
-
-                    if (customerId != Guid.Empty)
-                    {
-                        //controllo se c'è già un indirizzo di default
-                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
-
-                        //se c'è
-                        if (addresses.Entities.Count > 0)
-                        {
-                            foreach (var duplicate in addresses.Entities)
-                            {
-                                duplicate[res_address.res_isdefault] = false;
-                                crmServiceProvider.Service.Update(duplicate);
-                            }
-                        }
-                    }
-                }
                 #endregion
             }
         }

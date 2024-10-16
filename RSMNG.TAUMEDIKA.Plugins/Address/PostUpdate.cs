@@ -1,0 +1,64 @@
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.DataModel;
+using RSMNG.TAUMEDIKA.Shared.Address;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RSMNG.TAUMEDIKA.Plugins.Address
+{
+    public class PostUpdate : RSMNG.BaseClass
+    {
+        public PostUpdate(string unsecureConfig, string secureConfig) : base(unsecureConfig, secureConfig)
+        {
+            PluginStage = Stage.POST;
+            PluginMessage = "Update";
+            PluginPrimaryEntityName = DataModel.res_address.logicalName;
+            PluginRegion = "";
+            PluginActiveTrace = false;
+        }
+        public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
+        {
+            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+
+            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
+            {
+                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+                Entity postImage = target.GetPostImage(preImage);
+
+                #region Gestione Indirizzo Default
+                PluginRegion = "Gestione Indirizzo Default";
+
+                postImage.TryGetAttributeValue<EntityReference>(DataModel.res_address.res_customerid, out EntityReference erCustomer);
+                target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+
+                if (isDefault)
+                {
+                    Guid customerId = erCustomer != null ? erCustomer.Id : Guid.Empty;
+
+                    if (customerId != Guid.Empty)
+                    {
+                        //controllo se c'è già un indirizzo di default
+                        EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, customerId);
+
+                        //se c'è
+                        if (addresses.Entities.Count > 0)
+                        {
+                            foreach (var duplicate in addresses.Entities)
+                            {
+                                duplicate[res_address.res_isdefault] = false;
+                                crmServiceProvider.Service.Update(duplicate);
+                            }
+                        }
+                    }
+                }
+                #endregion
+            }
+        }
+    }
+}
+
