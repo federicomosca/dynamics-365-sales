@@ -26,7 +26,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = false;
+                bool isTraceActive = true;
                 {
                     if (isTraceActive)
                     {
@@ -61,11 +61,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     {
                         Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
-                        foreach(Entity duplicate in defaultAddressesCollection.Entities)
+                        foreach (Entity duplicate in defaultAddressesCollection.Entities)
                         {
-                        duplicate[res_address.res_isdefault] = false;
-                        duplicate[res_address.res_iscustomeraddress] = false;
-                        crmServiceProvider.Service.Update(duplicate);
+                            Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
+                            duplicate[res_address.res_isdefault] = false;
+                            duplicate[res_address.res_iscustomeraddress] = false;
+                            crmServiceProvider.Service.Update(duplicate);
                         }
                     }
                 }
