@@ -70,6 +70,8 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
                     else { control.setDisabled(true); }
                 }
             });
+
+            formContext.getControl("WebResource_postalcode").setVisible(false);
         }
     };
     //---------------------------------------------------
