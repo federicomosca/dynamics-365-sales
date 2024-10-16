@@ -42,15 +42,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity postImage = target.GetPostImage(preImage);
 
             #region Controllo campo Indirizzo scheda cliente
-            PluginRegion = "Controllo campo Indirizzo scheda cliente";
+            //PluginRegion = "Controllo campo Indirizzo scheda cliente";
 
-            target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddressModified);
-            if (isCustomerAddressModified)
-            {
-                Trace("Check", "Il campo Indirizzo scheda cliente è stato modificato"); /** <------------< TRACE >------------ */
+            //target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddressModified);
 
-                throw new ApplicationException("Il campo Indirizzo scheda cliente non è modificabile dall'utente");
-            }
+            
+
+            //if (isCustomerAddressModified)
+            //{
+            //    Trace("Check", "Il campo Indirizzo scheda cliente è stato modificato"); /** <------------< TRACE >------------ */
+
+            //    throw new ApplicationException("Il campo Indirizzo scheda cliente non è modificabile dall'utente");
+            //}
             #endregion
 
             #region Controllo campo Nome
