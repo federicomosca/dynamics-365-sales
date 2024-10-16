@@ -42,6 +42,8 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_paymentreference: "res_paymentreference",
 	///Scadenziario Pagamenti
 	res_paymentscheduleid: "res_paymentscheduleid",
+	///Data registrazione
+	res_registrationdate: "res_registrationdate",
 	///Data sollecito
 	res_reminderdate: "res_reminderdate",
 	///Descrizione sollecito

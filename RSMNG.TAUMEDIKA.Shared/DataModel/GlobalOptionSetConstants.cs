@@ -862,6 +862,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			ContactLeads = 22,
 			Contatto = 2,
 			Contattodiritto = 7272,
+			Copilotknowledgeinteraction = 11214,
 			CronologiadeidatideldispositivoIoT = 10412,
 			CronologiadiregistrazionedispositivoIoT = 10414,
 			DefinizionedeicomandideldispositivoIoT = 10411,
@@ -1459,6 +1460,15 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
+		/// Tag raccolta informazioni constants.
+		/// </summary>
+		public enum msdyn_harvestingtagValues
+		{
+			Nonobbligatoria = 192350000,
+			Raccoltainformazionisoluzione = 192350001
+		}
+
+		/// <summary>
 		/// Stato modello constants.
 		/// </summary>
 		public enum msdyn_iermlmodelstatusValues
@@ -1489,6 +1499,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public enum msdyn_importconfigtypeValues
 		{
 			Conversazione = 617690000
+		}
+
+		/// <summary>
+		/// intent_source constants.
+		/// </summary>
+		public enum msdyn_intent_sourceValues
+		{
+			Esecuzionedati = 192350000,
+			Modificatamanualmente = 192350002,
+			Simulazione = 192350001
 		}
 
 		/// <summary>
@@ -1759,6 +1779,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			ConversationExpired = 192350038,
 			CustomerDisconnect = 192350014,
 			CustomerEndConversation = 192350029,
+			CustomerReconnect = 192350049,
 			CustomerRejoin = 192350028,
 			CustomerTimeout = 192350013,
 			Disconnetti = 192350021,
@@ -2231,6 +2252,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Molti = 387300001,
 			Una = 387300000
+		}
+
+		/// <summary>
+		/// reviewstate constants.
+		/// </summary>
+		public enum msdyn_reviewstateValues
+		{
+			Approvata = 192350001,
+			Ignorato = 192350002,
+			Insospeso = 192350000
 		}
 
 		/// <summary>

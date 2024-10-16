@@ -37,7 +37,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ImportPayments
     public class Field
     {
         public string name { get; set; }
-        public string name_invoice { get; set; }
+        public string name_payment { get; set; }
         public int position { get; set; }
     }
 }

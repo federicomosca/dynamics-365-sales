@@ -690,6 +690,7 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			ContactLeads: 22,
 			Contatto: 2,
 			Contattodiritto: 7272,
+			Copilotknowledgeinteraction: 11214,
 			CronologiadeidatideldispositivoIoT: 10412,
 			CronologiadiregistrazionedispositivoIoT: 10414,
 			DefinizionedeicomandideldispositivoIoT: 10411,
@@ -1160,6 +1161,12 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			Nonspecificato: 192350000
 		},
 
+		/// Tag raccolta informazioni constants.
+		msdyn_harvestingtagValues: {
+			Nonobbligatoria: 192350000,
+			Raccoltainformazionisoluzione: 192350001
+		},
+
 		/// Stato modello constants.
 		msdyn_iermlmodelstatusValues: {
 			Bozza: 100000000,
@@ -1182,6 +1189,13 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 		/// Tipo di configurazione caricamento dati constants.
 		msdyn_importconfigtypeValues: {
 			Conversazione: 617690000
+		},
+
+		/// intent_source constants.
+		msdyn_intent_sourceValues: {
+			Esecuzionedati: 192350000,
+			Modificatamanualmente: 192350002,
+			Simulazione: 192350001
 		},
 
 		/// Stato invito constants.
@@ -1383,6 +1397,7 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 			ConversationExpired: 192350038,
 			CustomerDisconnect: 192350014,
 			CustomerEndConversation: 192350029,
+			CustomerReconnect: 192350049,
 			CustomerRejoin: 192350028,
 			CustomerTimeout: 192350013,
 			Disconnetti: 192350021,
@@ -1774,6 +1789,13 @@ RSMNG.TAUMEDIKA.DataModel.GlobalPickListConstants = new function () {
 		msdyn_relationship_cardinalityValues: {
 			Molti: 387300001,
 			Una: 387300000
+		},
+
+		/// reviewstate constants.
+		msdyn_reviewstateValues: {
+			Approvata: 192350001,
+			Ignorato: 192350002,
+			Insospeso: 192350000
 		},
 
 		/// Stato approvazione constants.

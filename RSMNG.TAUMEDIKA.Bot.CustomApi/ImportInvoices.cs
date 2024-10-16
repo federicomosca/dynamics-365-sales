@@ -402,7 +402,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             #region Popolo il parametro di output file
                             PluginRegion = "Popolo il parametro di output";
                             outResult = "OK";
-                            outMessage = "Importazione delle Fattire avviata (in fase di validazione)";
+                            outMessage = "Importazione delle Fatture avviata (in fase di validazione)";
                             #endregion
                         }
                     }

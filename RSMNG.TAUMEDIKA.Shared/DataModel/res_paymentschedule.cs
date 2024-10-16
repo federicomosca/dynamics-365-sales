@@ -152,6 +152,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_paymentscheduleid => "res_paymentscheduleid";
 
 		/// <summary>
+		/// Display Name: Data registrazione,
+		/// Type: DateTime,
+		/// Description: 
+		/// </summary>
+		public static string res_registrationdate => "res_registrationdate";
+
+		/// <summary>
 		/// Display Name: Data sollecito,
 		/// Type: DateTime,
 		/// Description: 
