@@ -27,14 +27,41 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            #region Controllo Indirizzo Scheda Cliente
-            PluginRegion = "Controllo Indirizzo Scheda Cliente";
+            #region Controllo Indirizzo scheda cliente
+            PluginRegion = "Controllo Indirizzo scheda cliente";
 
             postImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+
+            //campi non modificabili se Indirizzo scheda cliente = SI
+            List<string> campiSchedaCliente = new List<string>
+            {
+                res_address.res_customerid,
+                res_address.res_addressField,
+                res_address.res_postalcode,
+                res_address.res_city,
+                res_address.res_province,
+                res_address.res_location,
+                res_address.res_countryid,
+                res_address.res_iscustomeraddress
+            };
+
             if (isCustomerAddress)
             {
-                throw new ApplicationException("Gli indirizzi col campo Indirizzo Scheda Cliente = SI non sono modificabili");
+                foreach (string campoModificato in campiSchedaCliente)
+                {
+                    if (target.Contains(campoModificato))
+                    {
+                        throw new ApplicationException("I record con il campo Indirizzo scheda cliente = SI non sono modificabili a eccezione del campo Default");
+                    }
+                }
             }
+            #endregion
+
+            #region Controllo campo Nome
+            PluginRegion = "Controllo campo Nome";
+
+            target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
+            if (nome != null) throw new ApplicationException("Il campo nome non è modificabile dall'utente");
             #endregion
 
             #region Controllo campi obbligatori
