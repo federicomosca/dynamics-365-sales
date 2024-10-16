@@ -69,38 +69,38 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             //}
             #endregion
 
-            #region Controllo Indirizzo scheda cliente
-            PluginRegion = "Controllo Indirizzo scheda cliente";
+            #region Controllo Indirizzo scheda cliente [DISABLED]
+            //PluginRegion = "Controllo Indirizzo scheda cliente";
 
-            preImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+            //preImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
 
-            //se è un indirizzo scheda cliente
-            if (isCustomerAddress)
-            {
-                Trace("Check", "È un indirizzo scheda cliente"); /** <------------< TRACE >------------ */
+            ////se è un indirizzo scheda cliente
+            //if (isCustomerAddress)
+            //{
+            //    Trace("Check", "È un indirizzo scheda cliente"); /** <------------< TRACE >------------ */
 
-                //campi non modificabili dall'utente se Indirizzo scheda cliente = SI
-                List<string> campiSchedaCliente = new List<string>
-            {
-                res_address.res_customerid,
-                res_address.res_addressField,
-                res_address.res_postalcode,
-                res_address.res_city,
-                res_address.res_province,
-                res_address.res_location,
-                res_address.res_countryid,
-            };
+            //    //campi non modificabili dall'utente se Indirizzo scheda cliente = SI
+            //    List<string> campiSchedaCliente = new List<string>
+            //{
+            //    res_address.res_customerid,
+            //    res_address.res_addressField,
+            //    res_address.res_postalcode,
+            //    res_address.res_city,
+            //    res_address.res_province,
+            //    res_address.res_location,
+            //    res_address.res_countryid,
+            //};
 
-                foreach (string campoModificato in campiSchedaCliente)
-                {
-                    if (target.Contains(campoModificato) && target.GetAttributeValue<object>(campoModificato) != null)
-                    {
-                        Trace("Check", "È stato modificato un campo scheda cliente"); /** <------------< TRACE >------------ */
+            //    foreach (string campoModificato in campiSchedaCliente)
+            //    {
+            //        if (target.Contains(campoModificato) && target.GetAttributeValue<object>(campoModificato) != null)
+            //        {
+            //            Trace("Check", "È stato modificato un campo scheda cliente"); /** <------------< TRACE >------------ */
 
-                        throw new ApplicationException("I record con il campo Indirizzo scheda cliente = SI non sono modificabili a eccezione del campo Default");
-                    }
-                }
-            }
+            //            throw new ApplicationException("I record con il campo Indirizzo scheda cliente = SI non sono modificabili a eccezione del campo Default");
+            //        }
+            //    }
+            //}
             #endregion
 
             #region Controllo campi obbligatori
