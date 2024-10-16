@@ -32,8 +32,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             postImage.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
 
-            //campi non modificabili se Indirizzo scheda cliente = SI
-            List<string> campiSchedaCliente = new List<string>
+            //se è un indirizzo scheda cliente
+            if (isCustomerAddress)
+            {
+                //campi non modificabili dall'utente se Indirizzo scheda cliente = SI
+                List<string> campiSchedaCliente = new List<string>
             {
                 res_address.res_customerid,
                 res_address.res_addressField,
@@ -42,12 +45,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 res_address.res_province,
                 res_address.res_location,
                 res_address.res_countryid,
-                res_address.res_iscustomeraddress
             };
 
-            //se è un indirizzo scheda cliente
-            if (isCustomerAddress)
-            {
                 foreach (string campoModificato in campiSchedaCliente)
                 {
                     if (target.Contains(campoModificato))

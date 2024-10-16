@@ -21,11 +21,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 res_address.res_city
             };
 
-        /**
-        * fetcho gli address legati al customer (contact o account)
-        * se non esiste nessun address, creo un nuovo record address e lo valorizzo con i values passati come argomenti al metodo
-        * metto Default a true
-        */
+        //recupero eventuali indirizzi attivi correlati a un dato cliente con Default = SI
         public static EntityCollection GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString)
         {
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
