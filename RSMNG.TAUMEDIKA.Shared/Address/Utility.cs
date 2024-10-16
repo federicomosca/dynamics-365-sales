@@ -48,7 +48,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             string CAP,
             string provincia = "",
             string località = "",
-            string nazione = "")
+            EntityReference nazione = null)
         {
             Entity enAddress = new Entity(res_address.logicalName);
             enAddress[res_address.res_addressField] = indirizzo;

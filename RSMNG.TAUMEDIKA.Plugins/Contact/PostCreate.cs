@@ -58,7 +58,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
                     target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
                     target.TryGetAttributeValue<string>(contact.res_location, out string località);
-                    target.TryGetAttributeValue<string>(contact.res_countryid, out string nazione);
+                    target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
 
                     //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
                     Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, indirizzo, città, CAP, provincia, località, nazione);
