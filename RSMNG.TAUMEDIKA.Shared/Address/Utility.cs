@@ -22,7 +22,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             };
 
         //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
-        public static Entity GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString)
+        public static Entity GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
             void Trace(string key, object value)
             {
@@ -44,8 +44,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                             <fetch>
                               <entity name=""{res_address.logicalName}"">
                                 <filter type=""and"">
-                                  <condition attribute=""statecode"" operator=""eq"" value=""0"" />
+                                  <condition attribute=""{res_address.statecode}"" operator=""eq"" value=""0"" />
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
+                                  <condition attribute=""{res_address.res_addressid}"" operator=""ne"" value=""{updatedAddressId}"" />
                                   <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
                                   <condition attribute=""{res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
