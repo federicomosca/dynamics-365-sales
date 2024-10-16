@@ -62,6 +62,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                         Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
                         defaultAddress[res_address.res_isdefault] = false;
+                        defaultAddress[res_address.res_iscustomeraddress] = false;
                         crmServiceProvider.Service.Update(defaultAddress);
                     }
                 }

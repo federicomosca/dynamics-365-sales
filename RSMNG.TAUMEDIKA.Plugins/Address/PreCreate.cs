@@ -94,6 +94,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     if (defaultAddress != null)
                     {
                         defaultAddress[res_address.res_isdefault] = false;
+                        defaultAddress[res_address.res_iscustomeraddress] = false;
                         crmServiceProvider.Service.Update(defaultAddress);
                     }
                 }
