@@ -76,34 +76,37 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             #region Genera nome
             PluginRegion = "Genera nome";
-
-            string addressName = string.Empty;
-            string customerName = string.Empty;
-            string addressCity = string.Empty;
-            string addressStreet = string.Empty;
-
-            postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
-
-            if (erCustomer != null)
+            if (target.Contains(res_address.res_customerid) || target.Contains(res_address.res_city) || target.Contains(res_address.res_addressField))
             {
-                if (erCustomer.LogicalName == contact.logicalName)
+
+                string addressName;
+                string customerName = string.Empty;
+                string addressCity;
+                string addressStreet;
+
+                postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
+
+                if (erCustomer != null)
                 {
-                    Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(contact.fullname));
-                    customerName = customer.GetAttributeValue<string>(contact.fullname) ?? string.Empty;
+                    if (erCustomer.LogicalName == contact.logicalName)
+                    {
+                        Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(contact.fullname));
+                        customerName = customer.GetAttributeValue<string>(contact.fullname) ?? string.Empty;
+                    }
+                    if (erCustomer.LogicalName == account.logicalName)
+                    {
+                        Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(account.name));
+                        customerName = customer.GetAttributeValue<string>(account.name) ?? string.Empty;
+                    }
                 }
-                if (erCustomer.LogicalName == account.logicalName)
-                {
-                    Entity customer = crmServiceProvider.Service.Retrieve(erCustomer.LogicalName, erCustomer.Id, new ColumnSet(account.name));
-                    customerName = customer.GetAttributeValue<string>(account.name) ?? string.Empty;
-                }
+
+                addressCity = postImage.GetAttributeValue<string>(res_address.res_city) ?? string.Empty;
+                addressStreet = postImage.GetAttributeValue<string>(res_address.res_addressField) ?? string.Empty;
+
+                addressName = $"{customerName} - {addressCity} - {addressStreet}";
+
+                target[res_address.res_name] = addressName;
             }
-
-            addressStreet = postImage.GetAttributeValue<string>(res_address.res_addressField) ?? string.Empty;
-            addressCity = postImage.GetAttributeValue<string>(res_address.res_city) ?? string.Empty;
-
-            addressName = $"{customerName} - {addressCity} - {addressStreet}";
-
-            target[res_address.res_name] = addressName;
             #endregion
         }
     }
