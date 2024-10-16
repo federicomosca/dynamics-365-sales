@@ -21,6 +21,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            void Trace(string key, object value)
+            {
+                //TRACE TOGGLE
+                bool isTraceActive = true;
+                {
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
+                }
+            }
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Creo indirizzo di default
@@ -46,7 +60,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
 
                     //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
-                    Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, indirizzo, città, CAP, provincia, località, nazione);
+                    Utility.CreateNewDefaultAddress(target, crmServiceProvider, indirizzo, città, CAP, provincia, località, nazione);
                 }
             }
             else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");

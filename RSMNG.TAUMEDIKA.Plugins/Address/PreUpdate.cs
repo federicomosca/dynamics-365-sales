@@ -23,6 +23,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            void Trace(string key, object value)
+            {
+                //TRACE TOGGLE
+                bool isTraceActive = true;
+                {
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
+                }
+            }
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
@@ -31,14 +45,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             PluginRegion = "Controllo campo Indirizzo scheda cliente";
 
             target.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddressModified);
-            if (isCustomerAddressModified) throw new ApplicationException("Il campo Indirizzo scheda cliente non è modificabile dall'utente");
+            if (isCustomerAddressModified)
+            {
+                Trace("Check", "Il campo Indirizzo scheda cliente è stato modificato"); /** <------------< TRACE >------------ */
+
+                throw new ApplicationException("Il campo Indirizzo scheda cliente non è modificabile dall'utente");
+            }
             #endregion
 
             #region Controllo campo Nome
             PluginRegion = "Controllo campo Nome";
 
             target.TryGetAttributeValue<string>(res_address.res_name, out string nome);
-            if (nome != null) throw new ApplicationException("Il campo nome non è modificabile dall'utente");
+            if (nome != null)
+            {
+                Trace("Check", "Il campo Nome è stato modificato"); /** <------------< TRACE >------------ */
+
+                throw new ApplicationException("Il campo nome non è modificabile dall'utente");
+            }
             #endregion
 
             #region Controllo Indirizzo scheda cliente
@@ -49,6 +73,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             //se è un indirizzo scheda cliente
             if (isCustomerAddress)
             {
+                Trace("Check", "È un indirizzo scheda cliente"); /** <------------< TRACE >------------ */
+
                 //campi non modificabili dall'utente se Indirizzo scheda cliente = SI
                 List<string> campiSchedaCliente = new List<string>
             {
@@ -64,7 +90,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 foreach (string campoModificato in campiSchedaCliente)
                 {
                     if (target.Contains(campoModificato) && target.GetAttributeValue<object>(campoModificato) != null)
+                    {
+                        Trace("Check", "È stato modificato un campo scheda cliente"); /** <------------< TRACE >------------ */
+
                         throw new ApplicationException("I record con il campo Indirizzo scheda cliente = SI non sono modificabili a eccezione del campo Default");
+                    }
                 }
             }
             #endregion

@@ -21,7 +21,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 res_address.res_city
             };
 
-        //recupero eventuali indirizzi attivi correlati a un dato cliente con Default = SI
+        //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
         public static EntityCollection GetDefaultAddress(CrmServiceProvider crmServiceProvider, Guid customerIdString)
         {
             var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
@@ -31,13 +31,14 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                   <condition attribute=""statecode"" operator=""eq"" value=""0"" />
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
                                   <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
+                                  <condition attribute=""{res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
                             </fetch>";
 
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAddresses));
         }
-        public static void CreateNewDefaultAddress(Entity target, IOrganizationService service,
+        public static void CreateNewDefaultAddress(Entity target, CrmServiceProvider crmServiceProvider,
             string indirizzo,
             string città,
             string CAP,
@@ -45,6 +46,23 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             string località = "",
             EntityReference nazione = null)
         {
+            void Trace(string key, object value)
+            {
+                //TRACE TOGGLE
+                bool isTraceActive = true;
+                {
+                    if (isTraceActive)
+                    {
+                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
+                        value = value.ToString();
+                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
+                    }
+                }
+            }
+
+            Trace("Check", "Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
+
+
             Entity enAddress = new Entity(res_address.logicalName);
             enAddress[res_address.res_addressField] = indirizzo;
             enAddress[res_address.res_city] = città;
@@ -58,7 +76,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             enAddress[res_address.res_iscustomeraddress] = true;
             enAddress[res_address.res_isdefault] = true;
 
-            service.Create(enAddress);
+            crmServiceProvider.Service.Create(enAddress);
         }
     }
 }
