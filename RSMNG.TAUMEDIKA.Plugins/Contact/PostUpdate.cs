@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
@@ -27,41 +28,38 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
                 Entity postImage = target.GetPostImage(preImage);
 
-                #region Crea indirizzo di default
-                PluginRegion = "Crea indirizzo di default";
+                #region Creo indirizzo di default
+                PluginRegion = "Creo indirizzo di default";
 
-                /**
-                 * se Indirizzo o Città o Cap sono valorizzati
-                 * creo un nuovo indirizzo di default con i nuovi valori
-                 * 
-                 */
-                target.TryGetAttributeValue<string>(DataModel.contact.address1_name, out string address);
-                target.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
-                target.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
+                //recupero Indirizzo, Città e CAP
+                target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
+                target.TryGetAttributeValue<string>(contact.address1_city, out string città);
+                target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
 
-
-                if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(city) || !string.IsNullOrEmpty(postalcode))
+                //se uno dei tre è stato modificato...
+                if (!string.IsNullOrEmpty(indirizzo) || !string.IsNullOrEmpty(città) || !string.IsNullOrEmpty(CAP))
                 {
-                    //controllo se c'è già un indirizzo di default
-                    EntityCollection addresses = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+                    //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                    EntityCollection defaultAddressCollection = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
 
-                    if (addresses.Entities.Count > 0)
+                    //se non trovo nemmeno un indirizzo
+                    if (defaultAddressCollection.Entities.Count < 0)
                     {
-                        foreach (var duplicate in addresses.Entities)
-                        {
-                            duplicate[DataModel.res_address.res_isdefault] = false;
-                            crmServiceProvider.Service.Update(duplicate);
-                        }
-                    }
+                        //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
+                        target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
+                        target.TryGetAttributeValue<string>(contact.res_location, out string località);
+                        target.TryGetAttributeValue<string>(contact.res_countryid, out string nazione);
 
-                    /**
-                     * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
-                     */
-                    Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
-                        address ?? preImage.GetAttributeValue<string>(DataModel.contact.address1_name),
-                        city ?? preImage.GetAttributeValue<string>(DataModel.contact.address1_city),
-                        postalcode ?? preImage.GetAttributeValue<string>(DataModel.contact.address1_postalcode)
-                        );
+                        //creo il nuovo indirizzo di default
+                        Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service,
+                            !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name),
+                            !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_name),
+                            !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_name),
+                            !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_name),
+                            !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.address1_name),
+                            !string.IsNullOrEmpty(nazione) ? nazione : preImage.GetAttributeValue<string>(contact.address1_name)
+                            );
+                    }
                 }
                 #endregion
             }

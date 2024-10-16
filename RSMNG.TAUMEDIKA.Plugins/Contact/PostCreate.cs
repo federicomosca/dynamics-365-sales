@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared.Address;
 using System;
 using System.Collections.Generic;
@@ -37,24 +38,31 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Crea indirizzo di default
-            PluginRegion = "Crea indirizzo di default";
+            #region Creo indirizzo di default
+            PluginRegion = "Creo indirizzo di default";
 
-            /**
-             * controllo che i campi Indirizzo, Città e CAP siano valorizzati
-             * se almeno uno è valorizzato viene creato un nuovo indirizzo con i valori dei suddetti campi 
-             * e viene settato come indirizzo di default
-             */
-            target.TryGetAttributeValue<string>(DataModel.contact.address1_name, out string address);
-            target.TryGetAttributeValue<string>(DataModel.contact.address1_city, out string city);
-            target.TryGetAttributeValue<string>(DataModel.contact.address1_postalcode, out string postalcode);
+            //recupero Indirizzo, Città e CAP
+            target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
+            target.TryGetAttributeValue<string>(contact.address1_city, out string città);
+            target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
 
-            if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(city) && !string.IsNullOrEmpty(postalcode))
+            //se sono stati valorizzati tutti e 3...
+            if (!string.IsNullOrEmpty(indirizzo) && !string.IsNullOrEmpty(città) && !string.IsNullOrEmpty(CAP))
             {
-                /**
-                 * creo il record di Address e lo valorizzo con i values passati al metodo come argomenti
-                 */
-                Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, address, city, postalcode);
+                //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                EntityCollection defaultAddressCollection = Utility.GetDefaultAddress(crmServiceProvider, target.Id);
+
+                //se non trovo nemmeno un indirizzo
+                if (defaultAddressCollection.Entities.Count < 0)
+                {
+                    //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
+                    target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
+                    target.TryGetAttributeValue<string>(contact.res_location, out string località);
+                    target.TryGetAttributeValue<string>(contact.res_countryid, out string nazione);
+
+                    //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
+                    Utility.CreateNewDefaultAddress(target, crmServiceProvider.Service, indirizzo, città, CAP, provincia, località, nazione);
+                }
             }
             #endregion
         }
