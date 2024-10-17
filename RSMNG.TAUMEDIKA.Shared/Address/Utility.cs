@@ -24,21 +24,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
         public static EntityCollection GetDefaultAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = true;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-
-            Trace("Check", "Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
+            crmServiceProvider.TracingService.Trace("Check", "Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
 
             var fetchDefaultAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
@@ -54,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                 </filter>
                               </entity>
                             </fetch>";
-            Trace("fetchDefaultAddresses", fetchDefaultAddresses);
+            crmServiceProvider.TracingService.Trace("fetchDefaultAddresses", fetchDefaultAddresses);
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
         }
 
@@ -66,21 +52,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             string località = "",
             EntityReference nazione = null)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-
-            Trace("Check", "Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
+            crmServiceProvider.TracingService.Trace("Check", "Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
 
 
             Entity enAddress = new Entity(res_address.logicalName);

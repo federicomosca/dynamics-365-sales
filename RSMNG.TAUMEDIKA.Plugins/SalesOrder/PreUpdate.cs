@@ -22,21 +22,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-            #endregion
+            
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -148,7 +134,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             #region Ricalcolo di Totale imponibile, Importo totale, Totale IVA
             PluginRegion = "Ricalcolo di Totale imponibile, Importo totale, Totale IVA";
 
-            Trace("Check", "Ricalcolo di Totale imponibile, Importo totale, Totale IVA");
+            crmServiceProvider.TracingService.Trace("Check", "Ricalcolo di Totale imponibile, Importo totale, Totale IVA");
 
             if (target.Contains(salesorder.totalamountlessfreight) &&
                 target.Contains(salesorder.totaltax) &&
@@ -163,8 +149,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 totaleIva = postImage.GetAttributeValue<Money>(salesorder.totaltax)?.Value ?? 0;
                 totaleProdotti = postImage.GetAttributeValue<Money>(salesorder.totallineitemamount)?.Value ?? 0;
 
-                Trace("totale_prodotti", totaleProdotti);
-                Trace("totale_iva", totaleIva);
+                crmServiceProvider.TracingService.Trace("totale_prodotti", totaleProdotti);
+                crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
 
                 decimal totaleImponibile, importoTotale;
 
@@ -181,7 +167,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                                     </link-entity>
                                   </entity>
                                 </fetch>";
-                Trace("fetch_quote", fetchQuote);
+                crmServiceProvider.TracingService.Trace("fetch_quote", fetchQuote);
                 EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
                 if (quoteCollection.Entities.Count > 0)
@@ -196,8 +182,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
-                    Trace("totale_imponibile", totaleImponibile);
-                    Trace("importo_totale", importoTotale);
+                    crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
+                    crmServiceProvider.TracingService.Trace("importo_totale", importoTotale);
 
                     target[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
                     target[salesorder.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
