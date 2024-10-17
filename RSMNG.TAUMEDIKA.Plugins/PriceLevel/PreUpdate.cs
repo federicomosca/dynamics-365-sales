@@ -25,14 +25,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Controllo univocità DEFAULT PER AGENTI
-            PluginRegion = "controllo univocità DEFAULT PER AGENTI";
+            //PluginRegion = "controllo univocità DEFAULT PER AGENTI";
 
-            if(target.Contains(pricelevel.res_isdefaultforagents) || target.Contains(pricelevel.statecode))
-            {
-                bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
+            //if(target.Contains(pricelevel.res_isdefaultforagents) || target.Contains(pricelevel.statecode))
+            //{
+            //    bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
 
-                if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
-            }
+            //    if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
+            //}
             
             #endregion
 
