@@ -11,7 +11,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Account\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Address\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AgentCommission\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BankDetails\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commission\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contact\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Country\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataIntegrationDetail\Utility.cs" />
