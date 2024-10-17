@@ -92,7 +92,6 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                       </entity>
                     </fetch>";
 
-            crmService.TracingService.Trace(fetchPriceLevel);
             EntityCollection ec = service.RetrieveMultiple(new FetchExpression(fetchPriceLevel));
 
             if (ec.Entities.Count > 0)

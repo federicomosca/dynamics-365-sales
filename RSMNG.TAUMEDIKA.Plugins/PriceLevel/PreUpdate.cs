@@ -22,12 +22,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            var ts = PluginActiveTrace ? crmServiceProvider.TracingService : null;
-            ts.Trace("Sono nel PreUpdate di PriceLevel");
+            ITracingService ts = crmServiceProvider.TracingService;
+            if (PluginActiveTrace) if (PluginActiveTrace) ts.Trace("Sono nel PreUpdate di PriceLevel");
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             crmServiceProvider.PluginContext.PreEntityImages.TryGetValue("PreImage", out Entity preImage);
-            if (preImage == null) { return; }
+            if (preImage == null) { throw new ApplicationException("PreImage not found."); }
 
             #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
             PluginRegion = "Controllo univocità \"Default per Agenti\", \"Importo ERP\", \"Default sito web\"";
@@ -36,16 +36,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
             target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
 
-            ts.Trace($"Default per agenti: {isDefaultPerAgenti}");
-            ts.Trace($"Import ERP: {isERPImport}");
-            ts.Trace($"Default web site: {isDefaultPerWebsite}");
+            if (PluginActiveTrace) ts.Trace($"Default per agenti: {isDefaultPerAgenti}");   /* <--------------------------< Trace >-- */
+            if (PluginActiveTrace) ts.Trace($"Import ERP: {isERPImport}");                  /* <--------------------------< Trace >-- */
+            if (PluginActiveTrace) ts.Trace($"Default web site: {isDefaultPerWebsite}");    /* <--------------------------< Trace >-- */
 
             string field = null;
             if (isDefaultPerAgenti) { field = "Default per agenti"; }
             if (isERPImport) { field = "Import ERP"; }
             if (isDefaultPerWebsite) { field = "Default per sito web"; }
 
-            ts.Trace($"Field: {field}");
+            if (PluginActiveTrace) ts.Trace($"Field: {field}");                             /* <--------------------------< Trace >-- */
             Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, preImage.Id, field);
             #endregion
         }
