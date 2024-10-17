@@ -45,6 +45,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_amount_base => "res_amount_base";
 
 		/// <summary>
+		/// Display Name: Coordinata Bancaria,
+		/// Type: Lookup,
+		/// Related entities: res_bankdetails,
+		/// Description: 
+		/// </summary>
+		public static string res_bankdetailsid => "res_bankdetailsid";
+
+		/// <summary>
 		/// Display Name: Cliente,
 		/// Type: Lookup,
 		/// Related entities: account,
@@ -152,11 +160,12 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_paymentscheduleid => "res_paymentscheduleid";
 
 		/// <summary>
-		/// Display Name: Data registrazione,
-		/// Type: DateTime,
+		/// Display Name: Condizione di pagamento,
+		/// Type: Lookup,
+		/// Related entities: res_paymentterm,
 		/// Description: 
 		/// </summary>
-		public static string res_registrationdate => "res_registrationdate";
+		public static string res_paymenttermid => "res_paymenttermid";
 
 		/// <summary>
 		/// Display Name: Data sollecito,

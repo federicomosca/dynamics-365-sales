@@ -12,6 +12,8 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_amount: "res_amount",
 	///Importo (base)
 	res_amount_base: "res_amount_base",
+	///Coordinata Bancaria
+	res_bankdetailsid: "res_bankdetailsid",
 	///Cliente
 	res_clientid: "res_clientid",
 	///Codice cliente
@@ -42,8 +44,8 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_paymentreference: "res_paymentreference",
 	///Scadenziario Pagamenti
 	res_paymentscheduleid: "res_paymentscheduleid",
-	///Data registrazione
-	res_registrationdate: "res_registrationdate",
+	///Condizione di pagamento
+	res_paymenttermid: "res_paymenttermid",
 	///Data sollecito
 	res_reminderdate: "res_reminderdate",
 	///Descrizione sollecito

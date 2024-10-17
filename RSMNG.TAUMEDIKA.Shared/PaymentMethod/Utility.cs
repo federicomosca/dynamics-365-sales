@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PaymentMethod
         [DataMember] public string DataScadenza { get; set; }
         [DataMember] public string NProtDoc { get; set; }
         [DataMember] public string Descrizione { get; set; }
-        [DataMember] public string DataRegistraz { get; set; }
+        [DataMember] public string DataDocumento { get; set; }
         [DataMember] public decimal? ImportoDoc { get; set; }
         [DataMember] public LookUp Pagamento { get; set; }
         [DataMember] public LookUp CoordBancarie { get; set; }

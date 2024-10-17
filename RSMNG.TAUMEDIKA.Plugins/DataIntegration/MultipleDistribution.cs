@@ -108,6 +108,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                     {
                                         Entity enProductFamily = new Entity(product.logicalName);
+                                        enProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                         enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
                                         enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                         enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
@@ -140,6 +141,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         {
                                             //Creo la sotto categoria legata alla categoria
                                             Entity enSubProductFamily = new Entity(product.logicalName);
+                                            enSubProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                             enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
@@ -168,6 +170,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                         {
                                             Entity enProductFamily = new Entity(product.logicalName);
+                                            enProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                             enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
                                             enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
@@ -443,6 +446,104 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
                                 }
                                 #endregion
+                                break;
+                            case (int)res_dataintegration.res_integrationactionValues.Pagamenti:
+                                PluginRegion = "Deserializzo l'integrationRow dei pagamenti";
+                                Shared.PaymentMethod.ImportPaymentDanea importPaymentDanea = RSMNG.Plugins.Controller.Deserialize<Shared.PaymentMethod.ImportPaymentDanea>(res_integrationrow);
+
+                                #region Creo il pagamento
+                                try
+                                {
+                                    PluginRegion = "Controllo gli elemanti necessari per l'integrazione";
+                                    if (string.IsNullOrEmpty(importPaymentDanea.NProtDoc))
+                                    {
+                                        throw new Exception("Il N.Protocollo Documento è obbligatorio.");
+                                    }
+
+                                    PluginRegion = "Creo il pagamento";
+                                    Entity ePaymentScheduleUpt = new Entity(res_paymentschedule.logicalName);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_subject, importPaymentDanea.Cliente != null ? importPaymentDanea.Cliente.Text : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_clientid, importPaymentDanea.Cliente != null ? new EntityReference(importPaymentDanea.Cliente.Entity, importPaymentDanea.Cliente.Id) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_customernumber, importPaymentDanea.CodCliente);
+
+                                    string formattedData = string.Empty;
+                                    if (importPaymentDanea.Data != null)
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_date, Convert.ToDateTime(importPaymentDanea.Data));
+                                        DateTime parsedDate = DateTime.ParseExact(importPaymentDanea.Data, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                                        formattedData = parsedDate.ToString("dd/MM/yyyy");
+                                    }
+                                    else
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_date, null);
+                                    }
+                                    if (importPaymentDanea.DataScadenza != null)
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_expirationdate, Convert.ToDateTime(importPaymentDanea.DataScadenza));
+                                    }
+                                    else
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_expirationdate, null);
+                                    }
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_agent, importPaymentDanea.CodAgente);
+                                    if (importPaymentDanea.Agente != null)
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.ownerid, new EntityReference(importPaymentDanea.Agente.Entity, importPaymentDanea.Agente.Id));
+                                    }
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_amount, importPaymentDanea.Importo != null ? new Money((decimal)importPaymentDanea.Importo) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_resource, importPaymentDanea.Risorsa);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentmethod, importPaymentDanea.ModPagamento != null ? importPaymentDanea.ModPagamento.Text : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentreference, importPaymentDanea.RifPagamento);
+                                    if (importPaymentDanea.DataSollecito != null)
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_reminderdate, Convert.ToDateTime(importPaymentDanea.DataSollecito));
+                                    }
+                                    else
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_reminderdate, null);
+                                    }
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_reminderdescription, importPaymentDanea.DescrSollecito);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentprotocolnumber, importPaymentDanea.NProtDoc);
+                                    if (importPaymentDanea.DataDocumento != null)
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentdate, Convert.ToDateTime(importPaymentDanea.DataDocumento));
+                                    }
+                                    else
+                                    {
+                                        ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentdate, null);
+                                    }
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_description, importPaymentDanea.Descrizione);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentcomment, importPaymentDanea.Commento);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentamount, importPaymentDanea.ImportoDoc != null ? new Money((decimal)importPaymentDanea.ImportoDoc) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentmethodid, importPaymentDanea.ModPagamento != null ? new EntityReference(importPaymentDanea.ModPagamento.Entity, importPaymentDanea.ModPagamento.Id) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_bankdetailsid, importPaymentDanea.CoordBancarie != null ? new EntityReference(importPaymentDanea.CoordBancarie.Entity, importPaymentDanea.CoordBancarie.Id) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymenttermid, importPaymentDanea.Pagamento != null ? new EntityReference(importPaymentDanea.Pagamento.Entity, importPaymentDanea.Pagamento.Id) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_nome, $"{importPaymentDanea.CodCliente}{(importPaymentDanea.Cliente != null ? $" - {importPaymentDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importPaymentDanea.Importo).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
+
+                                    //Effettuo la creazione del pagamento
+                                    crmServiceProvider.Service.Create(ePaymentScheduleUpt);
+                                    integrationsNumber++;
+
+                                    #region Aggiorno lo stato del DataIntegrationDetail in distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.Distribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, "Ok, distribuito correttamente");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
+                                }
+                                catch (Exception e)
+                                {
+                                    #region Aggiorno lo stato del DataIntegrationDetail in non distribuito
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statecode, new OptionSetValue((int)res_dataintegrationdetail.statecodeValues.Inattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegration.statuscode, new OptionSetValue((int)res_dataintegrationdetail.statuscodeValues.NotDistribuito_StateInattivo));
+                                    enDataIntegrationDetail.AddWithRemove(res_dataintegrationdetail.res_integrationresult, $@"Errore: {e.Message}");
+                                    crmServiceProvider.Service.Update(enDataIntegrationDetail);
+                                    #endregion
+
+                                    detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
+                                }
+                                #endregion
+
                                 break;
                         }
                     }

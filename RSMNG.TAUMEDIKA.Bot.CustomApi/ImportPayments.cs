@@ -345,8 +345,8 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             DateTime? expirationDate = Helper.ValidateDateTime(dataScadenza);
 
                             //Definisco la data registrazione
-                            string dataRegistrazione = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataRegistraz)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataRegistraz)).position] : "";
-                            DateTime? registrationDate = Helper.ValidateDateTime(dataRegistrazione);
+                            string dataDocumwento = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataDocumento)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataDocumento)).position] : "";
+                            DateTime? documentDate = Helper.ValidateDateTime(dataDocumwento);
 
                             //Definisco la data sollecito
                             string dataSollecito = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataSollecito)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DataSollecito)).position] : "";
@@ -362,7 +362,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 DataScadenza = expirationDate != null ? expirationDate?.ToString("yyyy-MM-dd") : null,
                                 NProtDoc = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.NProtDoc)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.NProtDoc)).position] : null,
                                 Descrizione = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Descrizione)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Descrizione)).position] : null,
-                                DataRegistraz = registrationDate != null ? registrationDate?.ToString("yyyy-MM-dd") : null,
+                                DataDocumento = documentDate != null ? documentDate?.ToString("yyyy-MM-dd") : null,
                                 ImportoDoc = documentAmount,
                                 Pagamento = ePaymentTerm != null ? new Shared.PaymentMethod.LookUp() { Entity = ePaymentTerm.LogicalName, Id = ePaymentTerm.Id, Text = ePaymentTerm.GetAttributeValue<string>(res_paymentterm.res_name) } : null,
                                 CoordBancarie = eBankDetails != null ? new Shared.PaymentMethod.LookUp() { Entity = eBankDetails.LogicalName, Id = eBankDetails.Id, Text = eBankDetails.GetAttributeValue<string>(res_bankdetails.res_name) } : null,

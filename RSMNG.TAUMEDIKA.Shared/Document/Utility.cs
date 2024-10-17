@@ -12,7 +12,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Document
     [DataContract]
     public class ImportReceiptDanea
     {
-        [DataMember] public Option TipoDoc { get; set; } = new Option() { Text= "Ricevuta Fiscale", Value= 100000001, ExternalValue=null };
+        [DataMember] public Option TipoDoc { get; set; } = new Option() { Text = "Ricevuta Fiscale", Value = 100000001, ExternalValue = null };
         [DataMember] public string CodCliente { get; set; }
         [DataMember] public LookUp Cliente { get; set; }
         [DataMember] public string Data { get; set; }
