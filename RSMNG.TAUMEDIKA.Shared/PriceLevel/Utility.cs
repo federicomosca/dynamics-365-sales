@@ -62,21 +62,36 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             return result;
         }
-        public static void CheckDefaultForAgents(IOrganizationService service)
+        public static void checkIsDefault(IOrganizationService service, string field)
         {
-            var fetchData = new
+            string filter = null;
+            switch (field)
             {
-                res_isdefaultforagents = (int)pricelevel.res_isdefaultforagentsValues.Si,
-                statecode = (int)pricelevel.statecodeValues.Attivo
-            };
+                case "AGENTI":
+                    filter = $@"<filter>
+                                 <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                 <condition attribute=""{pricelevel.res_isdefaultforagents}"" operator=""eq"" value=""1"" />
+                                </filter>";
+                    break;
+
+                case "ERP":
+                    filter = $@"<filter>
+                                 <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                 <condition attribute=""{pricelevel.res_iserpimport}"" operator=""eq"" value=""1"" />
+                                </filter>";
+                    break;
+
+                case "WEBSITE":
+                    filter = $@"<filter>
+                                 <condition attribute=""{pricelevel.res_isdefaultforwebsite}"" operator=""eq"" value=""1"" />
+                                </filter>";
+                    break;
+            }
+
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                     <fetch top=""1"">
                       <entity name=""pricelevel"">
-                        <attribute name=""res_isdefaultforagents"" />
-                        <filter>
-                          <condition attribute=""res_isdefaultforagents"" operator=""eq"" value=""{fetchData.res_isdefaultforagents/*1*/}"" />
-                          <condition attribute=""statecode"" operator=""eq"" value=""{fetchData.statecode/*0*/}"" />
-                        </filter>
+                        {filter}
                       </entity>
                     </fetch>";
 
@@ -109,7 +124,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
             EntityCollection ecPriceLevel = service.RetrieveMultiple(new FetchExpression(fetchXml));
             if (ecPriceLevel?.Entities?.Count() > 0)
             {
-                erPriceLevel=ecPriceLevel.Entities[0].ToEntityReference();
+                erPriceLevel = ecPriceLevel.Entities[0].ToEntityReference();
             }
 
             return erPriceLevel;

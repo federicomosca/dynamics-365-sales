@@ -24,15 +24,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Controllo univocità DEFAULT PER AGENTI
-            PluginRegion = "controllo univocità DEFAULT PER AGENTI";
+            #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
+            PluginRegion = "Controllo univocità \"Default per Agenti\", \"Importo ERP\", \"Default sito web\"";
 
-            bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
+            target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
+            target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
+            target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
 
-            if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
+            string field = null;
+            if (isDefaultPerAgenti) { field = "AGENTI"; }
+            if (isERPImport) { field = "ERP"; }
+            if (isDefaultPerWebsite) { field = "WEBSITE"; }
+
+            Utility.checkIsDefault(crmServiceProvider.Service, field);
             #endregion
-
-
         }
     }
 }
