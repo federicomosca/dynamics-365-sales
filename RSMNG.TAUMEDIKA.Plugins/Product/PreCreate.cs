@@ -27,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             void Trace(string key, object value)
             {
                 //TRACE TOGGLE
-                bool isTraceActive = true;
+                bool isTraceActive = false;
                 {
                     if (isTraceActive)
                     {
@@ -44,12 +44,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginRegion = "Valorizzo il campo Categoria principale";
 
             target.TryGetAttributeValue<OptionSetValue>(product.res_origincode, out OptionSetValue originCode);
+
+            Trace("originCode", originCode);
+
             int dynamics = (int)product.res_origincodeValues.Dynamics;
+            Trace("dynamics", dynamics);
             int origine = (int)originCode.Value;
+            Trace("origine ", origine);
 
             if (origine == dynamics)
             {
-                Trace("originCode", originCode);
+                Trace("origine == dynamics", origine == dynamics);
                 target.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erParentProduct);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
