@@ -45,9 +45,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginRegion = "Valorizzo il campo Categoria principale";
 
             postImage.TryGetAttributeValue<OptionSetValue>(product.res_origincode, out OptionSetValue originCode);
-            OptionSetValue dynamics = new OptionSetValue((int)product.res_origincodeValues.Dynamics);
+            int dynamics = (int)product.res_origincodeValues.Dynamics;
+            int origine = (int)originCode.Value;
 
-            if (originCode == dynamics)
+            if (origine == dynamics)
             {
                 Trace("originCode", originCode);
                 postImage.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erParentProduct);
