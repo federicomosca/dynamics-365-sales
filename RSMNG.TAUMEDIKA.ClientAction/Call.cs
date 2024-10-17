@@ -25,7 +25,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             PluginMessage = "res_ClientAction";
             PluginPrimaryEntityName = "none";
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -38,27 +38,9 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                 String jsonDataInput = (String)crmServiceProvider.PluginContext.InputParameters["jsonDataInput"];
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ActionName:{actionName}.");
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"JsonDataInput:{jsonDataInput}.");
-                Model.BasicOutput basicOutput = new Model.BasicOutput();
 
                 switch (actionName)
                 {
-                    case "CASE":
-
-                        #region Azione1
-                        PluginRegion = "Azione1";
-                        basicOutput.result = 0; basicOutput.message = "Operazione effettuata.";
-                        try
-                        {
-                        }
-                        catch (Exception ex)
-                        {
-                            basicOutput.result = -1;
-                            basicOutput.message = ex.Message;
-                        }
-                        jsonDataOutput = Controller.Serialize<Model.BasicOutput>(basicOutput, typeof(Model.BasicOutput));
-                        #endregion
-
-                        break;
                     case "UPDATE_QUOTE_STATUS":
                         #region Aggiornamento status dell'offerta
                         PluginRegion = "Aggiornamento status dell'offerta";
@@ -82,6 +64,12 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         #region Prelevo il file di Distribuzione
                         PluginRegion = "Prelevo il file di Distribuzione";
                         jsonDataOutput = Shared.DataIntegration.Utility.GetDistributionFile(serviceAdmin, tracingService, jsonDataInput);
+                        #endregion
+                        break;
+                    case "DELETE_ALL_PAYMENTSCHEDULE":
+                        #region Cancello tutti pagamenti
+                        PluginRegion = "Cancello tutti pagamenti";
+                        jsonDataOutput = Shared.PaymentSchedule.Utility.DeleteAllPaymentSchedule(serviceAdmin);
                         #endregion
                         break;
                 }

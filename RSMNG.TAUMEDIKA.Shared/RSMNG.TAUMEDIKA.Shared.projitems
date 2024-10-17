@@ -50,6 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataIntegration\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaymentMethod\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PaymentSchedule\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaymentTerm\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PriceLevel\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Product\Utility.cs" />
