@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Create";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -38,12 +38,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             ts.Trace($"Default web site: {isDefaultPerWebsite}");
 
             string field = null;
-            if (isDefaultPerAgenti) { field = "AGENTI"; }
-            if (isERPImport) { field = "ERP"; }
-            if (isDefaultPerWebsite) { field = "WEBSITE"; }
+            if (isDefaultPerAgenti) { field = "Default per agenti"; }
+            if (isERPImport) { field = "Import ERP"; }
+            if (isDefaultPerWebsite) { field = "Default per sito web"; }
 
             ts.Trace($"Field: {field}");
-            Utility.checkIsDefault(crmServiceProvider.Service, target.Id, field);
+            Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, target.Id, field);
             #endregion
         }
     }

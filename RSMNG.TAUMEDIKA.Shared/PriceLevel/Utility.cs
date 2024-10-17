@@ -62,33 +62,27 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             return result;
         }
-        public static void checkIsDefault(IOrganizationService service, Guid priceLevelId,string field)
+        public static void checkIsDefault(IOrganizationService service, CrmServiceProvider crmService, Guid priceLevelId, string field)
         {
             string condition = null;
             switch (field)
             {
-                case "AGENTI":
-                    condition = $@"
-                                 <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
-                                 <condition attribute=""{pricelevel.res_isdefaultforagents}"" operator=""eq"" value=""1"" />
-                                ";
+                case "Default per agenti":
+                    condition = $@"<condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                   <condition attribute=""{pricelevel.res_isdefaultforagents}"" operator=""eq"" value=""1"" />";
                     break;
 
-                case "ERP":
-                    condition = $@"
-                                 <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
-                                 <condition attribute=""{pricelevel.res_iserpimport}"" operator=""eq"" value=""1"" />
-                                ";
+                case "Import ERP":
+                    condition = $@"<condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                   <condition attribute=""{pricelevel.res_iserpimport}"" operator=""eq"" value=""1"" />";
                     break;
 
-                case "WEBSITE":
-                    condition = $@"
-                                 <condition attribute=""{pricelevel.res_isdefaultforwebsite}"" operator=""eq"" value=""1"" />
-                                ";
+                case "Default per sito web":
+                    condition = $@"<condition attribute=""{pricelevel.res_isdefaultforwebsite}"" operator=""eq"" value=""1"" />";
                     break;
             }
 
-            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchPriceLevel = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                     <fetch top=""1"">
                       <entity name=""pricelevel"">
                         <filter>
@@ -98,14 +92,13 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                       </entity>
                     </fetch>";
 
-            EntityCollection ec = service.RetrieveMultiple(new FetchExpression(fetchXml));
+            crmService.TracingService.Trace(fetchPriceLevel);
+            EntityCollection ec = service.RetrieveMultiple(new FetchExpression(fetchPriceLevel));
 
             if (ec.Entities.Count > 0)
             {
-                throw new ApplicationException("Solo un listino prezzi per volta può avere 'Default per agenti' impostato a si");
+                throw new ApplicationException($"Non può esistere più di un record {field}");
             }
-
-
         }
         public static EntityReference GetPriceLevelERP(IOrganizationService service)
         {

@@ -18,15 +18,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Update";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             var ts = PluginActiveTrace ? crmServiceProvider.TracingService : null;
+            ts.Trace("Sono nel PreUpdate di PriceLevel");
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
-            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-            Entity postImage = target.GetPostImage(preImage);
+            crmServiceProvider.PluginContext.PreEntityImages.TryGetValue("PreImage", out Entity preImage);
+            if (preImage == null) { return; }
 
             #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
             PluginRegion = "Controllo univocità \"Default per Agenti\", \"Importo ERP\", \"Default sito web\"";
@@ -40,12 +41,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             ts.Trace($"Default web site: {isDefaultPerWebsite}");
 
             string field = null;
-            if (isDefaultPerAgenti) { field = "AGENTI"; }
-            if (isERPImport) { field = "ERP"; }
-            if (isDefaultPerWebsite) { field = "WEBSITE"; }
+            if (isDefaultPerAgenti) { field = "Default per agenti"; }
+            if (isERPImport) { field = "Import ERP"; }
+            if (isDefaultPerWebsite) { field = "Default per sito web"; }
 
             ts.Trace($"Field: {field}");
-            Utility.checkIsDefault(crmServiceProvider.Service, postImage.Id, field);
+            Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, preImage.Id, field);
             #endregion
         }
     }
