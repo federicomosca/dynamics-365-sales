@@ -35,7 +35,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             if (stato == (int)pricelevel.statecodeValues.Attivo)
             {
                 if (target.Contains(pricelevel.res_isdefaultforagents) ||
-                    target.Contains(pricelevel.res_iserpimport) ||
                     target.Contains(pricelevel.res_isdefaultforagents))
                 {
                     target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
