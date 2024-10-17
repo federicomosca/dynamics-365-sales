@@ -34,23 +34,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
 
             if (stato == (int)pricelevel.statecodeValues.Attivo)
             {
-                if (target.Contains(pricelevel.res_isdefaultforagents) ||
-                    target.Contains(pricelevel.res_isdefaultforagents))
+                target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
+                target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
+                target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
+
+                if (PluginActiveTrace) ts.Trace($"Default per agenti: {isDefaultPerAgenti}");   /* <--------------------------< Trace >-- */
+                if (PluginActiveTrace) ts.Trace($"Import ERP: {isERPImport}");                  /* <--------------------------< Trace >-- */
+                if (PluginActiveTrace) ts.Trace($"Default web site: {isDefaultPerWebsite}");    /* <--------------------------< Trace >-- */
+
+                string field = null;
+                if (isDefaultPerAgenti) { field = "Default per agenti"; }
+                if (isERPImport) { field = "Import ERP"; }
+                if (isDefaultPerWebsite) { field = "Default per sito web"; }
+
+                if (PluginActiveTrace) ts.Trace($"Field: {field}");                             /* <--------------------------< Trace >-- */
+
+                if (!string.IsNullOrEmpty(field))
                 {
-                    target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
-                    target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
-                    target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
-
-                    if (PluginActiveTrace) ts.Trace($"Default per agenti: {isDefaultPerAgenti}");   /* <--------------------------< Trace >-- */
-                    if (PluginActiveTrace) ts.Trace($"Import ERP: {isERPImport}");                  /* <--------------------------< Trace >-- */
-                    if (PluginActiveTrace) ts.Trace($"Default web site: {isDefaultPerWebsite}");    /* <--------------------------< Trace >-- */
-
-                    string field = null;
-                    if (isDefaultPerAgenti) { field = "Default per agenti"; }
-                    if (isERPImport) { field = "Import ERP"; }
-                    if (isDefaultPerWebsite) { field = "Default per sito web"; }
-
-                    if (PluginActiveTrace) ts.Trace($"Field: {field}");                             /* <--------------------------< Trace >-- */
                     Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, target.Id, field);
                 }
             }

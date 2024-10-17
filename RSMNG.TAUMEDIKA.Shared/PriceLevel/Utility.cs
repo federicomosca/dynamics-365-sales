@@ -96,8 +96,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             if (ec.Entities.Count > 0)
             {
-                if (field != string.Empty) { throw new ApplicationException($"Non può esistere più di un record {field}"); }
-                throw new ApplicationException("Errore di duplicazione");
+                if (!string.IsNullOrEmpty(field)) { throw new ApplicationException($"Non può esistere più di un record {field}"); }
             }
         }
         public static EntityReference GetPriceLevelERP(IOrganizationService service)
