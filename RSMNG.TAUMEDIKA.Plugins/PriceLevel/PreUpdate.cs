@@ -18,25 +18,35 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Update";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            var ts = PluginActiveTrace ? crmServiceProvider.TracingService : null;
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+            Entity postImage = target.GetPostImage(preImage);
 
-            #region Controllo univocità DEFAULT PER AGENTI
-            //PluginRegion = "controllo univocità DEFAULT PER AGENTI";
+            #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
+            PluginRegion = "Controllo univocità \"Default per Agenti\", \"Importo ERP\", \"Default sito web\"";
 
-            //if(target.Contains(pricelevel.res_isdefaultforagents) || target.Contains(pricelevel.statecode))
-            //{
-            //    bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
+            target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
+            target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
+            target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
 
-            //    if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
-            //}
-            
+            ts.Trace($"Default per agenti: {isDefaultPerAgenti}");
+            ts.Trace($"Import ERP: {isERPImport}");
+            ts.Trace($"Default web site: {isDefaultPerWebsite}");
+
+            string field = null;
+            if (isDefaultPerAgenti) { field = "AGENTI"; }
+            if (isERPImport) { field = "ERP"; }
+            if (isDefaultPerWebsite) { field = "WEBSITE"; }
+
+            ts.Trace($"Field: {field}");
+            Utility.checkIsDefault(crmServiceProvider.Service, postImage.Id, field);
             #endregion
-
-
         }
     }
 }

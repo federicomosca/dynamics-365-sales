@@ -18,10 +18,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Create";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            var ts = PluginActiveTrace ? crmServiceProvider.TracingService : null;
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
@@ -31,12 +33,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
             target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
 
+            ts.Trace($"Default per agenti: {isDefaultPerAgenti}");
+            ts.Trace($"Import ERP: {isERPImport}");
+            ts.Trace($"Default web site: {isDefaultPerWebsite}");
+
             string field = null;
             if (isDefaultPerAgenti) { field = "AGENTI"; }
             if (isERPImport) { field = "ERP"; }
             if (isDefaultPerWebsite) { field = "WEBSITE"; }
 
-            Utility.checkIsDefault(crmServiceProvider.Service, field);
+            ts.Trace($"Field: {field}");
+            Utility.checkIsDefault(crmServiceProvider.Service, target.Id, field);
             #endregion
         }
     }

@@ -62,36 +62,39 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             return result;
         }
-        public static void checkIsDefault(IOrganizationService service, string field)
+        public static void checkIsDefault(IOrganizationService service, Guid priceLevelId,string field)
         {
-            string filter = null;
+            string condition = null;
             switch (field)
             {
                 case "AGENTI":
-                    filter = $@"<filter>
+                    condition = $@"
                                  <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
                                  <condition attribute=""{pricelevel.res_isdefaultforagents}"" operator=""eq"" value=""1"" />
-                                </filter>";
+                                ";
                     break;
 
                 case "ERP":
-                    filter = $@"<filter>
+                    condition = $@"
                                  <condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
                                  <condition attribute=""{pricelevel.res_iserpimport}"" operator=""eq"" value=""1"" />
-                                </filter>";
+                                ";
                     break;
 
                 case "WEBSITE":
-                    filter = $@"<filter>
+                    condition = $@"
                                  <condition attribute=""{pricelevel.res_isdefaultforwebsite}"" operator=""eq"" value=""1"" />
-                                </filter>";
+                                ";
                     break;
             }
 
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                     <fetch top=""1"">
                       <entity name=""pricelevel"">
-                        {filter}
+                        <filter>
+                          <condition attribute=""{pricelevel.pricelevelid}"" operator=""ne"" value=""{priceLevelId}"" />
+                          {condition}
+                        </filter>
                       </entity>
                     </fetch>";
 
