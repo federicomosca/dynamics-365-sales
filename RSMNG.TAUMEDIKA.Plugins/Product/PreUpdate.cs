@@ -69,6 +69,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
 
                     target[product.res_parentcategoryid] = erFamigliaAssociataPadre ?? null;
                 }
+                else
+                {
+                    target[product.res_parentcategoryid] = null;
+                }
             }
             #endregion
         }
