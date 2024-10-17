@@ -55,13 +55,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             if (origine == dynamics)
             {
                 Trace("origine == dynamics", origine == dynamics);
-                target.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erParentProduct);
+                target.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociata);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
-                if (erParentProduct != null)
+                if (erFamigliaAssociata != null)
                 {
-                    Trace("erParentProduct", erParentProduct);
-                    target[product.res_parentcategoryid] = erParentProduct;
+                    Trace("erParentProduct", erFamigliaAssociata);
+
+                    Entity categoriaPrincipale = crmServiceProvider.Service.Retrieve($"{product.logicalName}", erFamigliaAssociata.Id, new ColumnSet(product.parentproductid));
+                    categoriaPrincipale.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociataPadre);
+
+                    target[product.res_parentcategoryid] = erFamigliaAssociataPadre ?? null;
                 }
             }
             #endregion

@@ -45,24 +45,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginRegion = "Valorizzo il campo Categoria principale";
 
             postImage.TryGetAttributeValue<OptionSetValue>(product.res_origincode, out OptionSetValue originCode);
-
             Trace("originCode", originCode);
 
+
             int dynamics = (int)product.res_origincodeValues.Dynamics;
-            Trace("dynamics", dynamics);
             int origine = (int)originCode.Value;
+
+            Trace("dynamics", dynamics);
             Trace("origine ", origine);
 
             if (origine == dynamics)
             {
                 Trace("origine == dynamics", origine == dynamics);
-                postImage.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erParentProduct);
+                postImage.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociata);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
-                if (erParentProduct != null)
+                if (erFamigliaAssociata != null)
                 {
-                    Trace("erParentProduct", erParentProduct);
-                    target[product.res_parentcategoryid] = erParentProduct;
+                    Trace("erParentProduct", erFamigliaAssociata);
+
+                    Entity categoriaPrincipale = crmServiceProvider.Service.Retrieve($"{product.logicalName}", erFamigliaAssociata.Id, new ColumnSet(product.parentproductid));
+                    categoriaPrincipale.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociataPadre);
+
+                    target[product.res_parentcategoryid] = erFamigliaAssociataPadre ?? null;
                 }
             }
             #endregion
