@@ -28,7 +28,9 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 //--- Deserializza --------------------------------------------------------------------------
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
-                Guid listinoGuid = pl.Guid != null ? new Guid(pl.Guid) : Guid.Empty;
+                if (isTrace) trace.Trace($"Listino ID stringa: {pl.Guid}");
+                Guid listinoGuid = string.IsNullOrEmpty(pl.Guid) ? new Guid(pl.Guid) : Guid.Empty;
+                if (isTrace) trace.Trace($"Listino Guid: {listinoGuid}");
 
                 Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
@@ -103,7 +105,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                                 productpricelevel.transactioncurrencyid,
                                 productpricelevel.uomid
                             };
-                            foreach(string attributo in attributiDaCopiare)
+                            foreach (string attributo in attributiDaCopiare)
                             {
                                 voceCopia[attributo] = voceOriginale.GetAttributeValue<object>(attributo) ?? null;
                             }
