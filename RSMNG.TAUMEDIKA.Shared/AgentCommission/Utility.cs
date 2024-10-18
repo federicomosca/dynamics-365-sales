@@ -216,7 +216,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
             [DataMember] public bool DeleteAgentCommission { get; set; }
             [DataMember] public string CommissionId { get; set; }
             [DataMember] public string AgentId { get; set; }
-            [DataMember] public int LastAgent { get; set; }
+            [DataMember] public bool LastAgent { get; set; }
         }
 
         [DataContract]
