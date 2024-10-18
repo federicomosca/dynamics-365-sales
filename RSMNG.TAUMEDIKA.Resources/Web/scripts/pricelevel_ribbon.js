@@ -97,6 +97,19 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
                 });
         }
     };
+    _self.DEACTIVATE = {
+        canExecute: formContext => {
+            debugger;
+            const erpControl = formContext.getControl("header_res_iserpimport");
+            const isERP = erpControl.getAttribute().getValue();
+
+            //se import ERP = SI disattivo il button
+            if (isERP) {
+                return false;
+            }
+            return true;
+        }
+    };
 }).call(RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.FORM);
 
 (function () {
