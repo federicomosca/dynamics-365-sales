@@ -14,6 +14,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 {
     public class Utility
     {
+        public static bool isTrace = true;
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             string result = string.Empty;
@@ -35,8 +36,15 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
                 DateTime? beginnerDate = null;
                 DateTime? endDate = null;
-                if (pl.begindate != null) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
-                if (pl.enddate != null) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+
+                if (isTrace) trace.Trace($"start date from json: {pl.begindate}");
+                if (isTrace) trace.Trace($"end date from json: {pl.enddate}");
+
+                if (!string.IsNullOrWhiteSpace(pl.begindate)) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+                if (!string.IsNullOrWhiteSpace(pl.enddate)) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+
+                if (isTrace) trace.Trace($"beginnerDate: {beginnerDate}");
+                if (isTrace) trace.Trace($"endDate: {endDate}");
 
                 enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
                 enPriceLevel.Attributes.Add(pricelevel.begindate, beginnerDate);
