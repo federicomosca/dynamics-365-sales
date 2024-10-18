@@ -45,6 +45,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_agentcommissionid => "res_agentcommissionid";
 
 		/// <summary>
+		/// Display Name: Agente,
+		/// Type: Lookup,
+		/// Related entities: systemuser,
+		/// Description: 
+		/// </summary>
+		public static string res_agentid => "res_agentid";
+
+		/// <summary>
 		/// Display Name: Provvigione calcolata,
 		/// Type: Money,
 		/// Description: 

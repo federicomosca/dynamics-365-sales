@@ -72,6 +72,12 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                         jsonDataOutput = Shared.PaymentSchedule.Utility.DeleteAllPaymentSchedule(serviceAdmin);
                         #endregion
                         break;
+                    case "AGENTCOMMISSION_CALCULATION":
+                        #region Calcolo delle provvigione agente
+                        PluginRegion = "Calcolo delle provvigione agente";
+                        jsonDataInput = Shared.AgentCommission.Utility.AgentCommissionCalculation(serviceAdmin, jsonDataInput);
+                        #endregion
+                        break;
                 }
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"JsonDataOutput:{jsonDataOutput}.");
                 crmServiceProvider.PluginContext.OutputParameters["jsonDataOutput"] = jsonDataOutput;

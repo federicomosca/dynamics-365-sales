@@ -12,6 +12,8 @@ RSMNG.TAUMEDIKA.DataModel.res_agentcommission = {
 	res_adjustment_base: "res_adjustment_base",
 	///Provvigione Agente
 	res_agentcommissionid: "res_agentcommissionid",
+	///Agente
+	res_agentid: "res_agentid",
 	///Provvigione calcolata
 	res_calculatedcommission: "res_calculatedcommission",
 	///Provvigione calcolata (base)

@@ -116,7 +116,7 @@
     <None Include="packages.config" />
     <None Include="RSMNG.TAUMEDIKA.ClientAction.snk" />
   </ItemGroup>
-  <Import Project="..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems" Label="Shared" />
   <Import Project="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.projitems" Label="Shared" />
+  <Import Project="..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

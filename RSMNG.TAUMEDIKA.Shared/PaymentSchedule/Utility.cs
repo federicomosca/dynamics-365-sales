@@ -31,7 +31,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PaymentSchedule
                 // Lista del pagamenti da cancellare
                 var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                 <fetch>
-                  <entity name=""res_paymentschedule"" />
+                  <entity name=""{res_paymentschedule.logicalName}"" />
                 </fetch>";
                 List<Entity> lPaymentsSchedule = service.RetrieveAll(fetchXml);
 

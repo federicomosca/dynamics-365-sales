@@ -945,6 +945,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_agentnumber => "res_agentnumber";
 
 		/// <summary>
+		/// Display Name: % Commissione,
+		/// Type: Decimal,
+		/// Description: 
+		/// </summary>
+		public static string res_commissionpercentage => "res_commissionpercentage";
+
+		/// <summary>
 		/// Display Name: Agente,
 		/// Type: Boolean,
 		/// Values:

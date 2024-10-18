@@ -163,6 +163,37 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
 
         return allRecords;
     };
+    //-------------------------------------------------------------------------------------
+    _self.callClientAction = (_xrm, _actionName, _json) => {
+        return new Promise(function (resolve, reject) {
+            var execute_res_ClientAction_Request = {
+                // Parameters
+                actionName: _actionName, // Edm.String
+                jsonDataInput: JSON.stringify(_json), // Edm.String
+                getMetadata: function () {
+                    return {
+                        boundParameter: null,
+                        parameterTypes: {
+                            actionName: { typeName: "Edm.String", structuralProperty: 1 },
+                            jsonDataInput: { typeName: "Edm.String", structuralProperty: 1 }
+                        },
+                        operationType: 0, operationName: "res_ClientAction"
+                    };
+                }
+            };
+
+            _xrm.WebApi.execute(execute_res_ClientAction_Request).then(
+                response => {
+                    if (response.ok) { return response.json(); }
+                }
+            ).then(responseBody => {
+                const result = JSON.parse(responseBody.jsonDataOutput);
+                resolve(result);
+            }).catch(error => {
+                reject(error);
+            });
+        });
+    };
 
     /**
      * 
@@ -186,6 +217,27 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
                 if (Date.parse(startDate) > Date.parse(endDate)) {
                     eventSourceControl.setNotification(`La data di inizio ${startDate} non può essere antecedente alla data di fine ${endDate}`);
                 }
+            }
+        }
+    };
+    //-----------------------------------------------------------------------
+    _self.checkDates = (executionContext, startDate, endDate, messageNotify, idNotify) => {
+        // Ottieni il form context
+        var formContext = executionContext.getFormContext();
+
+        // Ottieni i valori dei campi data passati come parametri
+        var startDateValue = formContext.getAttribute(startDate).getValue();
+        var endDateValue = formContext.getAttribute(endDate).getValue();
+
+        // Verifica se entrambe le date sono valorizzate
+        if (startDateValue !== null && endDateValue !== null) {
+            // Confronta le date
+            if (startDateValue > endDateValue) {
+                // Imposta la notifica sul campo dataInizio
+                formContext.getControl(startDate).setNotification(messageNotify, idNotify);
+            } else {
+                // Rimuovi la notifica se la condizione non è più vera
+                formContext.getControl(startDate).clearNotification(idNotify);
             }
         }
     };
@@ -366,14 +418,14 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
                 "</fetch>"
             ].join("");
 
-         
+
             Xrm.WebApi.retrieveMultipleRecords("res_address", fetchXml)
                 .then(function (result) {
-                    resolve(result); 
+                    resolve(result);
                 })
                 .catch(function (error) {
                     console.log(error);
-                    reject(error.message);  
+                    reject(error.message);
                 });
         });
     };
@@ -387,11 +439,11 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             if (setAllReadOnly === true && !field.getDisabled()) {
                 field.setDisabled(true);
 
-            } 
+            }
             else if (setAllReadOnly === false && !readOnlyFields.includes(field._controlName)) {
                 field.setDisabled(false);
             }
-            
+
         });
 
     };

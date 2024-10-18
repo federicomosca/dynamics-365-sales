@@ -236,6 +236,8 @@ RSMNG.TAUMEDIKA.DataModel.systemuser = {
 	queueid: "queueid",
 	///Codice agente
 	res_agentnumber: "res_agentnumber",
+	///% Commissione
+	res_commissionpercentage: "res_commissionpercentage",
 	///Agente
 	res_isagente: "res_isagente",
 	///Disabilita calcolo provvigioni

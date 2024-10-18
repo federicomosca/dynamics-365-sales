@@ -31,40 +31,39 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
 
     var _self = this;
 
-	_self.formModel = {
-		entity: {
-			///Provvigione constants.
-			logicalName: "res_commission",
-			displayName: "Provvigione",
-		},
-		fields: {
+    _self.formModel = {
+        entity: {
+            ///Provvigione constants.
+            logicalName: "res_commission",
+            displayName: "Provvigione",
+        },
+        fields: {
 
-			///Provvigione
-			res_commissionid: "res_commissionid",
-			///Data fine
-			res_enddate: "res_enddate",
-			///Nome
-			res_name: "res_name",
-			///Data inizio
-			res_startdate: "res_startdate",
+            ///Provvigione
+            res_commissionid: "res_commissionid",
+            ///Data fine
+            res_enddate: "res_enddate",
+            ///Nome
+            res_name: "res_name",
+            ///Data inizio
+            res_startdate: "res_startdate",
 
-			/// Values for field Stato
-			statecodeValues: {
-				Attivo: 0,
-				Inattivo: 1
-			},
+            /// Values for field Stato
+            statecodeValues: {
+                Attivo: 0,
+                Inattivo: 1
+            },
 
-			/// Values for field Motivo stato
-			statuscodeValues: {
-				Bozza_StateAttivo: 1,
-				Calcolata_StateAttivo: 100000002,
-				Calcolataerrori_StateAttivo: 100000003,
-				Calcoloincorso_StateAttivo: 100000001,
-				Inattivo_StateInattivo: 2
-			}
-		}
-	};
-
+            /// Values for field Motivo stato
+            statuscodeValues: {
+                Bozza_StateAttivo: 1,
+                Calcolata_StateAttivo: 100000002,
+                Calcolataerrori_StateAttivo: 100000003,
+                Calcoloincorso_StateAttivo: 100000001,
+                Inattivo_StateInattivo: 2
+            }
+        }
+    };
 
     //--------------------------------------------------
     _self.STARTCALC = {
@@ -90,17 +89,59 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                 position: 1,
                 title: 'Seleziona Agenti'
             }
+            formContext.ui.clearFormNotification();
             window._formContext = formContext;
             Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
-                function (result) {
+                async function (result) {
 
                     if (result.returnValue != null) {
-
-                        console.log("navigate ok");
-
+                        try {
+                            debugger;
+                            selectedAgentsCommission = JSON.parse(result.returnValue);
+                            var processedAgentCommission = 0;
+                            var processPercentage = 0;
+                            var agentsCommissionWithErrors = [];
+                            if (selectedAgentsCommission.length > 0) {
+                                Xrm.Utility.showProgressIndicator(`Calcolo della provvigione in corso con Agenti ${processedAgentCommission} di ${selectedAgentsCommission.length}...`);
+                                for (let selectedItem of selectedAgentsCommission) {
+                                    try {
+                                        var jsonInput = {
+                                            "DeleteAgentCommission": processedAgentCommission == 0 ? true : false,
+                                            "CommissionId": formContext.data.entity.getId(),
+                                            "AgentId": selectedItem["systemuserid"],
+                                            "LastAgent": processedAgentCommission == selectedAgentsCommission.length - 1
+                                        };
+                                        var resposeMsg = {
+                                            message: "",
+                                            id: selectedItem["fullname"]
+                                        };
+                                        var response = await RSMNG.TAUMEDIKA.GLOBAL.callClientAction(Xrm, "AGENTCOMMISSION_CALCULATION", JSON.stringify(jsonInput));
+                                        processedAgentCommission++;
+                                        processPercentage = (processedAgentCommission / selectedAgentsCommission.length) * 100;
+                                        Xrm.Utility.showProgressIndicator(`Calcolo della provvigione in corso con Agenti ${processedAgentCommission} di ${selectedAgentsCommission.length} (${selectedItem["fullname"].substring(0, 30) + "..."}) (${processPercentage.toFixed(1)}%)`);
+                                        if (response.Result != 0) {
+                                            resposeMsg.message = response.Message;
+                                            agentsCommissionWithErrors.push(resposeMsg);
+                                        }
+                                    } catch (error) {
+                                        resposeMsg.message = error.message;
+                                        agentsCommissionWithErrors.push(resposeMsg);
+                                    }
+                                }
+                                Xrm.Utility.closeProgressIndicator();
+                                if (agentsCommissionWithErrors.length > 0) {
+                                    for (var i = 0; i < agentsCommissionWithErrors.length; i++) {
+                                        formContext.ui.setFormNotification(`Il calcolo della provvigione non e' stata terminata con successo. L'agente': [${agentsCommissionWithErrors[i].id}] non e' stato processato. In dettaglio: [${agentsCommissionWithErrors[i].message}]`, "WARNING", i);
+                                    }
+                                } else {
+                                    formContext.ui.setFormNotification(`Il calcolo della provvigione stata terminata con successo.`, "INFO", i);
+                                }
+                            }
+                        } catch (e) {
+                            formContext.ui.setFormNotification(`Il calcolo della provvigione non e' stata terminata con successo. In dettaglio: [${e.message}]`, "ERROR", "001");
+                        }
                     }
                 },
-
                 function (error) {
                     console.log(error.message);
                 }
