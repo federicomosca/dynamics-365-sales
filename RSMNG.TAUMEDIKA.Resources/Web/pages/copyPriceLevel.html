@@ -157,6 +157,12 @@
                 }
             });
 
+            //chiudo la finestra premendo Esc
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' || event.key === 'Esc' || event.keyCode === 27) {
+                    window.close();
+                }
+            });
         };
 
 
