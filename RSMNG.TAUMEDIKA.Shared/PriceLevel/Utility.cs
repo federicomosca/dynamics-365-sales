@@ -14,7 +14,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 {
     public class Utility
     {
-        public static bool isTrace = true;
+        public static bool isTrace = false;
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             string result = string.Empty;
@@ -56,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
 
-                service.Create(enPriceLevel);
+                Guid listinoCopiatoId = service.Create(enPriceLevel);
 
                 if (!string.IsNullOrEmpty(listinoGuid))
                 {
@@ -91,6 +91,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                         foreach (Entity voceOriginale in vociListinoCollection.Entities)
                         {
                             Entity voceCopia = new Entity(productpricelevel.logicalName);
+                            if (isTrace) trace.Trace($"Ho creato la copia della voce di listino: {voceOriginale.Id}");
                             List<string> attributiDaCopiare = new List<string> {
                                 productpricelevel.amount,
                                 productpricelevel.discounttypeid,
@@ -107,10 +108,14 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                             };
                             foreach (string attributo in attributiDaCopiare)
                             {
+                                if (isTrace) trace.Trace($"L'attributo {attributo} è null: {voceOriginale.GetAttributeValue<object>(attributo) == null}");
                                 voceCopia[attributo] = voceOriginale.GetAttributeValue<object>(attributo) ?? null;
                             }
-                            voceCopia[productpricelevel.pricelevelid] = enPriceLevel.Id;
+                            voceCopia[productpricelevel.pricelevelid] = new EntityReference(pricelevel.logicalName, listinoCopiatoId);
+                            if (isTrace) trace.Trace($"Ho valorizzato l'id del padre della copia: {listinoCopiatoId}");
+
                             service.Create(voceCopia);
+                            if (isTrace) trace.Trace($"Ho registrto nel db la copia della voce di listino");
                         }
                     }
                 }
