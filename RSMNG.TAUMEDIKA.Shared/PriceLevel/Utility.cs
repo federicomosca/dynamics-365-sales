@@ -29,7 +29,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
 
-                string listinoGuid = string.IsNullOrEmpty(pl.Guid) ? pl.Guid : null;
+                string listinoGuid = !string.IsNullOrEmpty(pl.Guid) ? pl.Guid : null;
 
                 Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
@@ -58,8 +58,9 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
                 service.Create(enPriceLevel);
 
-                if (listinoGuid != null)
+                if (!string.IsNullOrEmpty(listinoGuid))
                 {
+
                     //dopo aver creato la copia del listino, recupero le voci associate all'originale
                     var fetchVociListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
