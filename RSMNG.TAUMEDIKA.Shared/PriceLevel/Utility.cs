@@ -28,7 +28,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 //--- Deserializza --------------------------------------------------------------------------
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
-
+                Guid listinoGuid = pl.Guid != null ? new Guid(pl.Guid) : Guid.Empty;
 
                 Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
@@ -56,6 +56,62 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
 
                 service.Create(enPriceLevel);
+
+                if (listinoGuid != Guid.Empty)
+                {
+                    //dopo aver creato la copia del listino, recupero le voci associate all'originale
+                    var fetchVociListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch>
+                                      <entity name=""{productpricelevel.logicalName}"">
+                                            <attribute name=""{productpricelevel.amount}"" />
+                                            <attribute name=""{productpricelevel.discounttypeid}"" />
+                                            <attribute name=""{productpricelevel.percentage}"" />
+                                            <attribute name=""{productpricelevel.pricelevelid}"" />
+                                            <attribute name=""{productpricelevel.pricingmethodcode}"" />
+                                            <attribute name=""{productpricelevel.productid}"" />
+                                            <attribute name=""{productpricelevel.quantitysellingcode}"" />
+                                            <attribute name=""{productpricelevel.roundingoptionamount}"" />
+                                            <attribute name=""{productpricelevel.roundingoptioncode}"" />
+                                            <attribute name=""{productpricelevel.roundingpolicycode}"" />
+                                            <attribute name=""{productpricelevel.transactioncurrencyid}"" />
+                                            <attribute name=""{productpricelevel.uomid}"" />
+                                        <filter>
+                                          <condition attribute=""{productpricelevel.pricelevelid}"" operator=""eq"" value=""{listinoGuid}"" />
+                                        </filter>
+                                      </entity>
+                                    </fetch>";
+                    if (isTrace) trace.Trace(fetchVociListino);
+                    EntityCollection vociListinoCollection = service.RetrieveMultiple(new FetchExpression(fetchVociListino));
+
+                    if (vociListinoCollection.Entities.Count > 0)
+                    {
+                        if (isTrace) trace.Trace("Ho trovato delle voci di listino associate al listino prezzi");
+                        foreach (Entity voceOriginale in vociListinoCollection.Entities)
+                        {
+                            Entity voceCopia = new Entity(productpricelevel.logicalName);
+                            List<string> attributiDaCopiare = new List<string> {
+                                productpricelevel.amount,
+                                productpricelevel.discounttypeid,
+                                productpricelevel.percentage,
+                                productpricelevel.pricelevelid,
+                                productpricelevel.pricingmethodcode,
+                                productpricelevel.productid,
+                                productpricelevel.quantitysellingcode,
+                                productpricelevel.roundingoptionamount,
+                                productpricelevel.roundingoptioncode,
+                                productpricelevel.roundingpolicycode,
+                                productpricelevel.transactioncurrencyid,
+                                productpricelevel.uomid
+                            };
+                            foreach(string attributo in attributiDaCopiare)
+                            {
+                                voceCopia[attributo] = voceOriginale.GetAttributeValue<object>(attributo) ?? null;
+                            }
+                            voceCopia[productpricelevel.pricelevelid] = enPriceLevel.Id;
+                            service.Create(voceCopia);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -139,6 +195,8 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
         [DataContract]
         public class PriceLevel
         {
+            [DataMember]
+            public string Guid { get; set; }
             [DataMember]
             public string name { get; set; }
             [DataMember]
