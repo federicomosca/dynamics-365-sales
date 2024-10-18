@@ -55,6 +55,9 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, false); // Esiste solo un record con isdefaultforagents a true, quindi questo valore a priori non può essere copiato.
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
+                enPriceLevel[pricelevel.res_isdefaultforagents] = false;
+                enPriceLevel[pricelevel.res_isdefaultforwebsite] = false;
+                enPriceLevel[pricelevel.res_iserpimport] = false;
 
                 Guid listinoCopiatoId = service.Create(enPriceLevel);
 
