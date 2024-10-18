@@ -180,6 +180,33 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
             }
             return jsonDataOutput;
         }
+        public static void UpdateTotalCommission(IOrganizationService service, Guid entityId)
+        {
+            var fetchData = new
+            {
+                res_agentcommissionid = entityId
+            };
+            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            <fetch aggregate=""true"">
+                <entity name=""{res_document.logicalName}"">
+                <attribute name=""{res_document.res_calculatedcommission}"" alias=""res_calculatedcommission"" aggregate=""sum"" />
+                <attribute name=""{res_document.res_nettotalexcludingvat}"" alias=""res_nettotalexcludingvat"" aggregate=""sum"" />
+                <filter>
+                    <condition attribute=""res_agentcommissionid"" operator=""eq"" value=""{fetchData.res_agentcommissionid}"" />
+                </filter>
+                </entity>
+            </fetch>";
+            List<Entity> lDocument = service.RetrieveAll(fetchXml);
+            if (lDocument.Count > 0)
+            {
+                Entity enDocument = lDocument[0];
+                Entity enAgentCommission = new Entity(res_agentcommission.logicalName, entityId);
+                enAgentCommission.Attributes.Add(res_agentcommission.res_soldtotalamount, enDocument.GetAliasedValue<Money>(res_document.res_nettotalexcludingvat));
+                enAgentCommission.Attributes.Add(res_agentcommission.res_calculatedcommission, enDocument.GetAliasedValue<Money>(res_document.res_calculatedcommission));
+                service.Update(enAgentCommission);
+            }
+        }
+
     }
     public class Model
     {

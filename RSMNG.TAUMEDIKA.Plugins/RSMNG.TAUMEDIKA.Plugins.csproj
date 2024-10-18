@@ -123,6 +123,8 @@
     <Compile Include="Contact\PreCreate.cs" />
     <Compile Include="Contact\PreUpdate.cs" />
     <Compile Include="DataIntegration\MultipleDistribution.cs" />
+    <Compile Include="Document\PostUpdate.cs" />
+    <Compile Include="Document\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreCreate.cs" />
     <Compile Include="Product\PreCreate.cs" />

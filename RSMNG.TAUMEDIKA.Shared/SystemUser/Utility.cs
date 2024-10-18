@@ -3,6 +3,7 @@ using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RSMNG.TAUMEDIKA.DataModel;
 
 namespace RSMNG.TAUMEDIKA.Shared.SystemUser
 {
@@ -39,6 +40,31 @@ namespace RSMNG.TAUMEDIKA.Shared.SystemUser
             }
 
             return ret;
+        }
+        public static decimal? GetCommissionPercentage(IOrganizationService service, string agentNumber)
+        {
+            var fetchData = new
+            {
+                res_agentnumber = agentNumber
+            };
+            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            <fetch>
+              <entity name=""{systemuser.logicalName}"">
+                <attribute name=""{systemuser.res_commissionpercentage}"" />
+                <filter>
+                  <condition attribute=""{systemuser.res_agentnumber}"" operator=""eq"" value=""{fetchData.res_agentnumber}"" />
+                </filter>
+              </entity>
+            </fetch>";
+            EntityCollection ecAgent = service.RetrieveMultiple(new FetchExpression(fetchXml));
+            if (ecAgent?.Entities?.Count>0)
+            {
+                Entity enAgent = ecAgent.Entities[0];
+                return enAgent.ContainsAttributeNotNull(systemuser.res_commissionpercentage) ? enAgent.GetAttributeValue<decimal?>(systemuser.res_commissionpercentage) : null;
+            } else
+            {
+                return null;
+            }
         }
     }
 }
