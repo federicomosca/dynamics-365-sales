@@ -194,13 +194,22 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
         }
     };
     _self.DEACTIVATE = {
-        canExecute: formContext => {
-            debugger;
-            const erpControl = formContext.getControl("header_res_iserpimport");
-            const isERP = erpControl.getAttribute().getValue();
+        canExecute: async SelectedControlSelectedItemIds => {
 
-            //se import ERP = SI disattivo il button
-            if (isERP) {
+            let isErpSelected = false;
+
+            SelectedControlSelectedItemIds.forEach(id, () => {
+
+                const pricelevel = await Xrm.WebApi.retrieveRecord("pricelevel", id, "?$select=res_iserpimport");
+                if (pricelevel) {
+                    const isErpImport = pricelevel.res_iserpimport ?? null;
+
+                    isErpSelected = isErpImport === true ? true : false;
+                }
+            });
+
+            //se anche solo un record ha import ERP = SI disattivo il button
+            if (isErpSelected) {
                 return false;
             }
             return true;
