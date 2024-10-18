@@ -40,10 +40,13 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
+            const beginDateString = formContext.getAttribute("begindate").getValue();
+            const endDateString = formContext.getAttribute("enddate").getValue();
+
             let scopeTypeCodes = formContext.getControl("res_scopetypecodes").getAttribute().getOptions();
             let selectedScope = formContext.getAttribute("res_scopetypecodes").getValue();
-            let beginDate = new Date(formContext.getAttribute("begindate").getValue());
-            let endDate = new Date(formContext.getAttribute("enddate").getValue());
+            let beginDate = beginDateString ? new Date(beginDateString) : null;
+            let endDate = endDateString ? new Date(endDateString) : null;
             let transactionCurrency = formContext.getAttribute("transactioncurrencyid").getValue();
             let isDefaultWebsite = formContext.getAttribute("res_isdefaultforwebsite").getValue();
             let isDefaultForAgents = formContext.getAttribute("res_isdefaultforagents").getValue();
@@ -52,8 +55,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
             jsonDataInput = {
                 scopeValues: scopeTypeCodes,
                 selectedScope: selectedScope,
-                begindate: beginDate.toISOString(),
-                enddate: endDate.toISOString(),
+                begindate: beginDate ? beginDate.toISOString() : null,
+                enddate: endDate ? endDate.toISOString() : null,
                 transactioncurrencyid: transactionCurrency === null ? null : RSMNG.TAUMEDIKA.GLOBAL.convertGuid(transactionCurrency[0].id),
                 isDefautWebsite: isDefaultWebsite,
                 isDefaultForAgents: isDefaultForAgents,
@@ -125,8 +128,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
                     jsonDataInput = {
                         scopeValues: scopeTypeCodes,
                         selectedScope: result.res_scopetypecodes,
-                        begindate: result.begindate !== null ? result.begindate.replace("Z", ".000Z") : null,
-                        enddate: result.enddate !== null ? result.enddate.replace("Z", ".000Z") : null,
+                        begindate: result.begindate ? result.begindate.replace("Z", ".000Z") : null,
+                        enddate: result.enddate ? result.enddate.replace("Z", ".000Z") : null,
                         transactioncurrencyid: result._transactioncurrencyid_value,
                         isDefautWebsite: result.res_isdefaultforwebsite,
                         isDefaultForAgents: result.res_isdefaultforagents,

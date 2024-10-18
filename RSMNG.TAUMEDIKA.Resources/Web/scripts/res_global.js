@@ -366,14 +366,14 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
                 "</fetch>"
             ].join("");
 
-         
+
             Xrm.WebApi.retrieveMultipleRecords("res_address", fetchXml)
                 .then(function (result) {
-                    resolve(result); 
+                    resolve(result);
                 })
                 .catch(function (error) {
                     console.log(error);
-                    reject(error.message);  
+                    reject(error.message);
                 });
         });
     };
@@ -387,11 +387,11 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             if (setAllReadOnly === true && !field.getDisabled()) {
                 field.setDisabled(true);
 
-            } 
+            }
             else if (setAllReadOnly === false && !readOnlyFields.includes(field._controlName)) {
                 field.setDisabled(false);
             }
-            
+
         });
 
     };
@@ -410,5 +410,4 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             );
         });
     };
-    //-----------------------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

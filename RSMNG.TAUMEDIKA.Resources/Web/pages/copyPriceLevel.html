@@ -42,6 +42,7 @@
                     id: item.value
                 };
             });
+
             //console.log(GLOBAL_data);
             const form = new dhx.Form("content", {
                 css: "dhx_widget--bordered",
@@ -73,17 +74,14 @@
                 }
             });
 
-
-
-
             form.events.on("click", function (name, e) {
                 if (name === "copia") {
 
                     let out = {
                         name: form.getItem("name").getValue(),
                         selectedScope: form.getItem("ambito").getValue(),
-                        begindate: GLOBAL_data.begindate,
-                        enddate: GLOBAL_data.enddate,
+                        begindate: GLOBAL_data.begindate ?? null,
+                        enddate: GLOBAL_data.enddate ?? null,
                         transactioncurrencyid: GLOBAL_data.transactioncurrencyid,
                         isDefautWebsite: GLOBAL_data.isDefautWebsite,
                         isDefaultForAgents: GLOBAL_data.isDefaultForAgents,
