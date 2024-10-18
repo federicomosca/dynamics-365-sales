@@ -40,6 +40,8 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
+            const priceLevelId = formContext.data.entity.getId() ?? null;
+
             const beginDateString = formContext.getAttribute("begindate").getValue();
             const endDateString = formContext.getAttribute("enddate").getValue();
 
@@ -53,6 +55,7 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
             let description = formContext.getAttribute("description").getValue();
 
             jsonDataInput = {
+                priceLevelId: priceLevelId ?? null,
                 scopeValues: scopeTypeCodes,
                 selectedScope: selectedScope,
                 begindate: beginDate ? beginDate.toISOString() : null,
@@ -126,6 +129,7 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
                 function success(result) {
 
                     jsonDataInput = {
+                        priceLevelId: priceLevelId,
                         scopeValues: scopeTypeCodes,
                         selectedScope: result.res_scopetypecodes,
                         begindate: result.begindate ? result.begindate.replace("Z", ".000Z") : null,
