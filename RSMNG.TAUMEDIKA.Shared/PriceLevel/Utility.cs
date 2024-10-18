@@ -28,6 +28,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 //--- Deserializza --------------------------------------------------------------------------
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
+                if (isTrace) trace.Trace($"Sono nel metodo CopyPriceLevel");
                 if (isTrace) trace.Trace($"Listino ID stringa: {pl.Guid}");
                 Guid listinoGuid = string.IsNullOrEmpty(pl.Guid) ? new Guid(pl.Guid) : Guid.Empty;
                 if (isTrace) trace.Trace($"Listino Guid: {listinoGuid}");
