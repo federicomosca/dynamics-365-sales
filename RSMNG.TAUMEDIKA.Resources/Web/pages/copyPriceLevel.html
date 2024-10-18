@@ -77,8 +77,6 @@
             form.events.on("click", function (name, e) {
                 if (name === "copia") {
 
-                    console.log(GLOBAL_data.priceLevelId);
-
                     let out = {
                         Guid: GLOBAL_data.priceLevelId.replace(/[{}]/g, ""),
                         name: form.getItem("name").getValue(),

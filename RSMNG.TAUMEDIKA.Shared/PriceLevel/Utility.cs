@@ -28,10 +28,8 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 //--- Deserializza --------------------------------------------------------------------------
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
-                if (isTrace) trace.Trace($"Sono nel metodo CopyPriceLevel");
-                if (isTrace) trace.Trace($"Listino ID stringa: {pl.Guid}");
-                Guid listinoGuid = string.IsNullOrEmpty(pl.Guid) ? new Guid(pl.Guid) : Guid.Empty;
-                if (isTrace) trace.Trace($"Listino Guid: {listinoGuid}");
+
+                string listinoGuid = string.IsNullOrEmpty(pl.Guid) ? pl.Guid : null;
 
                 Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
@@ -60,7 +58,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
                 service.Create(enPriceLevel);
 
-                if (listinoGuid != Guid.Empty)
+                if (listinoGuid != null)
                 {
                     //dopo aver creato la copia del listino, recupero le voci associate all'originale
                     var fetchVociListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
