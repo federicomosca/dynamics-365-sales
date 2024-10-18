@@ -218,7 +218,6 @@ if (typeof (RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME) == "undefined") {
 }).call(RSMNG.TAUMEDIKA.PRICELEVEL.RIBBON.HOME);
 
 
-
 /*
 Alla call puoi aggiungere i namespace se hai necessità di estendere le funzionalità
 - RSMNG.PROGETTO.ENTITY.RIBBON.SUBGRID
