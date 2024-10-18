@@ -22,20 +22,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-            Trace("Check", "Trace attivo.");
+            crmServiceProvider.TracingService.Trace("Trace attivo.");
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -45,24 +32,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginRegion = "Valorizzo il campo Categoria principale";
 
             postImage.TryGetAttributeValue<OptionSetValue>(product.res_origincode, out OptionSetValue originCode);
-            Trace("originCode", originCode);
+            crmServiceProvider.TracingService.Trace("originCode", originCode);
 
 
             int dynamics = (int)product.res_origincodeValues.Dynamics;
             int origine = (int)originCode.Value;
 
-            Trace("dynamics", dynamics);
-            Trace("origine ", origine);
+            crmServiceProvider.TracingService.Trace("dynamics", dynamics);
+            crmServiceProvider.TracingService.Trace("origine ", origine);
 
             if (origine == dynamics)
             {
-                Trace("origine == dynamics", origine == dynamics);
+                crmServiceProvider.TracingService.Trace("origine == dynamics", origine == dynamics);
                 postImage.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociata);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
                 if (erFamigliaAssociata != null)
                 {
-                    Trace("erParentProduct", erFamigliaAssociata);
+                    crmServiceProvider.TracingService.Trace("erParentProduct", erFamigliaAssociata);
 
                     Entity categoriaPrincipale = crmServiceProvider.Service.Retrieve($"{product.logicalName}", erFamigliaAssociata.Id, new ColumnSet(product.parentproductid));
                     categoriaPrincipale.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociataPadre);

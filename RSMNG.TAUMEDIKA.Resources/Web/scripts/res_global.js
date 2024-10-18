@@ -462,5 +462,4 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
             );
         });
     };
-    //-----------------------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.GLOBAL);

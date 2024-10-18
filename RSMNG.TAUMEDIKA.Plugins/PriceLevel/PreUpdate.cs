@@ -22,21 +22,44 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            ITracingService ts = crmServiceProvider.TracingService;
+            if (PluginActiveTrace) if (PluginActiveTrace) ts.Trace("Sono nel PreUpdate di PriceLevel");
+
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            crmServiceProvider.PluginContext.PreEntityImages.TryGetValue("PreImage", out Entity preImage);
+            if (preImage == null) { throw new ApplicationException("PreImage not found."); }
+            Entity postImage = target.GetPostImage(preImage);
 
-            #region Controllo univocità DEFAULT PER AGENTI
-            PluginRegion = "controllo univocità DEFAULT PER AGENTI";
+            #region Controllo univocità "Default per Agenti", "Importo ERP", "Default sito web"
+            PluginRegion = "Controllo univocità \"Default per Agenti\", \"Importo ERP\", \"Default sito web\"";
 
-            if(target.Contains(pricelevel.res_isdefaultforagents) || target.Contains(pricelevel.statecode))
+            postImage.TryGetAttributeValue<OptionSetValue>(pricelevel.statecode, out OptionSetValue statecode);
+            int stato = (int)statecode.Value;
+
+            if (stato == (int)pricelevel.statecodeValues.Attivo)
             {
-                bool isDefaultForAgents = target.GetAttributeValue<bool>(pricelevel.res_isdefaultforagents);
+                if (target.Contains(pricelevel.res_isdefaultforagents) ||
+                    target.Contains(pricelevel.res_iserpimport) ||
+                    target.Contains(pricelevel.res_isdefaultforagents))
+                {
+                    target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforagents, out bool isDefaultPerAgenti);
+                    target.TryGetAttributeValue<bool>(pricelevel.res_iserpimport, out bool isERPImport);
+                    target.TryGetAttributeValue<bool>(pricelevel.res_isdefaultforwebsite, out bool isDefaultPerWebsite);
 
-                if (isDefaultForAgents) { Utility.CheckDefaultForAgents(crmServiceProvider.Service); }
+                    if (PluginActiveTrace) ts.Trace($"Default per agenti: {isDefaultPerAgenti}");   /* <--------------------------< Trace >-- */
+                    if (PluginActiveTrace) ts.Trace($"Import ERP: {isERPImport}");                  /* <--------------------------< Trace >-- */
+                    if (PluginActiveTrace) ts.Trace($"Default web site: {isDefaultPerWebsite}");    /* <--------------------------< Trace >-- */
+
+                    string field = null;
+                    if (isDefaultPerAgenti) { field = "Default per agenti"; }
+                    if (isERPImport) { field = "Import ERP"; }
+                    if (isDefaultPerWebsite) { field = "Default per sito web"; }
+
+                    if (PluginActiveTrace) ts.Trace($"Field: {field}");                             /* <--------------------------< Trace >-- */
+                    Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, preImage.Id, field);
+                }
             }
-            
             #endregion
-
-
         }
     }
 }

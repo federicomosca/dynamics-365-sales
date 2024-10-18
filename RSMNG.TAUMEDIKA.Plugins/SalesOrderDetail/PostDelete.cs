@@ -22,22 +22,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-            #endregion
-
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
 
             //----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
@@ -57,7 +41,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
             EntityReference erParent = preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) ?? null;
-            Trace("Parent entity reference is not null", erParent != null ? true : false);
+            crmServiceProvider.TracingService.Trace("Parent entity reference is not null", erParent != null ? true : false);
 
             if (erParent != null)
             {
@@ -72,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                         </filter>
                                       </entity>
                                     </fetch>";
-                Trace("fetch_Aggregato_Righe", fetchAggregatoRighe);
+                crmServiceProvider.TracingService.Trace("fetch_Aggregato_Righe", fetchAggregatoRighe);
                 EntityCollection aggregatoRigheCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchAggregatoRighe));
 
                 if (aggregatoRigheCollection.Entities.Count > 0)
@@ -82,8 +66,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     parentTotaleProdotti = aggregato.GetAliasedValue<Money>("TotaleImponibile")?.Value is decimal taxableamount ? taxableamount : 0;
                     detailsTotaleIVA = aggregato.GetAliasedValue<Money>("TotaleIva")?.Value is decimal totaltax ? totaltax : 0;
 
-                    Trace("parentTotaleProdotti", parentTotaleProdotti);
-                    Trace("detailsTotaleIVA ", detailsTotaleIVA);
+                    crmServiceProvider.TracingService.Trace("parentTotaleProdotti", parentTotaleProdotti);
+                    crmServiceProvider.TracingService.Trace("detailsTotaleIVA ", detailsTotaleIVA);
 
                     var fetchSpesaAccessoria = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
@@ -97,7 +81,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                     </link-entity>
                                   </entity>
                                 </fetch>";
-                    Trace("fetch_Spesa_Accessoria", fetchSpesaAccessoria);
+                    crmServiceProvider.TracingService.Trace("fetch_Spesa_Accessoria", fetchSpesaAccessoria);
                     EntityCollection spesaAccessoriaCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchSpesaAccessoria));
 
                     if (spesaAccessoriaCollection.Entities.Count > 0)
@@ -113,12 +97,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         parentTotaleImponibile = parentTotaleProdotti + parentIvaSpesaAccessoria;
                         parentImportoTotale = parentTotaleImponibile + parentTotaleIva;
 
-                        Trace("parentImportoSpesaAccessoria", parentImportoSpesaAccessoria);
-                        Trace("parentAliquota ", parentAliquota);
-                        Trace("parentIvaSpesaAccessoria", parentIvaSpesaAccessoria);
-                        Trace("parentTotaleIva ", parentTotaleIva);
-                        Trace("parentTotaleImponibile", parentTotaleImponibile);
-                        Trace("parentImportoTotale", parentImportoTotale);
+                        crmServiceProvider.TracingService.Trace("parentImportoSpesaAccessoria", parentImportoSpesaAccessoria);
+                        crmServiceProvider.TracingService.Trace("parentAliquota ", parentAliquota);
+                        crmServiceProvider.TracingService.Trace("parentIvaSpesaAccessoria", parentIvaSpesaAccessoria);
+                        crmServiceProvider.TracingService.Trace("parentTotaleIva ", parentTotaleIva);
+                        crmServiceProvider.TracingService.Trace("parentTotaleImponibile", parentTotaleImponibile);
+                        crmServiceProvider.TracingService.Trace("parentImportoTotale", parentImportoTotale);
                     }
                 }
                 //----------------------------------------< AGGIORNAMENTO >-----------------------------------------//

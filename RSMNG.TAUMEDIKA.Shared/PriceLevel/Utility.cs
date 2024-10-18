@@ -14,6 +14,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 {
     public class Utility
     {
+        public static bool isTrace = false;
         public static string CopyPriceLevel(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
             string result = string.Empty;
@@ -28,6 +29,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 Model.PriceLevel pl = RSMNG.Plugins.Controller.Deserialize<Model.PriceLevel>(Uri.UnescapeDataString(jsonDataInput), typeof(Model.PriceLevel));
                 //-------------------------------------------------------------------------------------------
 
+                string listinoGuid = !string.IsNullOrEmpty(pl.Guid) ? pl.Guid : null;
 
                 Entity enPriceLevel = new Entity(pricelevel.logicalName);
 
@@ -35,8 +37,15 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
                 DateTime? beginnerDate = null;
                 DateTime? endDate = null;
-                if (pl.begindate != null) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
-                if (pl.enddate != null) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+
+                if (isTrace) trace.Trace($"start date from json: {pl.begindate}");
+                if (isTrace) trace.Trace($"end date from json: {pl.enddate}");
+
+                if (!string.IsNullOrWhiteSpace(pl.begindate)) { beginnerDate = DateTime.ParseExact(pl.begindate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+                if (!string.IsNullOrWhiteSpace(pl.enddate)) { endDate = DateTime.ParseExact(pl.enddate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal); }
+
+                if (isTrace) trace.Trace($"beginnerDate: {beginnerDate}");
+                if (isTrace) trace.Trace($"endDate: {endDate}");
 
                 enPriceLevel.Attributes.Add(pricelevel.name, pl.name);
                 enPriceLevel.Attributes.Add(pricelevel.begindate, beginnerDate);
@@ -46,8 +55,73 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforagents, false); // Esiste solo un record con isdefaultforagents a true, quindi questo valore a priori non può essere copiato.
                 enPriceLevel.Attributes.Add(pricelevel.res_isdefaultforwebsite, pl.isDefautWebsite);
                 enPriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, pl.selectedScope != null && pl.selectedScope.Any() ? optSet : null);
+                enPriceLevel[pricelevel.res_isdefaultforagents] = false;
+                enPriceLevel[pricelevel.res_isdefaultforwebsite] = false;
+                enPriceLevel[pricelevel.res_iserpimport] = false;
 
-                service.Create(enPriceLevel);
+                Guid listinoCopiatoId = service.Create(enPriceLevel);
+
+                if (!string.IsNullOrEmpty(listinoGuid))
+                {
+
+                    //dopo aver creato la copia del listino, recupero le voci associate all'originale
+                    var fetchVociListino = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch>
+                                      <entity name=""{productpricelevel.logicalName}"">
+                                            <attribute name=""{productpricelevel.amount}"" />
+                                            <attribute name=""{productpricelevel.discounttypeid}"" />
+                                            <attribute name=""{productpricelevel.percentage}"" />
+                                            <attribute name=""{productpricelevel.pricelevelid}"" />
+                                            <attribute name=""{productpricelevel.pricingmethodcode}"" />
+                                            <attribute name=""{productpricelevel.productid}"" />
+                                            <attribute name=""{productpricelevel.quantitysellingcode}"" />
+                                            <attribute name=""{productpricelevel.roundingoptionamount}"" />
+                                            <attribute name=""{productpricelevel.roundingoptioncode}"" />
+                                            <attribute name=""{productpricelevel.roundingpolicycode}"" />
+                                            <attribute name=""{productpricelevel.transactioncurrencyid}"" />
+                                            <attribute name=""{productpricelevel.uomid}"" />
+                                        <filter>
+                                          <condition attribute=""{productpricelevel.pricelevelid}"" operator=""eq"" value=""{listinoGuid}"" />
+                                        </filter>
+                                      </entity>
+                                    </fetch>";
+                    if (isTrace) trace.Trace(fetchVociListino);
+                    EntityCollection vociListinoCollection = service.RetrieveMultiple(new FetchExpression(fetchVociListino));
+
+                    if (vociListinoCollection.Entities.Count > 0)
+                    {
+                        if (isTrace) trace.Trace("Ho trovato delle voci di listino associate al listino prezzi");
+                        foreach (Entity voceOriginale in vociListinoCollection.Entities)
+                        {
+                            Entity voceCopia = new Entity(productpricelevel.logicalName);
+                            if (isTrace) trace.Trace($"Ho creato la copia della voce di listino: {voceOriginale.Id}");
+                            List<string> attributiDaCopiare = new List<string> {
+                                productpricelevel.amount,
+                                productpricelevel.discounttypeid,
+                                productpricelevel.percentage,
+                                productpricelevel.pricelevelid,
+                                productpricelevel.pricingmethodcode,
+                                productpricelevel.productid,
+                                productpricelevel.quantitysellingcode,
+                                productpricelevel.roundingoptionamount,
+                                productpricelevel.roundingoptioncode,
+                                productpricelevel.roundingpolicycode,
+                                productpricelevel.transactioncurrencyid,
+                                productpricelevel.uomid
+                            };
+                            foreach (string attributo in attributiDaCopiare)
+                            {
+                                if (isTrace) trace.Trace($"L'attributo {attributo} è null: {voceOriginale.GetAttributeValue<object>(attributo) == null}");
+                                voceCopia[attributo] = voceOriginale.GetAttributeValue<object>(attributo) ?? null;
+                            }
+                            voceCopia[productpricelevel.pricelevelid] = new EntityReference(pricelevel.logicalName, listinoCopiatoId);
+                            if (isTrace) trace.Trace($"Ho valorizzato l'id del padre della copia: {listinoCopiatoId}");
+
+                            service.Create(voceCopia);
+                            if (isTrace) trace.Trace($"Ho registrto nel db la copia della voce di listino");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -62,32 +136,42 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             return result;
         }
-        public static void CheckDefaultForAgents(IOrganizationService service)
+        public static void checkIsDefault(IOrganizationService service, CrmServiceProvider crmService, Guid priceLevelId, string field)
         {
-            var fetchData = new
+            string condition = null;
+            switch (field)
             {
-                res_isdefaultforagents = (int)pricelevel.res_isdefaultforagentsValues.Si,
-                statecode = (int)pricelevel.statecodeValues.Attivo
-            };
-            var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                case "Default per agenti":
+                    condition = $@"<condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                   <condition attribute=""{pricelevel.res_isdefaultforagents}"" operator=""eq"" value=""1"" />";
+                    break;
+
+                case "Import ERP":
+                    condition = $@"<condition attribute=""{pricelevel.statecode}"" operator=""eq"" value=""0"" />
+                                   <condition attribute=""{pricelevel.res_iserpimport}"" operator=""eq"" value=""1"" />";
+                    break;
+
+                case "Default per sito web":
+                    condition = $@"<condition attribute=""{pricelevel.res_isdefaultforwebsite}"" operator=""eq"" value=""1"" />";
+                    break;
+            }
+
+            var fetchPriceLevel = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                     <fetch top=""1"">
                       <entity name=""pricelevel"">
-                        <attribute name=""res_isdefaultforagents"" />
                         <filter>
-                          <condition attribute=""res_isdefaultforagents"" operator=""eq"" value=""{fetchData.res_isdefaultforagents/*1*/}"" />
-                          <condition attribute=""statecode"" operator=""eq"" value=""{fetchData.statecode/*0*/}"" />
+                          <condition attribute=""{pricelevel.pricelevelid}"" operator=""ne"" value=""{priceLevelId}"" />
+                          {condition}
                         </filter>
                       </entity>
                     </fetch>";
 
-            EntityCollection ec = service.RetrieveMultiple(new FetchExpression(fetchXml));
+            EntityCollection ec = service.RetrieveMultiple(new FetchExpression(fetchPriceLevel));
 
             if (ec.Entities.Count > 0)
             {
-                throw new ApplicationException("Solo un listino prezzi per volta può avere 'Default per agenti' impostato a si");
+                if (!string.IsNullOrEmpty(field)) { throw new ApplicationException($"Non può esistere più di un record {field}"); }
             }
-
-
         }
         public static EntityReference GetPriceLevelERP(IOrganizationService service)
         {
@@ -109,7 +193,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
             EntityCollection ecPriceLevel = service.RetrieveMultiple(new FetchExpression(fetchXml));
             if (ecPriceLevel?.Entities?.Count() > 0)
             {
-                erPriceLevel=ecPriceLevel.Entities[0].ToEntityReference();
+                erPriceLevel = ecPriceLevel.Entities[0].ToEntityReference();
             }
 
             return erPriceLevel;
@@ -121,6 +205,8 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
         [DataContract]
         public class PriceLevel
         {
+            [DataMember]
+            public string Guid { get; set; }
             [DataMember]
             public string name { get; set; }
             [DataMember]

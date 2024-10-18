@@ -21,20 +21,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
             #region Creo indirizzo di default
@@ -48,7 +34,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             //se sono stati valorizzati tutti e 3...
             if (!string.IsNullOrEmpty(indirizzo) && !string.IsNullOrEmpty(città) && !string.IsNullOrEmpty(CAP))
             {
-                Trace("Check", "Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
+                crmServiceProvider.TracingService.Trace("Check", "Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
 
 
                 //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
@@ -57,7 +43,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 //se non trovo nemmeno un indirizzo
                 if (defaultAddressesCollection.Entities.Count < 0)
                 {
-                    Trace("Check", "Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                    crmServiceProvider.TracingService.Trace("Check", "Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
                     //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
                     target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
@@ -67,7 +53,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
                     Utility.CreateNewDefaultAddress(target, crmServiceProvider, indirizzo, città, CAP, provincia, località, nazione);
 
-                    Trace("Check", "Ho creato un nuovo indirizzo di default"); /** <------------< TRACE >------------ */
+                    crmServiceProvider.TracingService.Trace("Check", "Ho creato un nuovo indirizzo di default"); /** <------------< TRACE >------------ */
                 }
             }
             else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");

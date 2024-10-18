@@ -24,22 +24,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-            #endregion
-
             var service = crmServiceProvider.Service;
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
@@ -53,13 +37,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Guid codiceIvaGuid = Guid.Empty;
             decimal totaleImponibile;
             decimal? totaleIva;
-            Trace("01", 01);
+            crmServiceProvider.TracingService.Trace("01", 01);
             decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m;
-            Trace("02", 02);
+            crmServiceProvider.TracingService.Trace("02", 02);
             decimal scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m;
-            Trace("03", 03);
+            crmServiceProvider.TracingService.Trace("03", 03);
             decimal? aliquota = postImage.GetAttributeValue<decimal?>(salesorderdetail.res_vatrate) ?? 0m;
-            Trace("031", 031);
+            crmServiceProvider.TracingService.Trace("031", 031);
             string productNumber = postImage.GetAttributeValue<string>(salesorderdetail.productnumber);
 
 
@@ -94,11 +78,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 if (results.Entities.Count > 0)
                 {
                     Entity prodotto = results.Entities[0];
-                    Trace("041", 041);
+                    crmServiceProvider.TracingService.Trace("041", 041);
                     codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                    Trace("04", 04);
-                    aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; Trace("aliquota", aliquota);
-                    Trace("05", 05);
+                    crmServiceProvider.TracingService.Trace("04", 04);
+                    aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; crmServiceProvider.TracingService.Trace("aliquota", aliquota);
+                    crmServiceProvider.TracingService.Trace("05", 05);
                     productNumber = prodotto.GetAttributeValue<string>(product.productnumber);
 
                     //creo qui entityreference di codice iva prima di passarla al target
@@ -108,11 +92,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             //}
             #endregion
 
-            totaleImponibile = importo - scontoTotale; Trace("totale_imponibile", totaleImponibile);
-            totaleIva = totaleImponibile * (aliquota / 100); Trace("totale_iva", totaleIva);
+            totaleImponibile = importo - scontoTotale; crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
+            totaleIva = totaleImponibile * (aliquota / 100); crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
 
             EntityReference erCodiceIVA = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
-            Trace("06", 06);
+            crmServiceProvider.TracingService.Trace("06", 06);
             target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
             target[salesorderdetail.res_taxableamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
             target[salesorderdetail.tax] = totaleIva != 0 ? new Money((decimal)totaleIva) : null;

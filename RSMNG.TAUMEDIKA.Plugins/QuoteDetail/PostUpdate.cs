@@ -22,20 +22,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = false;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
@@ -110,16 +96,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         offertaScontoTotale,            // S [quotedetail] sconto totale
                         offertaTotaleIva;               // S [quotedetail] totale iva + iva calcolata su importo spesa accessoria
 
-                    Trace("scontoTotale", scontoTotale);
-                    Trace("totaleImponibile", totaleImponibile);
-                    Trace("importoSpesaAccessoria", importoSpesaAccessoria);
-                    Trace("aliquota", aliquota);
-                    Trace("TotaleIva", totaleIva);
+                    crmServiceProvider.TracingService.Trace("scontoTotale", scontoTotale);
+                    crmServiceProvider.TracingService.Trace("totaleImponibile", totaleImponibile);
+                    crmServiceProvider.TracingService.Trace("importoSpesaAccessoria", importoSpesaAccessoria);
+                    crmServiceProvider.TracingService.Trace("aliquota", aliquota);
+                    crmServiceProvider.TracingService.Trace("TotaleIva", totaleIva);
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                    offertaTotaleProdotti = totaleImponibile; Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-                    offertaScontoTotale = scontoTotale; Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); Trace("offerta_Totale_Iva", offertaTotaleIva);
+                    offertaTotaleProdotti = totaleImponibile; crmServiceProvider.TracingService.Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    offertaScontoTotale = scontoTotale; crmServiceProvider.TracingService.Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); crmServiceProvider.TracingService.Trace("offerta_Totale_Iva", offertaTotaleIva);
 
                     Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
 

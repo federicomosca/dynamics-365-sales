@@ -23,21 +23,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            #region Trace Activation Method
-            bool isFirstExecute = true;
-            void Trace(string key, object value)
-            {
-                bool isTraceActive = false;
-                if (isFirstExecute)
-                {
-                    crmServiceProvider.TracingService.Trace($"TRACE IS ACTIVE: {isTraceActive}");
-
-                    isFirstExecute = false;
-                }
-                if (isTraceActive) crmServiceProvider.TracingService.Trace($"{key.ToUpper()}: {value.ToString()}");
-            }
-            #endregion
-
             IPluginExecutionContext context = crmServiceProvider.PluginContext as IPluginExecutionContext;
 
             if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference target)
@@ -46,7 +31,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                 //qui definisco il record padre che sta condividendo i permessi
                 Guid contactId = target.Id;
-                Trace("Contact ID", contactId);
+                crmServiceProvider.TracingService.Trace("Contact ID", contactId);
 
                 if (context.InputParameters.Contains("PrincipalAccess") && context.InputParameters["PrincipalAccess"] is PrincipalAccess principalAccess)
                 {
@@ -55,12 +40,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     string principalLogicalName = principalAccess.Principal.LogicalName;
                     var principal = new EntityReference(principalLogicalName, principalId);
 
-                    Trace("Principal ID", principalId);
-                    Trace("Principal_logical_name", principalLogicalName);
+                    crmServiceProvider.TracingService.Trace("Principal ID", principalId);
+                    crmServiceProvider.TracingService.Trace("Principal_logical_name", principalLogicalName);
 
                     //qui recupero i permessi selezionati nel record padre
                     AccessRights rights = principalAccess.AccessMask;
-                    Trace("Rights", rights);
+                    crmServiceProvider.TracingService.Trace("Rights", rights);
 
                     var fetchAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
@@ -75,10 +60,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                     if (addresses.Entities.Count > 0)
                     {
-                        Trace("Check", "Fetched results.");
+                        crmServiceProvider.TracingService.Trace("Check", "Fetched results.");
                         foreach (var address in addresses.Entities)
                         {
-                            Trace("address_id", address.Id);
+                            crmServiceProvider.TracingService.Trace("address_id", address.Id);
                             crmServiceProvider.Service.GrantAccess(principal, target, rights);
                         }
                     }

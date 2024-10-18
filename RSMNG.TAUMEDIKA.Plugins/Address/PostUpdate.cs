@@ -23,20 +23,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            void Trace(string key, object value)
-            {
-                //TRACE TOGGLE
-                bool isTraceActive = true;
-                {
-                    if (isTraceActive)
-                    {
-                        key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToUpper();
-                        value = value.ToString();
-                        crmServiceProvider.TracingService.Trace($"{key}: {value}");
-                    }
-                }
-            }
-
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
@@ -59,11 +45,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     //se ci sono, imposto Default e Indirizzo scheda cliente a NO e faccio update
                     if (defaultAddressesCollection.Entities.Count > 0)
                     {
-                        Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                        crmServiceProvider.TracingService.Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
                         foreach (Entity duplicate in defaultAddressesCollection.Entities)
                         {
-                            Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
+                            crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
                             duplicate[res_address.res_isdefault] = false;
                             duplicate[res_address.res_iscustomeraddress] = false;
                             crmServiceProvider.Service.Update(duplicate);
