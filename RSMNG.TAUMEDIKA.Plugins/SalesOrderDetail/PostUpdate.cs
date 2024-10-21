@@ -70,6 +70,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     {
                         salesorderid = erSalesOrder.Id
                     };
+
                     // Recupero Importo Spesa Accessoria  e Aliquota
                     var fetchXml2 = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
@@ -98,20 +99,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         offertaScontoTotale,            // S [salesorderdetail] sconto totale
                         offertaTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("scontoTotale", scontoTotale);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("totaleImponibile", totaleImponibile);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("importoSpesaAccessoria", importoSpesaAccessoria);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("aliquota", aliquota);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("TotaleIva", totaleIva);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"scontoTotale {scontoTotale}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleImponibile {totaleImponibile}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importoSpesaAccessoria {importoSpesaAccessoria}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"aliquota {aliquota}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIva {totaleIva}");
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
                     offertaTotaleProdotti = totaleImponibile;
                     offertaScontoTotale = scontoTotale;
                     offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Totale_Iva", offertaTotaleIva);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaTotaleProdotti {offertaTotaleProdotti}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaScontoTotale {offertaScontoTotale}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaTotaleIva {offertaTotaleIva}");
 
                     Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
 
