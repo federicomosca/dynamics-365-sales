@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             PluginMessage = "Update";
             PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -37,9 +37,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 decimal aliquota = 0;
                 decimal importoSpesaAccessoria = 0;
 
-                decimal scontoTotale = 0;
-                decimal totaleImponibile = 0;
-                decimal totaleIva = 0;
+                decimal scontoTotale;
+                decimal totaleImponibile;
+                decimal totaleIva;
 
                 var fetchData = new
                 {
@@ -84,30 +84,34 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                   </entity>
                                 </fetch>";
 
-                    EntityCollection ecOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml2));
+                    EntityCollection ecOrdine = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml2));
 
-                    if (ecOfferta.Entities.Count > 0)
+                    if (ecOrdine.Entities.Count > 0)
                     {
-                        importoSpesaAccessoria = ecOfferta.Entities[0].ContainsAttributeNotNull(salesorder.freightamount) ? ecOfferta.Entities[0].GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
-                        aliquota = ecOfferta.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOfferta.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
+                        importoSpesaAccessoria = ecOrdine.Entities[0].ContainsAttributeNotNull(salesorder.freightamount) ? ecOrdine.Entities[0].GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
+                        aliquota = ecOrdine.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOrdine.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
                     }
 
-                    ////----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
+                    ////----------------------------------< CAMPI ORDINE DA AGGIORNARE >----------------------------------//
 
                     decimal offertaTotaleProdotti,      // S [salesorderdetail] totale imponibile
                         offertaScontoTotale,            // S [salesorderdetail] sconto totale
                         offertaTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
 
-                    crmServiceProvider.TracingService.Trace("scontoTotale", scontoTotale);
-                    crmServiceProvider.TracingService.Trace("totaleImponibile", totaleImponibile);
-                    crmServiceProvider.TracingService.Trace("importoSpesaAccessoria", importoSpesaAccessoria);
-                    crmServiceProvider.TracingService.Trace("aliquota", aliquota);
-                    crmServiceProvider.TracingService.Trace("TotaleIva", totaleIva);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("scontoTotale", scontoTotale);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("totaleImponibile", totaleImponibile);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("importoSpesaAccessoria", importoSpesaAccessoria);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("aliquota", aliquota);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("TotaleIva", totaleIva);
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                    offertaTotaleProdotti = totaleImponibile; crmServiceProvider.TracingService.Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
-                    offertaScontoTotale = scontoTotale; crmServiceProvider.TracingService.Trace("offerta_Sconto_Totale", offertaScontoTotale);
-                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); crmServiceProvider.TracingService.Trace("offerta_Totale_Iva", offertaTotaleIva);
+                    offertaTotaleProdotti = totaleImponibile;
+                    offertaScontoTotale = scontoTotale;
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));
+
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("offerta_Totale_Iva", offertaTotaleIva);
 
                     Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
 

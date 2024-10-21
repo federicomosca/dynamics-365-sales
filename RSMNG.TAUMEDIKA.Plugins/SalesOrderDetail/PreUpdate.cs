@@ -64,22 +64,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                     //dalla fetch
                     Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                    decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; crmServiceProvider.TracingService.Trace("aliquota_iva", codiceIvaAliquota);
+                    decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
+
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("aliquota_iva", codiceIvaAliquota);
 
                     //dal target
-                    decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("prezzo_unitario", importo);
-                    decimal quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity); crmServiceProvider.TracingService.Trace("quantità", quantità);
-                    decimal scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("sconto_totale", scontoTotale);
+                    decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m; 
+                    decimal quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
+
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("prezzo_unitario", importo);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("quantità", quantità);
 
                     if (codiceIvaGuid != Guid.Empty)
                     {
                         EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
                         //calcolo il totale imponibile [riga offerta]
-                        decimal totaleImponibile = importo - scontoTotale; crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
+                        decimal totaleImponibile = importo;
 
                         //calcolo il totale iva [riga offerta]
-                        decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
+                        decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100);
+
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
 
                         //aggiorno i campi di riga offerta
                         target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
