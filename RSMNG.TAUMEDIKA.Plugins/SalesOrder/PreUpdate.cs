@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             PluginMessage = "Update";
             PluginPrimaryEntityName = DataModel.salesorder.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -145,8 +145,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 totaleIva = postImage.GetAttributeValue<Money>(salesorder.totaltax)?.Value ?? 0;
                 totaleProdotti = postImage.GetAttributeValue<Money>(salesorder.totallineitemamount)?.Value ?? 0;
 
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleProdotti.ToString());
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleIva.ToString());
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIva {totaleIva}");
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleProdotti {totaleProdotti}");
 
                 decimal totaleImponibile, importoTotale;
 
@@ -164,22 +164,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                                   </entity>
                                 </fetch>";
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchQuote);
-                EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
-                if (quoteCollection.Entities.Count > 0)
+                EntityCollection orderCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+
+                if (orderCollection.Entities.Count > 0)
                 {
-                    Entity enQuote = quoteCollection.Entities[0];
+                    Entity enQuote = orderCollection.Entities[0];
 
                     decimal importoSpesaAccessoria = enQuote.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
                     decimal aliquota = enQuote.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
+
                     decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria != 0 && aliquota != 0 ? importoSpesaAccessoria * (aliquota / 100) : 0;
 
                     totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleImponibile.ToString());
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(importoTotale.ToString());
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importoTotale {importoTotale}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIva {totaleIva}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleImponibile {totaleImponibile}");
 
                     target[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
                     target[salesorder.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;

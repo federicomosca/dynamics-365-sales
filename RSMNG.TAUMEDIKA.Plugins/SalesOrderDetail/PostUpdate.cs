@@ -34,12 +34,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
             {
 
-                decimal aliquota = 0;
-                decimal importoSpesaAccessoria = 0;
+                decimal aliquotaOrdine = 0;
+                decimal importoSpesaAccessoriaOrdine = 0;
 
-                decimal scontoTotale;
-                decimal totaleImponibile;
-                decimal totaleIva;
+                decimal scontoTotaleRigheOrdine;
+                decimal totaleImponibileRigheOrdine;
+                decimal totaleIvaRigheOrdine;
 
                 var fetchData = new
                 {
@@ -57,14 +57,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                       </entity>
                                     </fetch>";
 
-                EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
+                EntityCollection aggregatiRigheOrdine = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-                if (aggregatiRigheOfferta.Entities.Count > 0)
+                if (aggregatiRigheOrdine.Entities.Count > 0)
                 {
 
-                    scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
-                    totaleImponibile = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
-                    totaleIva = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
+                    scontoTotaleRigheOrdine = aggregatiRigheOrdine.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOrdine.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
+                    totaleImponibileRigheOrdine = aggregatiRigheOrdine.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOrdine.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
+                    totaleIvaRigheOrdine = aggregatiRigheOrdine.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOrdine.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
 
                     var fetchData2 = new
                     {
@@ -89,36 +89,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                     if (ecOrdine.Entities.Count > 0)
                     {
-                        importoSpesaAccessoria = ecOrdine.Entities[0].ContainsAttributeNotNull(salesorder.freightamount) ? ecOrdine.Entities[0].GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
-                        aliquota = ecOrdine.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOrdine.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
+                        importoSpesaAccessoriaOrdine = ecOrdine.Entities[0].ContainsAttributeNotNull(salesorder.freightamount) ? ecOrdine.Entities[0].GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
+                        aliquotaOrdine = ecOrdine.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOrdine.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
                     }
 
                     ////----------------------------------< CAMPI ORDINE DA AGGIORNARE >----------------------------------//
 
-                    decimal offertaTotaleProdotti,      // S [salesorderdetail] totale imponibile
-                        offertaScontoTotale,            // S [salesorderdetail] sconto totale
-                        offertaTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
+                    decimal ordineTotaleProdotti,      // S [salesorderdetail] totale imponibile
+                        ordineScontoTotale,            // S [salesorderdetail] sconto totale
+                        ordineTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"scontoTotale {scontoTotale}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleImponibile {totaleImponibile}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importoSpesaAccessoria {importoSpesaAccessoria}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"aliquota {aliquota}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIva {totaleIva}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"scontoTotaleRigheOrdine {scontoTotaleRigheOrdine}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleImponibileRigheOrdine {totaleImponibileRigheOrdine}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importoSpesaAccessoriaOrdine {importoSpesaAccessoriaOrdine}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"aliquotaOrdine {aliquotaOrdine}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIvaRigheOrdine {totaleIvaRigheOrdine}");
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
-                    offertaTotaleProdotti = totaleImponibile;
-                    offertaScontoTotale = scontoTotale;
-                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100));
+                    ordineTotaleProdotti = totaleImponibileRigheOrdine;
+                    ordineScontoTotale = scontoTotaleRigheOrdine;
+                    ordineTotaleIva = totaleIvaRigheOrdine + (importoSpesaAccessoriaOrdine * (aliquotaOrdine / 100));
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaTotaleProdotti {offertaTotaleProdotti}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaScontoTotale {offertaScontoTotale}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offertaTotaleIva {offertaTotaleIva}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineTotaleProdotti {ordineTotaleProdotti}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineScontoTotale {ordineScontoTotale}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineTotaleIva {ordineTotaleIva}");
 
                     Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
 
-                    enSalesOrder[salesorder.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
-                    enSalesOrder[salesorder.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
-                    enSalesOrder[salesorder.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
+                    enSalesOrder[salesorder.totallineitemamount] = ordineTotaleProdotti != 0 ? new Money(ordineTotaleProdotti) : null;
+                    enSalesOrder[salesorder.totaldiscountamount] = ordineScontoTotale != 0 ? new Money(ordineScontoTotale) : null;
+                    enSalesOrder[salesorder.totaltax] = ordineTotaleIva != 0 ? new Money(ordineTotaleIva) : null;
 
                     crmServiceProvider.Service.Update(enSalesOrder);
                 }
