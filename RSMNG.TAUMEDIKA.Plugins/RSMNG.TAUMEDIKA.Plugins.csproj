@@ -149,6 +149,8 @@
     <Compile Include="SalesOrder\PreUpdate.cs" />
     <Compile Include="SalesOrder\PreCreate.cs" />
     <Compile Include="SalesOrder\PrevCreate.cs" />
+    <Compile Include="VatNumber\PreCreate.cs" />
+    <Compile Include="VatNumber\PreUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
