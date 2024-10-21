@@ -33,7 +33,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
 
             return ret;
         }
-        public static string AgentCommissionCalculation(IOrganizationService service, string jsonDataInput)
+        public static string AgentCommissionCalculation(ITracingService tracingService, IOrganizationService service, string jsonDataInput)
         {
             string actionMsg = string.Empty;
             string jsonDataOutput = string.Empty;
@@ -42,6 +42,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
             {
                 #region Deserializzo il json in input
                 actionMsg = "Deserializzo il json in input";
+                tracingService.Trace(jsonDataInput);
                 Model.AgentCommissionCalculationInput agentCommissionCalculationInput = Controller.Deserialize<Model.AgentCommissionCalculationInput>(jsonDataInput, typeof(Model.AgentCommissionCalculationInput));
                 #endregion
 

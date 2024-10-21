@@ -125,6 +125,7 @@
     <Content Include="Web\scripts\OLD_quotedetail.js" />
     <Content Include="Web\scripts\quotedetail.js" />
     <Content Include="Web\scripts\product.js" />
+    <Content Include="Web\scripts\res_commission.js" />
     <Content Include="Web\scripts\res_commission_ribbon.js" />
     <Content Include="Web\scripts\salesorderdetail.js" />
     <Content Include="Web\scripts\salesorder_ribbon.js" />

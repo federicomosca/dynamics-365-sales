@@ -25,7 +25,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
             PluginMessage = "res_ClientAction";
             PluginPrimaryEntityName = "none";
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -75,7 +75,7 @@ namespace RSMNG.TAUMEDIKA.ClientAction
                     case "AGENTCOMMISSION_CALCULATION":
                         #region Calcolo delle provvigione agente
                         PluginRegion = "Calcolo delle provvigione agente";
-                        jsonDataInput = Shared.AgentCommission.Utility.AgentCommissionCalculation(serviceAdmin, jsonDataInput);
+                        jsonDataOutput = Shared.AgentCommission.Utility.AgentCommissionCalculation(tracingService, serviceAdmin, jsonDataInput);
                         #endregion
                         break;
                 }

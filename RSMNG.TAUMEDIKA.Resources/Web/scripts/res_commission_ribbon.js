@@ -107,7 +107,7 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                                     try {
                                         var jsonInput = {
                                             "DeleteAgentCommission": processedAgentCommission == 0 ? true : false,
-                                            "CommissionId": formContext.data.entity.getId(),
+                                            "CommissionId": RSMNG.TAUMEDIKA.GLOBAL.convertGuid(formContext.data.entity.getId()),
                                             "AgentId": selectedItem["systemuserid"],
                                             "LastAgent": processedAgentCommission == selectedAgentsCommission.length - 1
                                         };
@@ -115,12 +115,12 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                                             message: "",
                                             id: selectedItem["fullname"]
                                         };
-                                        var response = await RSMNG.TAUMEDIKA.GLOBAL.callClientAction(Xrm, "AGENTCOMMISSION_CALCULATION", JSON.stringify(jsonInput));
+                                        var response = await RSMNG.TAUMEDIKA.GLOBAL.callClientAction(Xrm, "AGENTCOMMISSION_CALCULATION", jsonInput);
                                         processedAgentCommission++;
                                         processPercentage = (processedAgentCommission / selectedAgentsCommission.length) * 100;
                                         Xrm.Utility.showProgressIndicator(`Calcolo della provvigione in corso con Agenti ${processedAgentCommission} di ${selectedAgentsCommission.length} (${selectedItem["fullname"].substring(0, 30) + "..."}) (${processPercentage.toFixed(1)}%)`);
-                                        if (response.Result != 0) {
-                                            resposeMsg.message = response.Message;
+                                        if (response.result != 0) {
+                                            resposeMsg.message = response.message;
                                             agentsCommissionWithErrors.push(resposeMsg);
                                         }
                                     } catch (error) {
