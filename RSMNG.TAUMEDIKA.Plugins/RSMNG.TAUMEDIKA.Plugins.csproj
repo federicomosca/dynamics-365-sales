@@ -118,6 +118,8 @@
     <Compile Include="AgentCommission\PostCreate.cs" />
     <Compile Include="AgentCommission\PreCreate.cs" />
     <Compile Include="AgentCommission\PreUpdate.cs" />
+    <Compile Include="Cap\PreCreate.cs" />
+    <Compile Include="Cap\PreUpdate.cs" />
     <Compile Include="Contact\PostCreate.cs" />
     <Compile Include="Contact\PostGrantAccess.cs" />
     <Compile Include="Contact\PostUpdate.cs" />
