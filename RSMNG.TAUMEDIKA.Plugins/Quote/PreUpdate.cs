@@ -19,7 +19,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             PluginMessage = "Update";
             PluginPrimaryEntityName = DataModel.quote.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -174,8 +174,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 totaleIva = postImage.GetAttributeValue<Money>(quote.totaltax)?.Value ?? 0;
                 totaleProdotti = postImage.GetAttributeValue<Money>(quote.totallineitemamount)?.Value ?? 0;
 
-                crmServiceProvider.TracingService.Trace("totale_prodotti", totaleProdotti);
-                crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_prodotti {totaleProdotti}");
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_iva {totaleIva}");
 
                 decimal totaleImponibile, importoTotale;
 
@@ -192,7 +192,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                                     </link-entity>
                                   </entity>
                                 </fetch>";
-                crmServiceProvider.TracingService.Trace("fetch_quote", fetchQuote);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchQuote);
+
                 EntityCollection quoteCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
 
                 if (quoteCollection.Entities.Count > 0)
@@ -207,8 +208,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
-                    crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
-                    crmServiceProvider.TracingService.Trace("importo_totale", importoTotale);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importo_totale {importoTotale}");
 
                     target[quote.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
                     target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;

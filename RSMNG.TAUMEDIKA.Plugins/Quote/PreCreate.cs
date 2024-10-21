@@ -62,7 +62,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 target.TryGetAttributeValue<EntityReference>(DataModel.quote.res_countryid, out EntityReference erCountry);
                 string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
-                target[DataModel.contact.address1_country] = countryName;
+                target[contact.address1_country] = countryName;
             }
             #endregion
 
