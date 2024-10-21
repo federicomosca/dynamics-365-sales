@@ -18,21 +18,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         {
             PluginStage = Stage.PRE;
             PluginMessage = "Update";
-            PluginPrimaryEntityName = DataModel.salesorderdetail.logicalName;
+            PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            var service = crmServiceProvider.Service;
-
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
+
+            postImage.TryGetAttributeValue<EntityReference>(salesorderdetail.productid, out EntityReference erProduct);
             if (erProduct != null)
             {
                 var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
@@ -60,7 +59,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     PluginRegion = "Valorizzo Codice Articolo";
 
                     string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
-                    target[quotedetail.res_itemcode] = codiceArticolo;
+                    target[salesorderdetail.res_itemcode] = codiceArticolo;
                     #endregion
 
                     //dalla fetch
@@ -68,9 +67,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; crmServiceProvider.TracingService.Trace("aliquota_iva", codiceIvaAliquota);
 
                     //dal target
-                    decimal importo = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("prezzo_unitario", importo);
-                    decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity); crmServiceProvider.TracingService.Trace("quantità", quantità);
-                    decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("sconto_totale", scontoTotale);
+                    decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("prezzo_unitario", importo);
+                    decimal quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity); crmServiceProvider.TracingService.Trace("quantità", quantità);
+                    decimal scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount)?.Value ?? 0m; crmServiceProvider.TracingService.Trace("sconto_totale", scontoTotale);
 
                     if (codiceIvaGuid != Guid.Empty)
                     {
@@ -83,10 +82,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100); crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
 
                         //aggiorno i campi di riga offerta
-                        target[quotedetail.res_vatnumberid] = erCodiceIVA;
-                        target[quotedetail.res_vatrate] = codiceIvaAliquota;
-                        target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-                        target[quotedetail.tax] = new Money(totaleIva);
+                        target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
+                        target[salesorderdetail.res_vatrate] = codiceIvaAliquota;
+                        target[salesorderdetail.res_taxableamount] = new Money(totaleImponibile);
+                        target[salesorderdetail.tax] = new Money(totaleIva);
                     }
                 }
             }

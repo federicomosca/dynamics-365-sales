@@ -24,57 +24,148 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+            Entity postImage = target.GetPostImage(preImage);
 
-            var trace = crmServiceProvider.TracingService;
+            #region Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent
+            PluginRegion = "Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent";
 
-            if (target.Contains(salesorderdetail.res_taxableamount))
+            EntityReference erSalesOrder = postImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
+
+            if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
             {
 
-                EntityReference erSalesOrder = target.Contains(salesorderdetail.salesorderid) ? target.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) : preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
+                decimal aliquota = 0;
+                decimal importoSpesaAccessoria = 0;
 
-                if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
+                decimal scontoTotale = 0;
+                decimal totaleImponibile = 0;
+                decimal totaleIva = 0;
+
+                var fetchData = new
                 {
-                    var fetchData = new
-                    {
-                        id = erSalesOrder.Id
-                    };
-                    var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                    salesorderid = erSalesOrder.Id
+                };
+                var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch aggregate=""true"">
                                       <entity name=""{salesorderdetail.logicalName}"">
                                         <attribute name=""{salesorderdetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
                                         <attribute name=""{salesorderdetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
                                         <attribute name=""{salesorderdetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
                                         <filter>
-                                          <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{fetchData.id}"" />
+                                          <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{fetchData.salesorderid}"" />
                                         </filter>
                                       </entity>
                                     </fetch>";
 
-                    EntityCollection results = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
+                EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
-                    if (results.Entities.Count > 0)
+                if (aggregatiRigheOfferta.Entities.Count > 0)
+                {
+
+                    scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
+                    totaleImponibile = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
+                    totaleIva = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
+
+                    var fetchData2 = new
                     {
+                        salesorderid = erSalesOrder.Id
+                    };
+                    // Recupero Importo Spesa Accessoria  e Aliquota
+                    var fetchXml2 = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                <fetch>
+                                  <entity name=""{salesorder.logicalName}"">
+                                    <attribute name=""{salesorder.freightamount}"" />
+                                    <filter>
+                                      <condition attribute=""{salesorder.salesorderid}"" operator=""eq"" value=""{fetchData2.salesorderid}"" />
+                                    </filter>
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""IVA"">
+                                      <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
+                                    </link-entity>
+                                  </entity>
+                                </fetch>";
 
-                        decimal scontoTotale = results.Entities[0].ContainsAliasNotNull("ScontoTotale") ? results.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
-                        decimal totaleImponibile = results.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? results.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
-                        decimal totaleIva = results.Entities[0].ContainsAliasNotNull("TotaleIva") ? results.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
+                    EntityCollection ecOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml2));
 
-                        Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
-
-                        enSalesOrder[salesorder.totallineitemamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-                        enSalesOrder[salesorder.totaldiscountamount] = scontoTotale != 0 ? new Money(scontoTotale) : null;
-                        enSalesOrder[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
-
-                        crmServiceProvider.Service.Update(enSalesOrder);
-
-
+                    if (ecOfferta.Entities.Count > 0)
+                    {
+                        importoSpesaAccessoria = ecOfferta.Entities[0].ContainsAttributeNotNull(salesorder.freightamount) ? ecOfferta.Entities[0].GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
+                        aliquota = ecOfferta.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOfferta.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
                     }
 
+                    ////----------------------------------< CAMPI OFFERTA DA AGGIORNARE >----------------------------------//
+
+                    decimal offertaTotaleProdotti,      // S [salesorderdetail] totale imponibile
+                        offertaScontoTotale,            // S [salesorderdetail] sconto totale
+                        offertaTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
+
+                    crmServiceProvider.TracingService.Trace("scontoTotale", scontoTotale);
+                    crmServiceProvider.TracingService.Trace("totaleImponibile", totaleImponibile);
+                    crmServiceProvider.TracingService.Trace("importoSpesaAccessoria", importoSpesaAccessoria);
+                    crmServiceProvider.TracingService.Trace("aliquota", aliquota);
+                    crmServiceProvider.TracingService.Trace("TotaleIva", totaleIva);
+                    //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
+
+                    offertaTotaleProdotti = totaleImponibile; crmServiceProvider.TracingService.Trace("offerta_Totale_Prodotti", offertaTotaleProdotti);
+                    offertaScontoTotale = scontoTotale; crmServiceProvider.TracingService.Trace("offerta_Sconto_Totale", offertaScontoTotale);
+                    offertaTotaleIva = totaleIva + (importoSpesaAccessoria * (aliquota / 100)); crmServiceProvider.TracingService.Trace("offerta_Totale_Iva", offertaTotaleIva);
+
+                    Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
+
+                    enSalesOrder[salesorder.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
+                    enSalesOrder[salesorder.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
+                    enSalesOrder[salesorder.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
+
+                    crmServiceProvider.Service.Update(enSalesOrder);
                 }
-
             }
+            #endregion
+
+            //if (target.Contains(salesorderdetail.res_taxableamount))
+            //{
+
+            //    EntityReference erSalesOrder = target.Contains(salesorderdetail.salesorderid) ? target.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) : preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
+
+            //    if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
+            //    {
+            //        var fetchData = new
+            //        {
+            //            id = erSalesOrder.Id
+            //        };
+            //        var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            //                        <fetch aggregate=""true"">
+            //                          <entity name=""{salesorderdetail.logicalName}"">
+            //                            <attribute name=""{salesorderdetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
+            //                            <attribute name=""{salesorderdetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
+            //                            <attribute name=""{salesorderdetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
+            //                            <filter>
+            //                              <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{fetchData.id}"" />
+            //                            </filter>
+            //                          </entity>
+            //                        </fetch>";
+
+            //        EntityCollection results = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
+
+            //        if (results.Entities.Count > 0)
+            //        {
+
+            //            decimal scontoTotale = results.Entities[0].ContainsAliasNotNull("ScontoTotale") ? results.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
+            //            decimal totaleImponibile = results.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? results.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
+            //            decimal totaleIva = results.Entities[0].ContainsAliasNotNull("TotaleIva") ? results.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
+
+            //            Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
+
+            //            enSalesOrder[salesorder.totallineitemamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
+            //            enSalesOrder[salesorder.totaldiscountamount] = scontoTotale != 0 ? new Money(scontoTotale) : null;
+            //            enSalesOrder[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
+
+            //            crmServiceProvider.Service.Update(enSalesOrder);
 
 
+            //        }
+
+            //    }
+
+            //}
         }
     }
 }
