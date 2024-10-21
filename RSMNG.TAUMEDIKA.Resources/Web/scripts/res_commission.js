@@ -18,13 +18,13 @@ if (typeof (RSMNG.TAUMEDIKA.RES_COMMISSION) == "undefined") {
     //Form model
     _self.formModel = {
         entity: {
-            logicalName: "quotedetail",
-            displayName: "Riga offerta"
-        },
-        fields: {
             ///Provvigione constants.
             logicalName: "res_commission",
-            displayName: "Provvigione",
+            displayName: "Provvigione"
+        },
+        fields: {
+            ///Dettaglio calcolo provvigioni
+            res_commissioncalculationdetail: "res_commissioncalculationdetail",
             ///Provvigione
             res_commissionid: "res_commissionid",
             ///Data fine
@@ -33,6 +33,10 @@ if (typeof (RSMNG.TAUMEDIKA.RES_COMMISSION) == "undefined") {
             res_name: "res_name",
             ///Data inizio
             res_startdate: "res_startdate",
+            ///Stato
+            statecode: "statecode",
+            ///Motivo stato
+            statuscode: "statuscode",
 
             /// Values for field Stato
             statecodeValues: {
@@ -55,6 +59,13 @@ if (typeof (RSMNG.TAUMEDIKA.RES_COMMISSION) == "undefined") {
         sections: {
 
         }
+    };
+    //---------------------------------------------------
+    _self.initFields = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+
+        let statuscode = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+        formContext.getControl(_self.formModel.fields.res_commissioncalculationdetail).setVisible(statuscode == _self.formModel.fields.statuscodeValues.Calcolataerrori_StateAttivo);
     };
     //---------------------------------------------------
     _self.onSaveForm = function (executionContext) {
@@ -89,10 +100,11 @@ if (typeof (RSMNG.TAUMEDIKA.RES_COMMISSION) == "undefined") {
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
-
-        //Init function
         formContext.getAttribute(_self.formModel.fields.res_startdate).addOnChange(() => { RSMNG.TAUMEDIKA.GLOBAL.checkDates(executionContext, _self.formModel.fields.res_startdate, _self.formModel.fields.res_enddate,"La data di inizio deve essere inferiore alla data di fine.","01"); });
         formContext.getAttribute(_self.formModel.fields.res_enddate).addOnChange(() => { RSMNG.TAUMEDIKA.GLOBAL.checkDates(executionContext, _self.formModel.fields.res_startdate, _self.formModel.fields.res_enddate, "La data di inizio deve essere inferiore alla data di fine.", "01"); });
+
+        //Init function
+        _self.initFields(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:

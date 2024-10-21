@@ -17,6 +17,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string displayName => "Provvigione";
 
 		/// <summary>
+		/// Display Name: Dettaglio calcolo provvigioni,
+		/// Type: Memo,
+		/// Description: 
+		/// </summary>
+		public static string res_commissioncalculationdetail => "res_commissioncalculationdetail";
+
+		/// <summary>
 		/// Display Name: Provvigione,
 		/// Type: Uniqueidentifier,
 		/// Description: Identificatore univoco delle istanze di entità

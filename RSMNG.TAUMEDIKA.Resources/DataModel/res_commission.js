@@ -4,6 +4,8 @@ RSMNG.TAUMEDIKA.DataModel.res_commission = {
 	///Provvigione constants.
 	logicalName: "res_commission",
 	displayName: "Provvigione",
+	///Dettaglio calcolo provvigioni
+	res_commissioncalculationdetail: "res_commissioncalculationdetail",
 	///Provvigione
 	res_commissionid: "res_commissionid",
 	///Data fine
