@@ -130,30 +130,30 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                                     }
                                 }
                                 Xrm.Utility.closeProgressIndicator();
+                                let commissionCalculationDetail = "";
                                 if (agentsCommissionWithErrors.length > 0) {
+                                    commissionCalculationDetail = "Lista degli agenti dove il calcolo della provvigione ha avuto errori:"
                                     for (var i = 0; i < agentsCommissionWithErrors.length; i++) {
+                                        commissionCalculationDetail += `\r\n${agentsCommissionWithErrors[i].id}`;
                                         formContext.ui.setFormNotification(`Il calcolo della provvigione non e' stata terminata con successo. L'agente': [${agentsCommissionWithErrors[i].id}] non e' stato processato. In dettaglio: [${agentsCommissionWithErrors[i].message}]`, "WARNING", i);
                                     }
                                     //Aggiorno lo stato della Provvigione
                                     statusData = {
-                                        "statecode": _self.formModel.statecodeValues.Attivo,
-                                        "statuscode": _self.formModel.statuscodeValues.Calcolataerrori_StateAttivo
+                                        "statecode": _self.formModel.fields.statecodeValues.Attivo,
+                                        "statuscode": _self.formModel.fields.statuscodeValues.Calcolataerrori_StateAttivo,
+                                        "res_commissioncalculationdetail": commissionCalculationDetail
                                     }
-                                    Xrm.WebApi.online.updateRecord(_self.formModel.logicalName, formContext.data.entity.getId(), statusData).then(function (result) {
-                                        formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
-                                    }, function (error) { });
                                 } else {
                                     formContext.ui.setFormNotification(`Il calcolo della provvigione stata terminata con successo.`, "INFO", i);
                                     //Aggiorno lo stato della Provvigione
                                     statusData = {
-                                        "statecode": _self.formModel.statecodeValues.Attivo,
-                                        "statuscode": _self.formModel.statuscodeValues.Calcolata_StateAttivo
+                                        "statecode": _self.formModel.fields.statecodeValues.Attivo,
+                                        "statuscode": _self.formModel.fields.statuscodeValues.Calcolata_StateAttivo,
+                                        "res_commissioncalculationdetail": commissionCalculationDetail
                                     }
-                                    Xrm.WebApi.online.updateRecord(_self.formModel.logicalName, formContext.data.entity.getId(), statusData).then(function (result) {
-                                        formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
-                                    }, function (error) { });
-                                    
                                 }
+                                let resultChangeStatus = await Xrm.WebApi.online.updateRecord(_self.formModel.entity.logicalName, formContext.data.entity.getId(), statusData);
+                                formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
                             }
                         } catch (e) {
                             formContext.ui.setFormNotification(`Il calcolo della provvigione non e' stata terminata con successo. In dettaglio: [${e.message}]`, "ERROR", "001");
