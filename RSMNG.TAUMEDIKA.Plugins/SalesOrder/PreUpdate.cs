@@ -151,28 +151,28 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 decimal totaleImponibile, importoTotale;
 
 
-                var fetchQuote = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                var fetchSalesOrder = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
                                   <entity name=""{salesorder.logicalName}"">
                                     <attribute name=""{salesorder.freightamount}"" alias=""ImportoSpesaAccessoria"" />
                                     <filter>
-                                      <condition attribute=""{salesorder.quoteid}"" operator=""eq"" value=""{salesorderId}"" />
+                                      <condition attribute=""{salesorder.salesorderid}"" operator=""eq"" value=""{salesorderId}"" />
                                     </filter>
                                     <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
                                       <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
                                     </link-entity>
                                   </entity>
                                 </fetch>";
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchQuote);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchSalesOrder);
 
-                EntityCollection orderCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchQuote));
+                EntityCollection orderCollection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchSalesOrder));
 
                 if (orderCollection.Entities.Count > 0)
                 {
-                    Entity enQuote = orderCollection.Entities[0];
+                    Entity enSalesOrder = orderCollection.Entities[0];
 
-                    decimal importoSpesaAccessoria = enQuote.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
-                    decimal aliquota = enQuote.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
+                    decimal importoSpesaAccessoria = enSalesOrder.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
+                    decimal aliquota = enSalesOrder.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
 
                     decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria != 0 && aliquota != 0 ? importoSpesaAccessoria * (aliquota / 100) : 0;
 

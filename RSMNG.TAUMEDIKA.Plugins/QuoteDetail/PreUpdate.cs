@@ -82,11 +82,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     //dal target
                     decimal importo = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m;
                     decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity);
-                    decimal scontoTotale = postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount)?.Value ?? 0m;
 
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"prezzo_unitario {importo}");
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"quantità {quantità}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"sconto_totale {scontoTotale}");
 
 
                     if (codiceIvaGuid != Guid.Empty)
@@ -94,7 +92,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
                         //calcolo il totale imponibile [riga offerta]
-                        decimal totaleImponibile = importo - scontoTotale;
+                        decimal totaleImponibile = importo;
 
                         //calcolo il totale iva [riga offerta]
                         decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100);

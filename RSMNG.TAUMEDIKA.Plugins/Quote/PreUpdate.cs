@@ -159,8 +159,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             #region Ricalcolo di Totale imponibile, Importo totale, Totale IVA
             PluginRegion = "Ricalcolo di Totale imponibile, Importo totale, Totale IVA";
 
-            crmServiceProvider.TracingService.Trace("Check", "Ricalcolo di Totale imponibile, Importo totale, Totale IVA");
-
             if (target.Contains(quote.totalamountlessfreight) &&
                 target.Contains(quote.totaltax) &&
                 target.Contains(quote.totalamount) &&
@@ -208,8 +206,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
                     importoTotale = totaleImponibile + totaleIva;
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importo_totale {importoTotale}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_iva {totaleIva}");
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
 
                     target[quote.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
                     target[quote.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
