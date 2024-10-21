@@ -153,6 +153,8 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                 enAgentCommission.Attributes.Add(res_agentcommission.res_agentid, enAgente.ToEntityReference());
                 enAgentCommission.Attributes.Add(res_agentcommission.ownerid, enAgente.ToEntityReference());
                 enAgentCommission.Attributes.Add(res_agentcommission.res_commissionid, new EntityReference(res_commission.logicalName, new Guid(agentCommissionCalculationInput.CommissionId)));
+                enAgentCommission.Attributes.Add(res_agentcommission.statecode, new OptionSetValue((int)res_agentcommission.statecodeValues.Attivo));
+                enAgentCommission.Attributes.Add(res_agentcommission.statuscode, new OptionSetValue((int)res_agentcommission.statuscodeValues.Calcolato_StateAttivo));
                 Guid enAgentCommissionId = service.Create(enAgentCommission);
                 #endregion
 
@@ -168,10 +170,6 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                     service.Update(enDocumentUpt);
                 }
                 #endregion
-            }
-            catch (InvalidPluginExecutionException)
-            {
-                throw;
             }
             catch (Exception ex)
             {
