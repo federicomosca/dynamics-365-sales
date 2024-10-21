@@ -75,7 +75,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                     actionMsg = "Cancello le Provvigioni agenti legate alla provvigione";
                     var fetchDataAC = new
                     {
-                        res_commissionid = "00000000-0000-0000-0000-000000000000"
+                        res_commissionid = agentCommissionCalculationInput.CommissionId
                     };
                     var fetchXmlAC = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                     <fetch>
@@ -85,7 +85,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                         </filter>
                       </entity>
                     </fetch>";
-                    List<Entity> lAgentCommission = service.RetrieveAll(fetchXmlD);
+                    List<Entity> lAgentCommission = service.RetrieveAll(fetchXmlAC);
                     foreach (Entity entity in lAgentCommission)
                     {
                         service.Delete(entity.LogicalName, entity.Id);
@@ -147,14 +147,10 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                 #region Creo la provvigione agente
                 actionMsg = "Creo la provvigione agente";
                 Entity enAgentCommission = new Entity(res_agentcommission.logicalName);
-                enAgentCommission.Attributes.Add(res_agentcommission.res_agentcommissionid, new EntityReference(systemuser.logicalName, new Guid(agentCommissionCalculationInput.AgentId)));
-                enAgentCommission.Attributes.Add(res_agentcommission.ownerid, new EntityReference(systemuser.logicalName, new Guid(agentCommissionCalculationInput.AgentId)));
+                enAgentCommission.Attributes.Add(res_agentcommission.res_agentid, enAgente.ToEntityReference());
+                enAgentCommission.Attributes.Add(res_agentcommission.ownerid, enAgente.ToEntityReference());
                 enAgentCommission.Attributes.Add(res_agentcommission.res_commissionid, new EntityReference(res_commission.logicalName, new Guid(agentCommissionCalculationInput.CommissionId)));
                 Guid enAgentCommissionId = service.Create(enAgentCommission);
-                #endregion
-
-                #region Condivido la provvigione agente all'agente
-                service.GrantAccess(enAgentCommission.ToEntityReference(), enAgente.ToEntityReference(), Microsoft.Crm.Sdk.Messages.AccessRights.ReadAccess);
                 #endregion
 
                 #region Aggiorno i documenti associando la provvigione agente e avviando di fatto il calcolo della provvigione
@@ -169,6 +165,10 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                     service.Update(enDocumentUpt);
                 }
                 #endregion
+            }
+            catch (InvalidPluginExecutionException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

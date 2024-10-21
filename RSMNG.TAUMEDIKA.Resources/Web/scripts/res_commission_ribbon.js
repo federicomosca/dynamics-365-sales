@@ -135,6 +135,7 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                                     }
                                 } else {
                                     formContext.ui.setFormNotification(`Il calcolo della provvigione stata terminata con successo.`, "INFO", i);
+                                    formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
                                 }
                             }
                         } catch (e) {
