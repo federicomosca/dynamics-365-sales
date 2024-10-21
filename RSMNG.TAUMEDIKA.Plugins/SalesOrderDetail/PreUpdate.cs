@@ -63,6 +63,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     target[salesorderdetail.res_itemcode] = codiceArticolo;
                     #endregion
 
+                    EntityReference erCodiceIVA = null;
+
                     //dalla fetch
                     Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                     decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
@@ -72,32 +74,43 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     //dal target
                     decimal importo = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount)?.Value ?? 0m;
                     decimal quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
+                    decimal totaleIva = 0;
+                    target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out EntityReference targetErCodiceIVA);
 
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(importo.ToString());
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(quantità.ToString());
 
-                    if (codiceIvaGuid != Guid.Empty)
+                    if (targetErCodiceIVA == null)
                     {
-                        EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
+                        if (codiceIvaGuid != Guid.Empty)
+                        {
+                            erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
 
-                        //calcolo il totale imponibile [riga ordine]
-                        decimal totaleImponibile = importo;
+                            //calcolo il totale imponibile [riga ordine]
 
-                        //calcolo il totale iva [riga ordine]
-                        decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100);
+                            //calcolo il totale iva [riga ordine]
+                            totaleIva = importo * (codiceIvaAliquota / 100);
 
-                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleImponibile.ToString());
-                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleIva.ToString());
+                            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(totaleIva.ToString());
 
-                        //cerco di recuperare l'id del Codice IVA
-                        target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out EntityReference targetErCodiceIVA);
-                        if (targetErCodiceIVA != null) { erCodiceIVA = targetErCodiceIVA; }
-                        //aggiorno i campi di riga ordine
-                        target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
-                        target[salesorderdetail.res_vatrate] = codiceIvaAliquota;
-                        target[salesorderdetail.res_taxableamount] = new Money(totaleImponibile);
-                        target[salesorderdetail.tax] = new Money(totaleIva);
+                            //cerco di recuperare l'id del Codice IVA
+
+                            //aggiorno i campi di riga ordine
+                        }
                     }
+                    else
+                    {
+                        Entity targetCodiceIVA = crmServiceProvider.Service.Retrieve("res_vatnumber", targetErCodiceIVA.Id, new ColumnSet(res_vatnumber.res_rate));
+                        decimal targetCodiceIvaAliquota = targetCodiceIVA != null ? targetCodiceIVA.GetAttributeValue<decimal>(res_vatnumber.res_rate) : 0;
+                        erCodiceIVA = targetErCodiceIVA;
+                        codiceIvaAliquota = targetCodiceIvaAliquota;
+                        totaleIva = importo * (targetCodiceIvaAliquota / 100);
+                    }
+
+                    target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
+                    target[salesorderdetail.res_vatrate] = codiceIvaAliquota;
+                    target[salesorderdetail.res_taxableamount] = new Money(importo);
+                    target[salesorderdetail.tax] = new Money(totaleIva);
                 }
             }
             #endregion
