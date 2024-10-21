@@ -26,8 +26,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            Guid targetId = target.Id;
-
             //traccio quali attributi vengono modificati alla "creazione" della riga
             foreach (var attribute in target.Attributes)
             {
