@@ -90,6 +90,9 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                     {
                         service.Delete(entity.LogicalName, entity.Id);
                     }
+
+                    actionMsg = "Avvio il calcolo delle provvigioni cambiando di stato alla provvigione";
+                    Helper.SetStateCode(service, res_commission.logicalName, new Guid(agentCommissionCalculationInput.CommissionId), (int)res_commission.statecodeValues.Attivo, (int)res_commission.statuscodeValues.Calcoloincorso_StateAttivo);
                 }
                 #endregion
 
@@ -203,7 +206,8 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                 Entity enDocument = lDocument[0];
                 Entity enAgentCommission = new Entity(res_agentcommission.logicalName, entityId);
                 enAgentCommission.Attributes.Add(res_agentcommission.res_soldtotalamount, enDocument.GetAliasedValue<Money>(res_document.res_nettotalexcludingvat));
-                enAgentCommission.Attributes.Add(res_agentcommission.res_calculatedcommission, enDocument.GetAliasedValue<Money>(res_document.res_calculatedcommission));
+                decimal res_calculatedcommission = enDocument.GetAliasedValue<Money>(res_document.res_calculatedcommission).Value;
+                enAgentCommission.Attributes.Add(res_agentcommission.res_calculatedcommission, res_calculatedcommission < 0 ? new Money(0) : enDocument.GetAliasedValue<Money>(res_document.res_calculatedcommission));
                 service.Update(enAgentCommission);
             }
         }

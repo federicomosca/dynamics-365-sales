@@ -80,7 +80,7 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
             pageInput = {
                 pageType: 'webresource',
                 webresourceName: '/res_pages/selectAgents.html'
-            }
+            };
 
             navigationOptions = {
                 target: 2,
@@ -88,7 +88,7 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                 height: { value: 660, unit: "px" },
                 position: 1,
                 title: 'Seleziona Agenti'
-            }
+            };
             formContext.ui.clearFormNotification();
             window._formContext = formContext;
             Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
@@ -101,6 +101,7 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                             var processedAgentCommission = 0;
                             var processPercentage = 0;
                             var agentsCommissionWithErrors = [];
+                            var statusData = {};
                             if (selectedAgentsCommission.length > 0) {
                                 Xrm.Utility.showProgressIndicator(`Calcolo della provvigione in corso con Agenti ${processedAgentCommission} di ${selectedAgentsCommission.length}...`);
                                 for (let selectedItem of selectedAgentsCommission) {
@@ -133,9 +134,25 @@ if (typeof (RSMNG.TAUMEDIKA.COMMISSION.RIBBON.HOME) == "undefined") {
                                     for (var i = 0; i < agentsCommissionWithErrors.length; i++) {
                                         formContext.ui.setFormNotification(`Il calcolo della provvigione non e' stata terminata con successo. L'agente': [${agentsCommissionWithErrors[i].id}] non e' stato processato. In dettaglio: [${agentsCommissionWithErrors[i].message}]`, "WARNING", i);
                                     }
+                                    //Aggiorno lo stato della Provvigione
+                                    statusData = {
+                                        "statecode": _self.formModel.statecodeValues.Attivo,
+                                        "statuscode": _self.formModel.statuscodeValues.Calcolataerrori_StateAttivo
+                                    }
+                                    Xrm.WebApi.online.updateRecord(_self.formModel.logicalName, formContext.data.entity.getId(), statusData).then(function (result) {
+                                        formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
+                                    }, function (error) { });
                                 } else {
                                     formContext.ui.setFormNotification(`Il calcolo della provvigione stata terminata con successo.`, "INFO", i);
-                                    formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
+                                    //Aggiorno lo stato della Provvigione
+                                    statusData = {
+                                        "statecode": _self.formModel.statecodeValues.Attivo,
+                                        "statuscode": _self.formModel.statuscodeValues.Calcolata_StateAttivo
+                                    }
+                                    Xrm.WebApi.online.updateRecord(_self.formModel.logicalName, formContext.data.entity.getId(), statusData).then(function (result) {
+                                        formContext.data.refresh(false).then(function () { formContext.ui.refreshRibbon(true); }, function () { formContext.ui.refreshRibbon(true); });
+                                    }, function (error) { });
+                                    
                                 }
                             }
                         } catch (e) {
