@@ -335,16 +335,15 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //
     //
     //------------------------< SPESA ACCESSORIA >------------------------ 
-    _self.onChangeAdditionalExpense = (executionContext, flag) => {
+    _self.onChangeAdditionalExpense = async (executionContext, flag) => {
         const formContext = executionContext.getFormContext();
 
         const additionalExpenseControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);        //spesa accessoria
         const vatNumberControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                        //codice iva
         const freightAmountControl = formContext.getControl(_self.formModel.fields.freightamount);                      //importo spesa accessoria
 
-        let totaleProdotti = formContext.getAttribute(_self.formModel.fields.totallineitemamount).getValue();
-        let spesaaccessoria = 0
-
+        let totaleProdotti = formContext.getAttribute(_self.formModel.fields.totallineitemamount).getValue() ?? 0;
+        let importoSpesaAccessoria = 0;
         const additionalExpenseLookup = additionalExpenseControl.getAttribute().getValue() ?? null;
 
         //se viene selezionata una spesa accessoria
@@ -352,28 +351,23 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             freightAmountControl.setDisabled(false);
 
-            Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseLookup[0].id, "?$select=res_amount").then(
-                additionalExpense => {
-                    spesaaccessoria = additionalExpense.res_amount;
+            const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseLookup[0].id, "?$select=res_amount");
 
-                    //imposto il suo ammontare al campo importo spesa accessoria
-                    formContext.getAttribute(_self.formModel.fields.freightamount).setValue(spesaaccessoria ?? null);
+            importoSpesaAccessoria = spesaAccessoria.res_amount;
 
-                    //e diventa editabile e obbligatorio il campo codice IVA spesa accessoria
-                    vatNumberControl.getAttribute().setRequiredLevel("required");
-                    vatNumberControl.setDisabled(false);
+            //imposto il suo ammontare al campo importo spesa accessoria
+            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(importoSpesaAccessoria ?? null);
 
-                    //gestisco totale iva e importo totale
-                    _self.onChangeVatNumber(executionContext);
+            //e diventa editabile e obbligatorio il campo codice IVA spesa accessoria
+            vatNumberControl.getAttribute().setRequiredLevel("required");
+            vatNumberControl.setDisabled(false);
 
-                    // ricalcolo totale imponibile: imp tot + spesa acc
+            //gestisco totale iva e importo totale
+            _self.onChangeVatNumber(executionContext);
 
-                    formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + spesaaccessoria ?? null);
-                },
-                error => {
-                    console.error(error.message);
-                }
-            );
+            // ricalcolo totale imponibile: imp tot + spesa acc
+
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue((totaleProdotti + importoSpesaAccessoria) ?? null);
         } else {
             //se non è stata selezionata spesa accessoria
 
@@ -395,11 +389,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             }
 
             // ricalcolo totale imponibile: imp tot + spesa acc
-            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti + spesaaccessoria ?? null);
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleProdotti ?? 0 + importoSpesaAccessoria ?? 0);
         }
-
-
-
     };
     //------------------< RETRIEVE ALIQUOTA CODICE IVA >------------------   
     _self.retrieveAliquotaCodiceIVA = async codiceIvaId => {
