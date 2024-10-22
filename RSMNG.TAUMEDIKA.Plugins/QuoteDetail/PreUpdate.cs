@@ -30,7 +30,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             foreach (var attribute in target.Attributes)
             {
                 string column = attribute.Key;
-                crmServiceProvider.TracingService.Trace(column, column);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(column.ToString());
             }
 
             #region Controllo campi obbligatori
@@ -59,7 +59,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                         </link-entity>
                                       </entity>
                                     </fetch>";
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("fetch", fetchProdotto);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchProdotto);
 
                 EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
                 if (collection.Entities.Count > 0)
@@ -97,8 +97,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         //calcolo il totale iva [riga offerta]
                         decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100);
 
-                        if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
-                        if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_iva {totaleIva}");
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_iva {totaleIva}");
 
                         //aggiorno i campi di riga offerta
                         target[quotedetail.res_vatnumberid] = erCodiceIVA;
