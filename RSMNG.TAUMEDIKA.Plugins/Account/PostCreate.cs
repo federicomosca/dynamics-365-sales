@@ -56,7 +56,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     Utility.CreateNewDefaultAddress(crmServiceProvider, target);
                 }
             }
-            else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");
             #endregion
         }
     }
