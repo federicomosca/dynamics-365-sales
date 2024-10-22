@@ -40,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
 
                 //se non trovo nemmeno un indirizzo
-                if (defaultAddressesCollection.Entities.Count < 0)
+                if (defaultAddressesCollection.Entities.Count == 0)
                 {
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
