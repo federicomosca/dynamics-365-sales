@@ -21,28 +21,28 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 res_address.res_city
             };
 
-        public static readonly Dictionary<string, string> accountToAddressMandatoryFieldsMapping = new Dictionary<string, string>
+        public static Dictionary<string, string> accountToAddressMandatoryFieldsMapping = new Dictionary<string, string>
         {
             {account.address1_line1, res_address.res_addressField},
             {account.address1_city, res_address.res_city},
             {account.address1_postalcode, res_address.res_postalcode}
         };
 
-        public static readonly Dictionary<string, string> accountToAddressOptionalFieldsMapping = new Dictionary<string, string>
+        public static Dictionary<string, string> accountToAddressOptionalFieldsMapping = new Dictionary<string, string>
         {
             {account.address1_stateorprovince, res_address.res_province},
             {account.res_location, res_address.res_location},
             {account.res_countryid, res_address.res_countryid}
         };
 
-        public static readonly Dictionary<string, string> contactToAddressMandatoryFieldsMapping = new Dictionary<string, string>
+        public static Dictionary<string, string> contactToAddressMandatoryFieldsMapping = new Dictionary<string, string>
         {
             {account.address1_name, res_address.res_addressField},
             {account.address1_city, res_address.res_city},
             {account.address1_postalcode, res_address.res_postalcode}
         };
 
-        public static readonly Dictionary<string, string> contactToAddressOptionalFieldsMapping = new Dictionary<string, string>
+        public static Dictionary<string, string> contactToAddressOptionalFieldsMapping = new Dictionary<string, string>
         {
             {account.address1_stateorprovince, res_address.res_province},
             {account.res_location, res_address.res_location},

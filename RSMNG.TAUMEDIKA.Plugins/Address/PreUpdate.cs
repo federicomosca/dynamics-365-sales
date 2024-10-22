@@ -98,7 +98,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             #region Genera nome
             PluginRegion = "Genera nome";
 
-
             if (target.Contains(res_address.res_customerid) || target.Contains(res_address.res_city) || target.Contains(res_address.res_addressField))
             {
 
@@ -149,7 +148,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                         foreach (Entity linkedAddress in linkedAddresses.Entities)
                         {
                             //aggiorno a Default = NO tutti i record meno questo in update
-                            linkedAddress[res_address.res_isdefault] = false;
+                            Entity linkedAddressUpt = new Entity(linkedAddress.LogicalName, linkedAddress.Id);
+                            linkedAddressUpt.Attributes.Add(res_address.res_isdefault, false);
+                            crmServiceProvider.Service.Update(linkedAddressUpt);
                         }
                     }
                 }
