@@ -17,7 +17,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.contact.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -34,8 +34,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             //se sono stati valorizzati tutti e 3...
             if (!string.IsNullOrEmpty(indirizzo) && !string.IsNullOrEmpty(città) && !string.IsNullOrEmpty(CAP))
             {
-                crmServiceProvider.TracingService.Trace("Check", "Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
-
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
 
                 //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
                 EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
@@ -43,7 +42,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 //se non trovo nemmeno un indirizzo
                 if (defaultAddressesCollection.Entities.Count < 0)
                 {
-                    crmServiceProvider.TracingService.Trace("Check", "Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
                     //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
                     target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
@@ -53,7 +52,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
                     Utility.CreateNewDefaultAddress(target, crmServiceProvider, indirizzo, città, CAP, provincia, località, nazione);
 
-                    crmServiceProvider.TracingService.Trace("Check", "Ho creato un nuovo indirizzo di default"); /** <------------< TRACE >------------ */
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Ho creato un nuovo indirizzo di default"); /** <------------< TRACE >------------ */
                 }
             }
             else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");

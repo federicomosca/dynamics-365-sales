@@ -24,7 +24,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
         //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
         public static EntityCollection GetDefaultAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
-            crmServiceProvider.TracingService.Trace("Check", "Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
+            crmServiceProvider.TracingService.Trace("Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
 
             var fetchDefaultAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
@@ -40,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                 </filter>
                               </entity>
                             </fetch>";
-            crmServiceProvider.TracingService.Trace("fetchDefaultAddresses", fetchDefaultAddresses);
+            crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
         }
 
