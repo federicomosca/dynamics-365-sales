@@ -38,12 +38,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     PluginRegion = "Creazione/aggiornamento indirizzo di default";
 
                     List<string> campiIndirizzo = new List<string>{
-                        contact.address1_line1,
-                        contact.address1_city,
-                        contact.address1_postalcode,
-                        contact.address1_stateorprovince,
-                        contact.res_location,
-                        contact.res_countryid
+                        account.address1_line1,
+                        account.address1_city,
+                        account.address1_postalcode,
+                        account.address1_stateorprovince,
+                        account.res_location,
+                        account.res_countryid
                     };
 
                     bool isAddressUpdated = false;
@@ -59,23 +59,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     //se almeno uno dei valori è stato modificato...
                     if (isAddressUpdated)
                     {
+                        //recupero Indirizzo, Città e CAP
+                        target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
+                        target.TryGetAttributeValue<string>(account.address1_city, out string città);
+                        target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+
+                        //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
+                        target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
+                        target.TryGetAttributeValue<string>(account.res_location, out string località);
+                        target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
+
                         //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                        EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
+                        EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 
                         //se non trovo nemmeno un indirizzo
-                        if (defaultAddressesCollection.Entities.Count == 0)
+                        if (linkedAddressesCollection.Entities.Count == 0)
                         {
-                            //recupero Indirizzo, Città e CAP
-                            target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
-                            target.TryGetAttributeValue<string>(account.address1_city, out string città);
-                            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
-
-                            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-                            target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
-                            target.TryGetAttributeValue<string>(account.res_location, out string località);
-                            target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
-
-                            //creo il nuovo indirizzo di default
+                            //creo il nuovo indirizzo con indirizzo scheda cliente si e default si
                             Utility.CreateNewDefaultAddress(target, crmServiceProvider,
                                 !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1),
                                 !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city),
@@ -87,28 +87,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         }
                         else
                         {
-                            //se l'indirizzo di default già esiste lo aggiorno
+                            //ho trovato almeno un indirizzo
+                            Entity defaultAddress = linkedAddressesCollection.Entities[0];
 
-                            //recupero Indirizzo, Città e CAP
-                            target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
-                            target.TryGetAttributeValue<string>(account.address1_city, out string città);
-                            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+                            //se è indirizzo scheda cliente = true
+                            defaultAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+                            defaultAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
-                            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-                            target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
-                            target.TryGetAttributeValue<string>(account.res_location, out string località);
-                            target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
-
-                            Entity defaultAddress = defaultAddressesCollection.Entities[0];
-
-                            defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
-                            defaultAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
-                            defaultAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
-                            defaultAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince);
-                            defaultAddress[res_address.res_location] = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location);
-                            defaultAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid);
-
-                            crmServiceProvider.Service.Update(defaultAddress);
+                            if (isCustomerAddress)
+                            {
+                                //se è indirizzo scheda cliente, aggiorno coi nuovi dati e imposto default a false se c'è già un indirizzo di default
+                                Utility.UpdateDefaultAddress(crmServiceProvider, target, preImage, defaultAddress, isDefault);
+                            }
+                            else
+                            {
+                                //se non è indirizzo scheda cliente, è per forza default (altrimenti la fetch non l'avrebbe trovato)
+                                Utility.CreateNewDefaultAddress(target, crmServiceProvider,
+                                !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1),
+                                !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city),
+                                !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode),
+                                !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince),
+                                !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location),
+                                nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid)
+                                );
+                            }
                         }
                     }
                     #endregion
