@@ -47,8 +47,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
-            //se il codice iva è nel target ricalcolo i campi correlati (in questa condizione entra solo se l'utente modifica il record dal form
-
             if (target.ContainsAttributeNotNull(salesorderdetail.res_vatnumberid) || target.Contains(salesorderdetail.quantity))
             {
                 codiceIva = postImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid);
@@ -91,9 +89,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     {
                         Entity prodotto = collection.Entities[0];
 
-                        PluginRegion = "Codice Articolo";
+
+                        #region Valorizzo Codice articolo
+                        PluginRegion = "Valorizzo Codice articolo";
                         string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
                         target[salesorderdetail.res_itemcode] = codiceArticolo;
+                        #endregion
 
                         //dalla fetch
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;

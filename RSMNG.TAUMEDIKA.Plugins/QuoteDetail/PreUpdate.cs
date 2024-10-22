@@ -42,10 +42,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
-            postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
-            if (erProduct != null)
+            EntityReference codiceIva = null;
+            decimal aliquota = 0;
+            decimal scontoTotale;
+            decimal importo;
+            decimal totaleImponibile = 0;
+            decimal totaleIva = 0;
+            decimal importoTotale = 0;
+
+            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || target.Contains(quotedetail.quantity))
             {
-                var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                codiceIva = postImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
+
+                Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+
+                aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
+                scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+                importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+
+                totaleImponibile = importo - scontoTotale;
+                totaleIva = importo * (aliquota / 100);
+                importoTotale = totaleImponibile + totaleIva;
+            }
+            else
+            {
+                //se il codice iva non è stato selezionato dall'utente, lo recupero dal prodotto correlato
+                postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
+
+                if (erProduct != null)
+                {
+                    var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
                                         <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
@@ -59,55 +85,40 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                         </link-entity>
                                       </entity>
                                     </fetch>";
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchProdotto);
 
-                EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
-                if (collection.Entities.Count > 0)
-                {
-                    Entity prodotto = collection.Entities[0];
+                    EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
 
-                    #region Valorizzo Codice Articolo
-                    PluginRegion = "Valorizzo Codice Articolo";
-
-                    string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
-                    target[quotedetail.res_itemcode] = codiceArticolo;
-                    #endregion
-
-                    //dalla fetch
-                    Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                    decimal codiceIvaAliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"aliquota_iva {codiceIvaAliquota}");
-
-
-                    //dal target
-                    decimal importo = postImage.GetAttributeValue<Money>(quotedetail.baseamount)?.Value ?? 0m;
-                    decimal quantità = postImage.GetAttributeValue<decimal>(quotedetail.quantity);
-
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"prezzo_unitario {importo}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"quantità {quantità}");
-
-
-                    if (codiceIvaGuid != Guid.Empty)
+                    if (collection.Entities.Count > 0)
                     {
-                        EntityReference erCodiceIVA = new EntityReference(res_vatnumber.logicalName, codiceIvaGuid);
+                        Entity prodotto = collection.Entities[0];
 
-                        //calcolo il totale imponibile [riga offerta]
-                        decimal totaleImponibile = importo;
 
-                        //calcolo il totale iva [riga offerta]
-                        decimal totaleIva = totaleImponibile * (codiceIvaAliquota / 100);
+                        #region Valorizzo Codice articolo
+                        PluginRegion = "Valorizzo Codice articolo";
+                        string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
+                        target[quotedetail.res_itemcode] = codiceArticolo;
+                        #endregion
 
-                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_imponibile {totaleImponibile}");
-                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totale_iva {totaleIva}");
+                        //dalla fetch
+                        Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                        crmServiceProvider.TracingService.Trace(codiceIvaGuid.ToString());
+                        codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        //aggiorno i campi di riga offerta
-                        target[quotedetail.res_vatnumberid] = erCodiceIVA;
-                        target[quotedetail.res_vatrate] = codiceIvaAliquota;
-                        target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-                        target[quotedetail.tax] = new Money(totaleIva);
+                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
+                        scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+                        importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+
+                        totaleImponibile = importo - scontoTotale;
+                        totaleIva = importo * (aliquota / 100);
+                        importoTotale = totaleImponibile + totaleIva;
                     }
                 }
             }
+            target[quotedetail.res_vatnumberid] = codiceIva;
+            target[quotedetail.res_vatrate] = aliquota;
+            target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
+            target[quotedetail.tax] = new Money(totaleIva);
+            target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
         }
     }
