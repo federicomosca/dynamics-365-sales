@@ -34,8 +34,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
                                   <condition attribute=""{res_address.res_addressid}"" operator=""ne"" value=""{updatedAddressId}"" />
                                 </filter>
-                                <filter type=""or"">
-                                  <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
+                                <filter>
                                   <condition attribute=""{res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
