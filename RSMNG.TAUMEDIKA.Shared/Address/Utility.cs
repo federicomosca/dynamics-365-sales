@@ -67,12 +67,12 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 target.TryGetAttributeValue<string>(account.res_location, out località);
                 target.TryGetAttributeValue<EntityReference>(account.res_countryid, out nazione);
 
-                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
-                città = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
-                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
-                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince);
-                località = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location);
-                nazione = nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid);
+                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage?.GetAttributeValue<string>(account.address1_line1);
+                città = !string.IsNullOrEmpty(città) ? città : preImage?.GetAttributeValue<string>(account.address1_city);
+                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage?.GetAttributeValue<string>(account.address1_postalcode);
+                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage?.GetAttributeValue<string>(account.address1_stateorprovince);
+                località = !string.IsNullOrEmpty(località) ? località : preImage?.GetAttributeValue<string>(account.res_location);
+                nazione = nazione ?? preImage?.GetAttributeValue<EntityReference>(account.res_countryid);
             }
             
             if (target.LogicalName == "contact")
@@ -88,12 +88,12 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 target.TryGetAttributeValue<string>(contact.res_location, out località);
                 target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out nazione);
 
-                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
-                città = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
-                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
-                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
-                località = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location);
-                nazione = nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid);
+                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage?.GetAttributeValue<string>(contact.address1_name);
+                città = !string.IsNullOrEmpty(città) ? città : preImage?.GetAttributeValue<string>(contact.address1_city);
+                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage?.GetAttributeValue<string>(contact.address1_postalcode);
+                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage?.GetAttributeValue<string>(contact.address1_stateorprovince);
+                località = !string.IsNullOrEmpty(località) ? località : preImage?.GetAttributeValue<string>(contact.res_location);
+                nazione = nazione ?? preImage?.GetAttributeValue<EntityReference>(contact.res_countryid);
             }
 
             Entity defaultAddress = new Entity(res_address.logicalName);

@@ -27,7 +27,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             PluginRegion = "Creo indirizzo di default";
 
             List<string> campiIndirizzo = new List<string>{
-                        contact.address1_line1,
+                        contact.address1_name,
                         contact.address1_city,
                         contact.address1_postalcode,
                     };
