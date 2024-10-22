@@ -30,9 +30,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
                 if (preImage != null && preImage.Contains("accountid"))
                 {
-                    Entity postImage = target.GetPostImage(preImage);
-
-                    string accountId = preImage.Id.ToString();
 
                     #region Creazione/aggiornamento indirizzo di default
                     PluginRegion = "Creazione/aggiornamento indirizzo di default";

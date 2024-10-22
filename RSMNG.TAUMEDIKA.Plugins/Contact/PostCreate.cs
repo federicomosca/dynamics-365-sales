@@ -29,12 +29,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             //controllo se è stato compilato l'indirizzo
             if (target.Contains(contact.address1_name))
             {
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Il contatto ha valorizzato il campo Indirizzo"); }
+
                 target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
                 target.TryGetAttributeValue<string>(contact.address1_city, out string città);
 
                 //cap e città sono obbligatori indirizzo è valorizzato
                 if (!string.IsNullOrEmpty(CAP) || !string.IsNullOrEmpty(città))
                 {
+                    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Sia città sia CAP sono valorizzati"); }
+
                     //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
                     EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 

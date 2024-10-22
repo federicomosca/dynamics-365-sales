@@ -26,7 +26,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
             {
                 Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
-                Entity postImage = target.GetPostImage(preImage);
 
                 #region Creazione/aggiornamento indirizzo di default
                 PluginRegion = "Creazione/aggiornamento indirizzo di default";

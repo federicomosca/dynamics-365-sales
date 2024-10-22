@@ -28,7 +28,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             PluginRegion = "Creo indirizzo scheda cliente";
 
             //controllo se è stato compilato l'indirizzo
-            if (target.Contains(account.address1_name))
+            if (target.Contains(account.address1_line1))
             {
                 target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
                 target.TryGetAttributeValue<string>(account.address1_city, out string città);
