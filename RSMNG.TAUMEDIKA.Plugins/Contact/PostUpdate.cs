@@ -60,7 +60,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     if (defaultAddressesCollection.Entities.Count == 0)
                     {
                         //recupero Indirizzo, Città e CAP
-                        target.TryGetAttributeValue<string>(contact.address1_line1, out string indirizzo);
+                        target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
                         target.TryGetAttributeValue<string>(contact.address1_city, out string città);
                         target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
 
@@ -71,7 +71,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                         //creo il nuovo indirizzo di default
                         Utility.CreateNewDefaultAddress(target, crmServiceProvider,
-                            !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_line1),
+                            !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name),
                             !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city),
                             !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode),
                             !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince),
@@ -84,7 +84,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                         //se l'indirizzo di default già esiste lo aggiorno
 
                         //recupero Indirizzo, Città e CAP
-                        target.TryGetAttributeValue<string>(contact.address1_line1, out string indirizzo);
+                        target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
                         target.TryGetAttributeValue<string>(contact.address1_city, out string città);
                         target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
 
@@ -95,7 +95,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                         Entity defaultAddress = defaultAddressesCollection.Entities[0];
 
-                        defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_line1);
+                        defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
                         defaultAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
                         defaultAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
                         defaultAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
