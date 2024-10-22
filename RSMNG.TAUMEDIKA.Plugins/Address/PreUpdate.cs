@@ -26,6 +26,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
+            postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
 
             #region Controllo campo Indirizzo scheda cliente [DISABLED]
             //PluginRegion = "Controllo campo Indirizzo scheda cliente";
@@ -97,6 +98,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             #region Genera nome
             PluginRegion = "Genera nome";
 
+
             if (target.Contains(res_address.res_customerid) || target.Contains(res_address.res_city) || target.Contains(res_address.res_addressField))
             {
 
@@ -105,7 +107,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 string addressCity;
                 string addressStreet;
 
-                postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
 
                 if (erCustomer != null)
                 {
@@ -133,7 +134,17 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             #region Controllo duplicati Default = SI
             PluginRegion = "Controllo duplicati Default = SI";
 
+            target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
+            if (isDefault)
+            {
+                if (erCustomer.Id != null)
+                {
+                    EntityCollection linkedAddresses = Utility.GetLinkedAddresses(crmServiceProvider, erCustomer.Id);
+
+                    if (linkedAddresses.Entities.Count > 0) { target[res_address.res_isdefault] = false; }
+                }
+            }
             #endregion
         }
     }

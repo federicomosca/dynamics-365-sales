@@ -47,7 +47,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     {
                         crmServiceProvider.TracingService.Trace("Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
-                        target[res_address.res_isdefault] = false;
                         //foreach (Entity duplicate in defaultAddressesCollection.Entities)
                         //{
                         //    crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
