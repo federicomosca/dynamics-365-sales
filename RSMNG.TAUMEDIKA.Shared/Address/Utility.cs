@@ -72,7 +72,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchLinkedAddresses));
         }
 
-        public static void CreateNewDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage = null)
+        public static void CreateNewDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, bool isAlreadyDefaultAddress, Entity preImage = null)
         {
             Dictionary<string, string> mandatoryFieldsMapping = null;
             Dictionary<string, string> optionalFieldsMapping = null;
@@ -120,7 +120,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
             //flag
             defaultAddress[res_address.res_iscustomeraddress] = true;
-            defaultAddress[res_address.res_isdefault] = true;
+
+            //se non c'è già un indirizzo con Default = SI, imposto il nuovo indirizzo a Default = SI
+            defaultAddress[res_address.res_isdefault] = !isAlreadyDefaultAddress;
 
             crmServiceProvider.Service.Create(defaultAddress);
         }
@@ -165,8 +167,6 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
                 customerAddress[addressField] = customerValue ?? null;
             }
-
-            customerAddress[res_address.res_isdefault] = isDefault;
 
             crmServiceProvider.Service.Update(customerAddress);
         }

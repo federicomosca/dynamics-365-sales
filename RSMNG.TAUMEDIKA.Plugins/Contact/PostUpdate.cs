@@ -30,6 +30,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 #region Creazione/aggiornamento indirizzo di default
                 PluginRegion = "Creazione/aggiornamento indirizzo di default";
 
+                bool isAlreadyDefaultAddress = false;
+
                 List<string> campiIndirizzo = new List<string>{
                         contact.address1_name,
                         contact.address1_city,
@@ -52,24 +54,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 //se almeno uno dei valori è stato modificato...
                 if (isAddressUpdated)
                 {
-                    //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                    //recupero gli indirizzi correlati
                     EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 
                     //se non trovo nemmeno un indirizzo
                     if (linkedAddressesCollection.Entities.Count == 0)
                     {
                         //creo il nuovo indirizzo con indirizzo scheda cliente si e default si
-                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, preImage);
+                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                     }
                     else
                     {
                         //ho trovato almeno un indirizzo
                         Entity linkedAddress = linkedAddressesCollection.Entities[0];
 
-                        //se è indirizzo scheda cliente = true
                         linkedAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
                         linkedAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
+                        //se è indirizzo scheda cliente = si
                         if (isCustomerAddress)
                         {
                             //se è indirizzo scheda cliente, aggiorno coi nuovi dati e imposto default a false se c'è già un indirizzo di default
@@ -78,7 +80,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                         else
                         {
                             //se non è indirizzo scheda cliente, è per forza default (altrimenti la fetch non l'avrebbe trovato)
-                            Utility.CreateNewDefaultAddress(crmServiceProvider, target, preImage);
+                            isAlreadyDefaultAddress = true;
+                            Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                         }
                     }
                 }

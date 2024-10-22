@@ -136,13 +136,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
             target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
+            //se aggiorno il record e imposto Default = SI
             if (isDefault)
             {
                 if (erCustomer.Id != null)
                 {
+                    //recupero eventuali record con Default = SI
                     EntityCollection linkedAddresses = Utility.GetLinkedAddresses(crmServiceProvider, erCustomer.Id);
 
-                    if (linkedAddresses.Entities.Count > 0) { target[res_address.res_isdefault] = false; }
+                    if (linkedAddresses.Entities.Count > 0)
+                    {
+                        foreach (Entity linkedAddress in linkedAddresses.Entities)
+                        {
+                            //aggiorno a Default = NO tutti i record meno questo in update
+                            linkedAddress[res_address.res_isdefault] = false;
+                        }
+                    }
                 }
             }
             #endregion

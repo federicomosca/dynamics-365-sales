@@ -27,6 +27,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             #region Creo indirizzo scheda cliente
             PluginRegion = "Creo indirizzo scheda cliente";
 
+            bool isAlreadyDefaultAddress = false;
+
             //controllo se è stato compilato l'indirizzo
             if (target.Contains(account.address1_line1))
             {
@@ -43,7 +45,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     if (linkedAddressesCollection.Entities.Count == 0)
                     {
                         //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
-                        Utility.CreateNewDefaultAddress(crmServiceProvider, target);
+                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress);
                     }
                 }
                 else throw new ApplicationException("Se il campo Indirizzo è valorizzato, i campi CAP e Città sono obbligatori.");
