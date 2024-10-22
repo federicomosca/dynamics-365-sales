@@ -50,6 +50,12 @@
         };
         let form = null;
         //Form model
+        //var _Xrm = null;
+        //var _formContext = null;
+        //var _form = null;
+        //var _context = null;
+        //var _fields = null;
+
 
         onLoad = function () {
             const formconfig = {
@@ -102,7 +108,7 @@
                             window._formContext.getAttribute(window._fields.cap).setValue(capJson.code);
                             window._formContext.getAttribute(window._fields.city).setValue(capJson.city);
                             window._formContext.getAttribute(window._fields.province).setValue(capJson.province);
-                            if (window._fields.nation!=null) window._formContext.getAttribute(window._fields.nation).setValue(capJson.country);
+                            if (window._fields.nation != null) window._formContext.getAttribute(window._fields.nation).setValue(capJson.country);
                             window._formContext.getAttribute(window._fields.country).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
                         }
 
@@ -113,6 +119,28 @@
                         console.log(error.message)
                     }
                 );
+
+                //    _Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                //        function success(result) {
+                //            if (result.returnValue != null) {
+
+
+                //                //Imposto in automatico i dati presi dal cap
+                //                let capJson = JSON.parse(result.returnValue);
+                //                _formContext.getAttribute(_fields.cap).setValue(capJson.code);
+                //                _formContext.getAttribute(_fields.city).setValue(capJson.city);
+                //                _formContext.getAttribute(_fields.province).setValue(capJson.province);
+                //                if (_fields.nation != null) _formContext.getAttribute(_fields.nation).setValue(capJson.country);
+                //                _formContext.getAttribute(_fields.country).setValue([{ id: capJson.countryid, entityType: DataModel.res_country.logicalName, name: capJson.country }]);
+                //            }
+
+                //            //Aggiorno in automatico i campi dell'indirizzo
+                //            _form.onChangeAddress(window._context);
+                //        },
+                //        function error(error) {
+                //            console.log(error.message)
+                //        }
+                //    );
             });
             form.getItem("reset").events.on("click", function () {
 
@@ -121,16 +149,26 @@
                 window._formContext.getAttribute(window._fields.cap).setValue(null);
                 window._formContext.getAttribute(window._fields.city).setValue(null);
                 window._formContext.getAttribute(window._fields.province).setValue(null);
-                if (window._fields.nation!=null) window._formContext.getAttribute(window._fields.nation).setValue(null);
+                if (window._fields.nation != null) window._formContext.getAttribute(window._fields.nation).setValue(null);
                 window._formContext.getAttribute(window._fields.country).setValue(null);
 
                 //Aggiorno in automatico i campi dell'indirizzo
                 window._form.onChangeAddress(window._context);
 
+                ////Annullo i valori
+                //_formContext.getAttribute(_fields.cap).setValue(null);
+                //_formContext.getAttribute(_fields.city).setValue(null);
+                //_formContext.getAttribute(_fields.province).setValue(null);
+                //if (_fields.nation != null) _formContext.getAttribute(_fields.nation).setValue(null);
+                //_formContext.getAttribute(_fields.country).setValue(null);
+
+                ////Aggiorno in automatico i campi dell'indirizzo
+                //_form.onChangeAddress(_context);
+
             });
 
-            if (window._Xrm == undefined && parent._Xrm != undefined) {
-                setContext(parent._Xrm, parent._formContext);
+            if (window._Xrm == undefined || parent._Xrm != undefined) {
+                setContext(parent._Xrm, parent._formContext, parent._form, parent._context, parent._fields);
             }
 
         };
@@ -145,6 +183,12 @@
             parent._context = _context;
             window._fields = _fields;
             parent._fields = _fields;
+
+            //    _Xrm = _xrm;
+            //    _formContext = _formContext;
+            //    _form = _form;
+            //    _context = _context;
+            //    _fields = _fields;
         }
 
     </script>

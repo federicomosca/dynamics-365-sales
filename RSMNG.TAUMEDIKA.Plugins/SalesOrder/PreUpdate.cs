@@ -28,6 +28,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
             Guid salesorderId = postImage.Id;
 
+            #region Popolo in automatico il Destinatario
+            string destination = string.Empty;
+            if (postImage.ContainsAttributeNotNull(salesorder.res_shippingreference))
+            {
+                destination = postImage.GetAttributeValue<string>(salesorder.res_shippingreference);
+            }
+            if (string.IsNullOrEmpty(destination) && postImage.ContainsAttributeNotNull(salesorder.customerid))
+            {
+                destination = Shared.Account.Utility.GetName(crmServiceProvider.Service, postImage.GetAttributeValue<EntityReference>(salesorder.customerid).Id);
+            }
+            target.AddWithRemove(salesorder.res_recipient, destination);
+            #endregion
+
             #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [DISABLED]
             //PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
 

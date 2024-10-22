@@ -128,13 +128,15 @@ if (typeof (RSMNG.TAUMEDIKA.RES_ADDRESS) == "undefined") {
             country: _self.formModel.fields.res_countryid
         }
 
-        if (wrControl) {
-            wrControl.getContentWindow().then(
-                function (contentWindow) {
-                    contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
-                }
-            )
-        }
+        setTimeout(function () {
+            if (wrControl) {
+                wrControl.getContentWindow().then(
+                    function (contentWindow) {
+                        contentWindow.setContext(Xrm, formContext, _self, executionContext, fields);
+                    }
+                )
+            }
+        }, 500);
     };
     //---------------------------------------------------
     _self.onChangeAddress = function (executionContext) {

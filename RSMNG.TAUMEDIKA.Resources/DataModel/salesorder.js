@@ -114,6 +114,8 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	res_origincode: "res_origincode",
 	///Condizione di pagamento
 	res_paymenttermid: "res_paymenttermid",
+	///Destinatario
+	res_recipient: "res_recipient",
 	///Riferimento spedizione
 	res_shippingreference: "res_shippingreference",
 	///Codice IVA spesa accessoria

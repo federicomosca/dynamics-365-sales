@@ -24,17 +24,19 @@
     <script src="../res_scripts/res_global.js" type="text/jscript"></script>
     <script>
         var rowSel = null;
+        var formContext = null;
         var Xrm = null;
+        var CAP = "";
         onLoad = async function () {
-            if (parent._Xrm == null || parent._Xrm == undefined) {
+            if (parent._formContext == null || parent._formContext == undefined || parent._Xrm == null || parent._Xrm == undefined) {
                 alert("La form non è inizializzata");
                 window.returnValue = null;
                 window.close();
             } else {
                 Xrm = parent._Xrm;
+                formContext = parent._formContext;
                 Fields = parent._fields;
-
-                const CAP = Xrm.Page.getAttribute(Fields.cap).getValue();
+                CAP = Xrm.Page.getAttribute(Fields.cap).getValue();
 
                 //Xrm.Utility.showProgressIndicator("Caricamento in corso...");
                 //form.disable();
@@ -136,7 +138,7 @@
         };
         getCAP = async function () {
             return new Promise(function (resolve, reject) {
-                debugger;
+                //debugger;
                 var fetchXml = [
                     "<entity name='res_cap'>",
                     "<attribute name='res_code' />",

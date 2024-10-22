@@ -37,6 +37,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
             #endregion
 
+            #region Popolo in automatico il Destinatario
+            string destination = string.Empty;
+            if (target.ContainsAttributeNotNull(quote.res_shippingreference))
+            {
+                destination = target.GetAttributeValue<string>(quote.res_shippingreference);
+            }
+            if (string.IsNullOrEmpty(destination) && target.ContainsAttributeNotNull(quote.customerid))
+            {
+                destination = Shared.Account.Utility.GetName(crmServiceProvider.Service, target.GetAttributeValue<EntityReference>(quote.customerid).Id);
+            }
+            target.AddWithRemove(quote.res_recipient, destination);
+            #endregion
+
             #region Valorizzazione automatica del campo Importo spesa accessoria [DISABLED]
             //PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
             //Money amount = null;

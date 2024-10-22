@@ -43,6 +43,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             }
             #endregion
 
+            #region Popolo in automatico il Destinatario
+            string destination = string.Empty;
+            if (postImage.ContainsAttributeNotNull(quote.res_shippingreference))
+            {
+                destination = postImage.GetAttributeValue<string>(quote.res_shippingreference);
+            }
+            if (string.IsNullOrEmpty(destination) && postImage.ContainsAttributeNotNull(quote.customerid))
+            {
+                destination = Shared.Account.Utility.GetName(crmServiceProvider.Service, postImage.GetAttributeValue<EntityReference>(quote.customerid).Id);
+            }
+            target.AddWithRemove(quote.res_recipient, destination);
+            #endregion
+
             #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [DISABLED]
             PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
             //if (target.Contains(quote.totallineitemamount) ||

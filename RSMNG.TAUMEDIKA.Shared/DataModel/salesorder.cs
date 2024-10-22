@@ -486,6 +486,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_paymenttermid => "res_paymenttermid";
 
 		/// <summary>
+		/// Display Name: Destinatario,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_recipient => "res_recipient";
+
+		/// <summary>
 		/// Display Name: Riferimento spedizione,
 		/// Type: String,
 		/// Description: 

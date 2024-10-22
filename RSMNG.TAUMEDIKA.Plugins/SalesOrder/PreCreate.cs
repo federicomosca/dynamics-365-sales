@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.TAUMEDIKA.DataModel;
 using RSMNG.TAUMEDIKA.Shared;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, RSMNG.TAUMEDIKA.Shared.SalesOrder.Utility.mandatoryFields);
+            #endregion
+
+            #region Popolo in automatico il Destinatario
+            string destination = string.Empty;
+            if (target.ContainsAttributeNotNull(salesorder.res_shippingreference))
+            {
+                destination = target.GetAttributeValue<string>(salesorder.res_shippingreference);
+            }
+            if (string.IsNullOrEmpty(destination) && target.ContainsAttributeNotNull(salesorder.customerid))
+            {
+                destination = Shared.Account.Utility.GetName(crmServiceProvider.Service, target.GetAttributeValue<EntityReference>(salesorder.customerid).Id);
+            }
+            target.AddWithRemove(salesorder.res_recipient, destination);
             #endregion
 
             #region Valorizzo il campo Nazione (testo)
