@@ -47,13 +47,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     {
                         crmServiceProvider.TracingService.Trace("Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
-                        foreach (Entity duplicate in defaultAddressesCollection.Entities)
-                        {
-                            crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
-                            duplicate[res_address.res_isdefault] = false;
-                            duplicate[res_address.res_iscustomeraddress] = false;
-                            crmServiceProvider.Service.Update(duplicate);
-                        }
+                        target[res_address.res_isdefault] = false;
+                        //foreach (Entity duplicate in defaultAddressesCollection.Entities)
+                        //{
+                        //    crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
+                        //    duplicate[res_address.res_isdefault] = false;
+                        //    duplicate[res_address.res_iscustomeraddress] = false;
+                        //    crmServiceProvider.Service.Update(duplicate);
+                        //}
                     }
                 }
             }
