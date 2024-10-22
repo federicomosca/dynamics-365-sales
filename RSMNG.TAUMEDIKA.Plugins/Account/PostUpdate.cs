@@ -63,7 +63,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
 
                         //se non trovo nemmeno un indirizzo
-                        if (defaultAddressesCollection.Entities.Count < 0)
+                        if (defaultAddressesCollection.Entities.Count == 0)
                         {
                             //recupero Indirizzo, Città e CAP
                             target.TryGetAttributeValue<string>(account.address1_name, out string indirizzo);
