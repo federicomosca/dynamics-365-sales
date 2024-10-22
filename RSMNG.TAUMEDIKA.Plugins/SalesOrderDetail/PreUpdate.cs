@@ -41,12 +41,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
-            target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out codiceIva);
 
             //se il codice iva è nel target ricalcolo i campi correlati (in questa condizione entra solo se l'utente modifica il record dal form
             // ma la prima volta entra sempre per effetto di un comportamento nativo perché in questo caso il preUpdate "sostitusice" il preCreate)
-            if (codiceIva != null)
+            if (target.Contains(salesorderdetail.res_vatnumberid) || target.Contains(salesorderdetail.quantity))
             {
+                target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out codiceIva);
                 Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
 
                 prezzoUnitario = postImage.GetAttributeValue<decimal>(salesorderdetail.baseamount);
