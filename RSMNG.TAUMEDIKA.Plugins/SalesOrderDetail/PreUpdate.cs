@@ -35,29 +35,35 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             decimal prezzoUnitario;
             decimal quantità;
             decimal aliquota = 0;
-            decimal importo;
             decimal scontoTotale;
+            decimal importo;
             decimal totaleImponibile = 0;
             decimal totaleIva = 0;
-            decimal importoTotale;
+            decimal importoTotale = 0;
 
             target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out codiceIva);
 
+            //se il codice iva è nel target ricalcolo i campi correlati (in questa condizione entra solo se l'utente modifica il record dal form
+            // ma la prima volta entra sempre per effetto di un comportamento nativo perché in questo caso il preUpdate "sostitusice" il preCreate)
             if (codiceIva != null)
             {
                 Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
-                prezzoUnitario = target.GetAttributeValue<decimal>(salesorderdetail.baseamount);
-                quantità = target.GetAttributeValue<decimal>(salesorderdetail.quantity);
-                importo = prezzoUnitario * quantità;
+
+                prezzoUnitario = postImage.GetAttributeValue<decimal>(salesorderdetail.baseamount);
+                quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
                 aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
-                scontoTotale = target.GetAttributeValue<decimal>(salesorderdetail.manualdiscountamount);
+                scontoTotale = postImage.GetAttributeValue<decimal>(salesorderdetail.manualdiscountamount);
+
+                importo = prezzoUnitario * quantità;
                 totaleImponibile = importo - scontoTotale;
                 totaleIva = importo * (aliquota / 100);
                 importoTotale = totaleImponibile + totaleIva;
             }
             else
             {
+                //se il codice iva non è stato selezionato dall'utente, lo recupero dal prodotto correlato
                 postImage.TryGetAttributeValue<EntityReference>(salesorderdetail.productid, out EntityReference erProduct);
+
                 if (erProduct != null)
                 {
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
@@ -76,6 +82,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                     </fetch>";
 
                     EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
+
                     if (collection.Entities.Count > 0)
                     {
                         Entity prodotto = collection.Entities[0];
@@ -89,20 +96,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                         //dalla fetch
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
-
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
+
+                        prezzoUnitario = postImage.GetAttributeValue<decimal>(salesorderdetail.baseamount);
+                        quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
+                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
+                        scontoTotale = postImage.GetAttributeValue<decimal>(salesorderdetail.manualdiscountamount);
+
+                        importo = prezzoUnitario * quantità;
+                        totaleImponibile = importo - scontoTotale;
                         totaleIva = importo * (aliquota / 100);
-
-
+                        importoTotale = totaleImponibile + totaleIva;
                     }
                 }
             }
-
             target[salesorderdetail.res_vatnumberid] = codiceIva;
             target[salesorderdetail.res_vatrate] = aliquota;
             target[salesorderdetail.res_taxableamount] = new Money(totaleImponibile);
             target[salesorderdetail.tax] = new Money(totaleIva);
+            target[salesorderdetail.extendedamount] = new Money(importoTotale);
             #endregion
 
             #region Recupera dati product [DISABLED]
