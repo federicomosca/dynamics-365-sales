@@ -28,12 +28,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+            if (PluginActiveTrace)
+            {
+                foreach (var attribute in target.Attributes)
+                {
+                    crmServiceProvider.TracingService.Trace($"Key: {attribute.Key}, Value: {attribute.Value}");
+                }
+            }
+
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
             EntityReference codiceIva = null;
-            decimal prezzoUnitario;
-            decimal quantità;
             decimal aliquota = 0;
             decimal scontoTotale;
             decimal importo;
@@ -41,20 +47,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
-
             //se il codice iva è nel target ricalcolo i campi correlati (in questa condizione entra solo se l'utente modifica il record dal form
-            // ma la prima volta entra sempre per effetto di un comportamento nativo perché in questo caso il preUpdate "sostitusice" il preCreate)
-            if (target.Contains(salesorderdetail.res_vatnumberid) || target.Contains(salesorderdetail.quantity))
+
+            if (target.ContainsAttributeNotNull(salesorderdetail.res_vatnumberid) || target.Contains(salesorderdetail.quantity))
             {
-                target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out codiceIva);
+                codiceIva = postImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid);
+
                 Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
 
-                prezzoUnitario = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value;
-                quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
                 aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
-                scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value;
+                scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
+                importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                importo = prezzoUnitario * quantità;
                 totaleImponibile = importo - scontoTotale;
                 totaleIva = importo * (aliquota / 100);
                 importoTotale = totaleImponibile + totaleIva;
@@ -87,23 +91,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     {
                         Entity prodotto = collection.Entities[0];
 
-                        #region Valorizzo Codice Articolo
-                        PluginRegion = "Valorizzo Codice Articolo";
-
+                        PluginRegion = "Codice Articolo";
                         string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
                         target[salesorderdetail.res_itemcode] = codiceArticolo;
-                        #endregion
 
                         //dalla fetch
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                        crmServiceProvider.TracingService.Trace(codiceIvaGuid.ToString());
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        prezzoUnitario = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value;
-                        quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
                         aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
-                        scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value;
+                        scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
+                        importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                        importo = prezzoUnitario * quantità;
                         totaleImponibile = importo - scontoTotale;
                         totaleIva = importo * (aliquota / 100);
                         importoTotale = totaleImponibile + totaleIva;
