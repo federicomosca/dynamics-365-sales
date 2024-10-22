@@ -77,13 +77,19 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             Dictionary<string, string> mandatoryFieldsMapping = null;
             Dictionary<string, string> optionalFieldsMapping = null;
 
-            //mappatura campi obbligatori
-            if (target.LogicalName == "account") { mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping; }
-            if (target.LogicalName == "contact") { mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping; }
+            //mappatura dei campi obbligatori o facoltativi di ACCOUNT
+            if (target.LogicalName == "account")
+            {
+                mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
+            }
 
-            //mappatura campi facoltativi
-            if (target.LogicalName == "account") { optionalFieldsMapping = accountToAddressOptionalFieldsMapping; }
-            if (target.LogicalName == "contact") { optionalFieldsMapping = contactToAddressOptionalFieldsMapping; }
+            //mappatura dei campi obbligatori o facoltativi di CONTACT
+            if (target.LogicalName == "contact")
+            {
+                mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
+            }
 
             Entity defaultAddress = new Entity(res_address.logicalName);
 
@@ -119,100 +125,50 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             crmServiceProvider.Service.Create(defaultAddress);
         }
 
-        //recupero Indirizzo, Città e CAP
-        //target.TryGetAttributeValue<string>(account.address1_line1, out indirizzo);
-        //    target.TryGetAttributeValue<string>(account.address1_city, out città);
-        //    target.TryGetAttributeValue<string>(account.address1_postalcode, out CAP);
-
-        //    //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-        //    target.TryGetAttributeValue<string>(account.address1_stateorprovince, out provincia);
-        //    target.TryGetAttributeValue<string>(account.res_location, out località);
-        //    target.TryGetAttributeValue<EntityReference>(account.res_countryid, out nazione);
-
-        //    indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage?.GetAttributeValue<string>(account.address1_line1);
-        //    città = !string.IsNullOrEmpty(città) ? città : preImage?.GetAttributeValue<string>(account.address1_city);
-        //    CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage?.GetAttributeValue<string>(account.address1_postalcode);
-        //    provincia = provincia ?? preImage?.GetAttributeValue<string>(account.address1_stateorprovince);
-        //    località = località ?? preImage?.GetAttributeValue<string>(account.res_location);
-        //    nazione = nazione ?? preImage?.GetAttributeValue<EntityReference>(account.res_countryid);
-
-
-        //    //recupero Indirizzo, Città e CAP
-        //    target.TryGetAttributeValue<string>(contact.address1_name, out indirizzo);
-        //    target.TryGetAttributeValue<string>(contact.address1_city, out città);
-        //    target.TryGetAttributeValue<string>(contact.address1_postalcode, out CAP);
-
-        //    //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-        //    target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out provincia);
-        //    target.TryGetAttributeValue<string>(contact.res_location, out località);
-        //    target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out nazione);
-
-        //    indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage?.GetAttributeValue<string>(contact.address1_name);
-        //    città = !string.IsNullOrEmpty(città) ? città : preImage?.GetAttributeValue<string>(contact.address1_city);
-        //    CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage?.GetAttributeValue<string>(contact.address1_postalcode);
-        //    provincia = provincia ?? preImage?.GetAttributeValue<string>(contact.address1_stateorprovince);
-        //    località = località ?? preImage?.GetAttributeValue<string>(contact.res_location);
-        //    nazione = nazione ?? preImage?.GetAttributeValue<EntityReference>(contact.res_countryid);
-
-        //    defaultAddress[res_address.res_addressField] = indirizzo;
-        //    defaultAddress[res_address.res_city] = città;
-        //    defaultAddress[res_address.res_postalcode] = CAP;
-        //    defaultAddress[res_address.res_province] = provincia;
-        //    defaultAddress[res_address.res_location] = località;
-        //    defaultAddress[res_address.res_countryid] = nazione;
-
-        //    defaultAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
-
-        //defaultAddress[res_address.res_iscustomeraddress] = true;
-        //    defaultAddress[res_address.res_isdefault] = true;
-
-        //    crmServiceProvider.Service.Create(defaultAddress);
-    }
-
-    public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity customerAddress, bool isDefault)
-    {
-        if (target.LogicalName == "account")
+        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity customerAddress, bool isDefault)
         {
-            //recupero Indirizzo, Città e CAP
-            target.TryGetAttributeValue<string>(account.address1_line1, out string indirizzo);
-            target.TryGetAttributeValue<string>(account.address1_city, out string città);
-            target.TryGetAttributeValue<string>(account.address1_postalcode, out string CAP);
+            Dictionary<string, string> mandatoryFieldsMapping = null;
+            Dictionary<string, string> optionalFieldsMapping = null;
 
-            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-            target.TryGetAttributeValue<string>(account.address1_stateorprovince, out string provincia);
-            target.TryGetAttributeValue<string>(account.res_location, out string località);
-            target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
+            //mappatura dei campi obbligatori o facoltativi di ACCOUNT
+            if (target.LogicalName == "account")
+            {
+                mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
+            }
 
-            customerAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
-            customerAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
-            customerAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
-            customerAddress[res_address.res_province] = provincia ?? preImage.GetAttributeValue<string>(account.address1_stateorprovince);
-            customerAddress[res_address.res_location] = località ?? preImage.GetAttributeValue<string>(account.res_location);
-            customerAddress[res_address.res_countryid] = nazione ?? null;
+            //mappatura dei campi obbligatori o facoltativi di CONTACT
+            if (target.LogicalName == "contact")
+            {
+                mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
+            }
+
+            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla preimage
+            foreach (var field in mandatoryFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
+
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                customerAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+            }
+
+            //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
+            foreach (var field in optionalFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
+
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                customerAddress[addressField] = customerValue ?? null;
+            }
+
             customerAddress[res_address.res_isdefault] = isDefault;
+
+            crmServiceProvider.Service.Update(customerAddress);
         }
-
-        if (target.LogicalName == "contact")
-        {
-            //recupero Indirizzo, Città e CAP
-            target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
-            target.TryGetAttributeValue<string>(contact.address1_city, out string città);
-            target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
-
-            //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-            target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
-            target.TryGetAttributeValue<string>(contact.res_location, out string località);
-            target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
-
-            customerAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
-            customerAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
-            customerAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
-            customerAddress[res_address.res_province] = provincia ?? preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
-            customerAddress[res_address.res_location] = località ?? preImage.GetAttributeValue<string>(contact.res_location);
-            customerAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid);
-            customerAddress[res_address.res_isdefault] = isDefault;
-        }
-
-        crmServiceProvider.Service.Update(customerAddress);
     }
 }
