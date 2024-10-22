@@ -49,10 +49,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 target.TryGetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid, out codiceIva);
                 Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
 
-                prezzoUnitario = postImage.GetAttributeValue<decimal>(salesorderdetail.baseamount);
+                prezzoUnitario = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value;
                 quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
                 aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
-                scontoTotale = postImage.GetAttributeValue<decimal>(salesorderdetail.manualdiscountamount);
+                scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value;
 
                 importo = prezzoUnitario * quantità;
                 totaleImponibile = importo - scontoTotale;
@@ -98,10 +98,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        prezzoUnitario = postImage.GetAttributeValue<decimal>(salesorderdetail.baseamount);
+                        prezzoUnitario = postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value;
                         quantità = postImage.GetAttributeValue<decimal>(salesorderdetail.quantity);
                         aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
-                        scontoTotale = postImage.GetAttributeValue<decimal>(salesorderdetail.manualdiscountamount);
+                        scontoTotale = postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value;
 
                         importo = prezzoUnitario * quantità;
                         totaleImponibile = importo - scontoTotale;
