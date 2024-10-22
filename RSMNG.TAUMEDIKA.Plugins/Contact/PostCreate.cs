@@ -23,37 +23,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Creo indirizzo di default
-            PluginRegion = "Creo indirizzo di default";
+            #region Creo indirizzo scheda cliente
+            PluginRegion = "Creo indirizzo scheda cliente";
 
-            List<string> campiIndirizzo = new List<string>{
-                        contact.address1_name,
-                        contact.address1_city,
-                        contact.address1_postalcode,
-                    };
-
-            bool isIndirizzo = false;
-            foreach (string campoValorizzato in campiIndirizzo)
+            //controllo se è stato compilato l'indirizzo
+            if (target.Contains(contact.address1_name))
             {
-                if (target.Contains(campoValorizzato))
-                {
-                    isIndirizzo = true;
-                    break;
-                }
-            }
+                target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
+                target.TryGetAttributeValue<string>(contact.address1_city, out string città);
 
-            //se almeno uno dei valori è stato modificato...
-            if (isIndirizzo)
-            {
-                //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
-
-                //se non trovo nemmeno un indirizzo
-                if (linkedAddressesCollection.Entities.Count == 0)
+                //cap e città sono obbligatori indirizzo è valorizzato
+                if (!string.IsNullOrEmpty(CAP) || !string.IsNullOrEmpty(città))
                 {
-                    //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
-                    Utility.CreateNewDefaultAddress(crmServiceProvider, target);
+                    //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                    EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
+
+                    //se non trovo nemmeno un indirizzo
+                    if (linkedAddressesCollection.Entities.Count == 0)
+                    {
+                        //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
+                        Utility.CreateNewDefaultAddress(crmServiceProvider, target);
+                    }
                 }
+                else throw new ApplicationException("Se il campo Indirizzo è valorizzato, i campi CAP e Città sono obbligatori.");
             }
             #endregion
         }
