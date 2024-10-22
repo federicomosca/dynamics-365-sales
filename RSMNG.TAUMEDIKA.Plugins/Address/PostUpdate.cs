@@ -40,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 if (customerId != Guid.Empty)
                 {
                     //controllo se ci sono indirizzi di default
-                    EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, customerId, target.Id);
+                    EntityCollection defaultAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, customerId, target.Id);
 
                     //se ci sono, imposto Default e Indirizzo scheda cliente a NO e faccio update
                     if (defaultAddressesCollection.Entities.Count > 0)

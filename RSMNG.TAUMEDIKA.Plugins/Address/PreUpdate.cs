@@ -129,6 +129,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 target[res_address.res_name] = addressName;
             }
             #endregion
+
+            #region Controllo duplicati Default = SI
+            PluginRegion = "Controllo duplicati Default = SI";
+
+
+            #endregion
         }
     }
 }

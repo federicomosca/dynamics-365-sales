@@ -37,7 +37,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
 
                 //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
+                EntityCollection defaultAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 
                 //se non trovo nemmeno un indirizzo
                 if (defaultAddressesCollection.Entities.Count == 0)
