@@ -21,18 +21,17 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 res_address.res_city
             };
 
-        //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
+        //recupero eventuali indirizzi attivi del cliente con Default = SI o Indirizzo scheda cliente = SI
         public static EntityCollection GetLinkedAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
-            crmServiceProvider.TracingService.Trace("Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
+            //crmServiceProvider.TracingService.Trace("Sono nella funzione GetLinkedAddresses"); /** <------------< TRACE >------------ */
 
-            var fetchDefaultAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+            var fetchLinkedAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
                               <entity name=""{res_address.logicalName}"">
                                 <filter type=""and"">
                                   <condition attribute=""{res_address.statecode}"" operator=""eq"" value=""0"" />
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
-                                  <condition attribute=""{res_address.res_addressid}"" operator=""ne"" value=""{updatedAddressId}"" />
                                 </filter>
                                 <filter type=""or"">
                                   <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
@@ -40,38 +39,80 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                 </filter>
                               </entity>
                             </fetch>";
-            crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
-            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
+            //crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
+            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchLinkedAddresses));
         }
 
-        public static void CreateNewDefaultAddress(Entity target, CrmServiceProvider crmServiceProvider,
-            string indirizzo,
-            string città,
-            string CAP,
-            string provincia = "",
-            string località = "",
-            EntityReference nazione = null)
+        public static void CreateNewDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage = null)
         {
-            crmServiceProvider.TracingService.Trace("Check", "Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
+            //crmServiceProvider.TracingService.Trace("Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
+            string indirizzo = string.Empty,
+                città = string.Empty,
+                CAP = string.Empty,
+                provincia = string.Empty,
+                località = string.Empty;
 
+            EntityReference nazione = null;
 
-            Entity enAddress = new Entity(res_address.logicalName);
-            enAddress[res_address.res_addressField] = indirizzo;
-            enAddress[res_address.res_city] = città;
-            enAddress[res_address.res_postalcode] = CAP;
-            enAddress[res_address.res_province] = provincia;
-            enAddress[res_address.res_location] = località;
-            enAddress[res_address.res_countryid] = nazione;
+            if (target.LogicalName == "account")
+            {
 
-            enAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+                //recupero Indirizzo, Città e CAP
+                target.TryGetAttributeValue<string>(account.address1_line1, out indirizzo);
+                target.TryGetAttributeValue<string>(account.address1_city, out città);
+                target.TryGetAttributeValue<string>(account.address1_postalcode, out CAP);
 
-            enAddress[res_address.res_iscustomeraddress] = true;
-            enAddress[res_address.res_isdefault] = true;
+                //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
+                target.TryGetAttributeValue<string>(account.address1_stateorprovince, out provincia);
+                target.TryGetAttributeValue<string>(account.res_location, out località);
+                target.TryGetAttributeValue<EntityReference>(account.res_countryid, out nazione);
 
-            crmServiceProvider.Service.Create(enAddress);
+                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
+                città = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
+                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
+                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince);
+                località = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location);
+                nazione = nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid);
+            }
+            
+            if (target.LogicalName == "contact")
+            {
+
+                //recupero Indirizzo, Città e CAP
+                target.TryGetAttributeValue<string>(contact.address1_name, out indirizzo);
+                target.TryGetAttributeValue<string>(contact.address1_city, out città);
+                target.TryGetAttributeValue<string>(contact.address1_postalcode, out CAP);
+
+                //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
+                target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out provincia);
+                target.TryGetAttributeValue<string>(contact.res_location, out località);
+                target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out nazione);
+
+                indirizzo = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
+                città = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
+                CAP = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
+                provincia = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
+                località = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location);
+                nazione = nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid);
+            }
+
+            Entity defaultAddress = new Entity(res_address.logicalName);
+            defaultAddress[res_address.res_addressField] = indirizzo;
+            defaultAddress[res_address.res_city] = città;
+            defaultAddress[res_address.res_postalcode] = CAP;
+            defaultAddress[res_address.res_province] = provincia;
+            defaultAddress[res_address.res_location] = località;
+            defaultAddress[res_address.res_countryid] = nazione;
+
+            defaultAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+
+            defaultAddress[res_address.res_iscustomeraddress] = true;
+            defaultAddress[res_address.res_isdefault] = true;
+
+            crmServiceProvider.Service.Create(defaultAddress);
         }
 
-        public static void UpdateDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity defaultAddress, bool isAlreadyDefaultAddress)
+        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity customerAddress, bool isDefault)
         {
             if (target.LogicalName == "account")
             {
@@ -85,13 +126,13 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 target.TryGetAttributeValue<string>(account.res_location, out string località);
                 target.TryGetAttributeValue<EntityReference>(account.res_countryid, out EntityReference nazione);
 
-                defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
-                defaultAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
-                defaultAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
-                defaultAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince);
-                defaultAddress[res_address.res_location] = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location);
-                defaultAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid);
-                if (isAlreadyDefaultAddress) { defaultAddress[res_address.res_isdefault] = false; }
+                customerAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(account.address1_line1);
+                customerAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(account.address1_city);
+                customerAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(account.address1_postalcode);
+                customerAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(account.address1_stateorprovince);
+                customerAddress[res_address.res_location] = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(account.res_location);
+                customerAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(account.res_countryid);
+                customerAddress[res_address.res_isdefault] = isDefault;
             }
 
             if (target.LogicalName == "contact")
@@ -106,16 +147,16 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 target.TryGetAttributeValue<string>(contact.res_location, out string località);
                 target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
 
-                defaultAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
-                defaultAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
-                defaultAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
-                defaultAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
-                defaultAddress[res_address.res_location] = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location);
-                defaultAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid);
-                if (isAlreadyDefaultAddress) { defaultAddress[res_address.res_isdefault] = false; }
+                customerAddress[res_address.res_addressField] = !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name);
+                customerAddress[res_address.res_city] = !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city);
+                customerAddress[res_address.res_postalcode] = !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode);
+                customerAddress[res_address.res_province] = !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince);
+                customerAddress[res_address.res_location] = !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location);
+                customerAddress[res_address.res_countryid] = nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid);
+                customerAddress[res_address.res_isdefault] = isDefault;
             }
 
-            crmServiceProvider.Service.Update(defaultAddress);
+            crmServiceProvider.Service.Update(customerAddress);
         }
     }
 }

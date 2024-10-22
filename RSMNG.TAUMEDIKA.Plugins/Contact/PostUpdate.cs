@@ -53,16 +53,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                 //se almeno uno dei valori è stato modificato...
                 if (isAddressUpdated)
                 {
-                    //recupero Indirizzo, Città e CAP
-                    target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
-                    target.TryGetAttributeValue<string>(contact.address1_city, out string città);
-                    target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
-
-                    //recupero gli eventuali valori facoltativi dei campi Provincia, Località, Nazione
-                    target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
-                    target.TryGetAttributeValue<string>(contact.res_location, out string località);
-                    target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
-
                     //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
                     EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 
@@ -70,40 +60,26 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     if (linkedAddressesCollection.Entities.Count == 0)
                     {
                         //creo il nuovo indirizzo con indirizzo scheda cliente si e default si
-                        Utility.CreateNewDefaultAddress(target, crmServiceProvider,
-                            !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name),
-                            !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city),
-                            !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode),
-                            !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince),
-                            !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location),
-                            nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid)
-                            );
+                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, preImage);
                     }
                     else
                     {
                         //ho trovato almeno un indirizzo
-                        Entity defaultAddress = linkedAddressesCollection.Entities[0];
+                        Entity linkedAddress = linkedAddressesCollection.Entities[0];
 
                         //se è indirizzo scheda cliente = true
-                        defaultAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
-                        defaultAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+                        linkedAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+                        linkedAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
 
                         if (isCustomerAddress)
                         {
                             //se è indirizzo scheda cliente, aggiorno coi nuovi dati e imposto default a false se c'è già un indirizzo di default
-                            Utility.UpdateDefaultAddress(crmServiceProvider, target, preImage, defaultAddress, isDefault);
+                            Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, linkedAddress, isDefault);
                         }
                         else
                         {
                             //se non è indirizzo scheda cliente, è per forza default (altrimenti la fetch non l'avrebbe trovato)
-                            Utility.CreateNewDefaultAddress(target, crmServiceProvider,
-                            !string.IsNullOrEmpty(indirizzo) ? indirizzo : preImage.GetAttributeValue<string>(contact.address1_name),
-                            !string.IsNullOrEmpty(città) ? città : preImage.GetAttributeValue<string>(contact.address1_city),
-                            !string.IsNullOrEmpty(CAP) ? CAP : preImage.GetAttributeValue<string>(contact.address1_postalcode),
-                            !string.IsNullOrEmpty(provincia) ? provincia : preImage.GetAttributeValue<string>(contact.address1_stateorprovince),
-                            !string.IsNullOrEmpty(località) ? località : preImage.GetAttributeValue<string>(contact.res_location),
-                            nazione ?? preImage.GetAttributeValue<EntityReference>(contact.res_countryid)
-                            );
+                            Utility.CreateNewDefaultAddress(crmServiceProvider, target, preImage);
                         }
                     }
                 }
