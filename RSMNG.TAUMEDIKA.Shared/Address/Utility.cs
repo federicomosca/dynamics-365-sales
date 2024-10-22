@@ -31,6 +31,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                               <entity name=""{res_address.logicalName}"">
                                 <filter type=""and"">
                                   <condition attribute=""{res_address.statecode}"" operator=""eq"" value=""0"" />
+                                  <condition attribute=""{res_address.res_addressid}"" operator=""ne"" value=""{updatedAddressId}"" />
                                   <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
                                 </filter>
                                 <filter type=""or"">

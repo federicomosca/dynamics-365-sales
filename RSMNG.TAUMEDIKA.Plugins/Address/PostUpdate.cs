@@ -45,7 +45,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                     //se ci sono, imposto Default e Indirizzo scheda cliente a NO e faccio update
                     if (defaultAddressesCollection.Entities.Count > 0)
                     {
-                        crmServiceProvider.TracingService.Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                        crmServiceProvider.TracingService.Trace("Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
                         foreach (Entity duplicate in defaultAddressesCollection.Entities)
                         {
