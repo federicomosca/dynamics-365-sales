@@ -26,6 +26,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
+            postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
 
             #region Controllo campo Indirizzo scheda cliente [DISABLED]
             //PluginRegion = "Controllo campo Indirizzo scheda cliente";
@@ -105,7 +106,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 string addressCity;
                 string addressStreet;
 
-                postImage.TryGetAttributeValue<EntityReference>(res_address.res_customerid, out EntityReference erCustomer);
 
                 if (erCustomer != null)
                 {
@@ -127,6 +127,33 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 addressName = $"{customerName} - {addressCity} - {addressStreet}";
 
                 target[res_address.res_name] = addressName;
+            }
+            #endregion
+
+            #region Controllo duplicati Default = SI
+            PluginRegion = "Controllo duplicati Default = SI";
+
+            target.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+
+            //se aggiorno il record e imposto Default = SI
+            if (isDefault)
+            {
+                if (erCustomer.Id != null)
+                {
+                    //recupero eventuali record con Default = SI
+                    EntityCollection linkedAddresses = Utility.GetLinkedAddresses(crmServiceProvider, erCustomer.Id);
+
+                    if (linkedAddresses.Entities.Count > 0)
+                    {
+                        foreach (Entity linkedAddress in linkedAddresses.Entities)
+                        {
+                            //aggiorno a Default = NO tutti i record meno questo in update
+                            Entity linkedAddressUpt = new Entity(linkedAddress.LogicalName, linkedAddress.Id);
+                            linkedAddressUpt.Attributes.Add(res_address.res_isdefault, false);
+                            crmServiceProvider.Service.Update(linkedAddressUpt);
+                        }
+                    }
+                }
             }
             #endregion
         }

@@ -136,7 +136,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
 
             return result;
         }
-        public static void checkIsDefault(IOrganizationService service, CrmServiceProvider crmService, Guid priceLevelId, string field)
+        public static void CheckIsDefault(IOrganizationService service, CrmServiceProvider crmService, Guid priceLevelId, string field)
         {
             string condition = null;
             switch (field)
@@ -173,6 +173,7 @@ namespace RSMNG.TAUMEDIKA.Shared.PriceLevel
                 if (!string.IsNullOrEmpty(field)) { throw new ApplicationException($"Non può esistere più di un record {field}"); }
             }
         }
+
         public static EntityReference GetPriceLevelERP(IOrganizationService service)
         {
             EntityReference erPriceLevel = null;

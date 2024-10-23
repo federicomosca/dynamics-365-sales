@@ -23,39 +23,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
 
-            #region Creo indirizzo di default
-            PluginRegion = "Creo indirizzo di default";
+            #region Creo indirizzo scheda cliente
+            PluginRegion = "Creo indirizzo scheda cliente";
 
-            //recupero Indirizzo, Città e CAP
-            target.TryGetAttributeValue<string>(contact.address1_name, out string indirizzo);
-            target.TryGetAttributeValue<string>(contact.address1_city, out string città);
-            target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
+            bool isAlreadyDefaultAddress = false;
 
-            //se sono stati valorizzati tutti e 3...
-            if (!string.IsNullOrEmpty(indirizzo) && !string.IsNullOrEmpty(città) && !string.IsNullOrEmpty(CAP))
+            //controllo se è stato compilato l'indirizzo
+            if (target.Contains(contact.address1_name))
             {
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Indirizzo, Città e CAP sono stati valorizzati"); /** <------------< TRACE >------------ */
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Il contatto ha valorizzato il campo Indirizzo"); }
 
-                //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, target.Id);
+                target.TryGetAttributeValue<string>(contact.address1_postalcode, out string CAP);
+                target.TryGetAttributeValue<string>(contact.address1_city, out string città);
 
-                //se non trovo nemmeno un indirizzo
-                if (defaultAddressesCollection.Entities.Count == 0)
+                //cap e città sono obbligatori indirizzo è valorizzato
+                if (!string.IsNullOrEmpty(CAP) || !string.IsNullOrEmpty(città))
                 {
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Non ho trovato un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Sia città sia CAP sono valorizzati"); }
 
-                    //recupero gli eventuali altri valori compilati nei campi Provincia, Località, Nazione
-                    target.TryGetAttributeValue<string>(contact.address1_stateorprovince, out string provincia);
-                    target.TryGetAttributeValue<string>(contact.res_location, out string località);
-                    target.TryGetAttributeValue<EntityReference>(contact.res_countryid, out EntityReference nazione);
+                    //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
+                    EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
 
-                    //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
-                    Utility.CreateNewDefaultAddress(target, crmServiceProvider, indirizzo, città, CAP, provincia, località, nazione);
-
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Ho creato un nuovo indirizzo di default"); /** <------------< TRACE >------------ */
+                    //se non trovo nemmeno un indirizzo
+                    if (linkedAddressesCollection.Entities.Count == 0)
+                    {
+                        //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
+                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress);
+                    }
                 }
+                else throw new ApplicationException("Se il campo Indirizzo è valorizzato, i campi CAP e Città sono obbligatori.");
             }
-            else throw new ApplicationException("I campi Indirizzo, Città e CAP sono obbligatori");
             #endregion
         }
     }

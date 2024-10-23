@@ -40,20 +40,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 if (customerId != Guid.Empty)
                 {
                     //controllo se ci sono indirizzi di default
-                    EntityCollection defaultAddressesCollection = Utility.GetDefaultAddresses(crmServiceProvider, customerId, target.Id);
+                    EntityCollection defaultAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, customerId, target.Id);
 
                     //se ci sono, imposto Default e Indirizzo scheda cliente a NO e faccio update
                     if (defaultAddressesCollection.Entities.Count > 0)
                     {
-                        crmServiceProvider.TracingService.Trace("Check", "Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
+                        crmServiceProvider.TracingService.Trace("Esiste già un indirizzo Default = SI e Indirizzo scheda cliente = SI"); /** <------------< TRACE >------------ */
 
-                        foreach (Entity duplicate in defaultAddressesCollection.Entities)
-                        {
-                            crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
-                            duplicate[res_address.res_isdefault] = false;
-                            duplicate[res_address.res_iscustomeraddress] = false;
-                            crmServiceProvider.Service.Update(duplicate);
-                        }
+                        //foreach (Entity duplicate in defaultAddressesCollection.Entities)
+                        //{
+                        //    crmServiceProvider.TracingService.Trace("Indirizzo duplicato", duplicate); /** <------------< TRACE >------------ */
+                        //    duplicate[res_address.res_isdefault] = false;
+                        //    duplicate[res_address.res_iscustomeraddress] = false;
+                        //    crmServiceProvider.Service.Update(duplicate);
+                        //}
                     }
                 }
             }

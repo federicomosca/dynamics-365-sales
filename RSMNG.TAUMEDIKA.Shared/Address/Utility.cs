@@ -21,53 +21,154 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 res_address.res_city
             };
 
-        //recupero eventuali indirizzi attivi del cliente con Default = SI e Indirizzo scheda cliente = SI
-        public static EntityCollection GetDefaultAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
+        public static Dictionary<string, string> accountToAddressMandatoryFieldsMapping = new Dictionary<string, string>
         {
-            crmServiceProvider.TracingService.Trace("Sono nella funzione GetDefaultAddresses"); /** <------------< TRACE >------------ */
+            {account.address1_line1, res_address.res_addressField},
+            {account.address1_city, res_address.res_city},
+            {account.address1_postalcode, res_address.res_postalcode}
+        };
 
-            var fetchDefaultAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+        public static Dictionary<string, string> accountToAddressOptionalFieldsMapping = new Dictionary<string, string>
+        {
+            {account.address1_stateorprovince, res_address.res_province},
+            {account.res_location, res_address.res_location},
+            {account.res_countryid, res_address.res_countryid}
+        };
+
+        public static Dictionary<string, string> contactToAddressMandatoryFieldsMapping = new Dictionary<string, string>
+        {
+            {account.address1_name, res_address.res_addressField},
+            {account.address1_city, res_address.res_city},
+            {account.address1_postalcode, res_address.res_postalcode}
+        };
+
+        public static Dictionary<string, string> contactToAddressOptionalFieldsMapping = new Dictionary<string, string>
+        {
+            {account.address1_stateorprovince, res_address.res_province},
+            {account.res_location, res_address.res_location},
+            {account.res_countryid, res_address.res_countryid}
+        };
+
+        //recupero eventuali indirizzi attivi del cliente con Default = SI o Indirizzo scheda cliente = SI
+        public static EntityCollection GetLinkedAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
+        {
+            //crmServiceProvider.TracingService.Trace("Sono nella funzione GetLinkedAddresses"); /** <------------< TRACE >------------ */
+
+            var fetchLinkedAddresses = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                             <fetch>
                               <entity name=""{res_address.logicalName}"">
                                 <filter type=""and"">
                                   <condition attribute=""{res_address.statecode}"" operator=""eq"" value=""0"" />
-                                  <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
                                   <condition attribute=""{res_address.res_addressid}"" operator=""ne"" value=""{updatedAddressId}"" />
+                                  <condition attribute=""{res_address.res_customerid}"" operator=""eq"" value=""{customerIdString}"" />
                                 </filter>
-                                <filter>
+                                <filter type=""or"">
+                                  <condition attribute=""{res_address.res_isdefault}"" operator=""eq"" value=""1"" />
                                   <condition attribute=""{res_address.res_iscustomeraddress}"" operator=""eq"" value=""1"" />
                                 </filter>
                               </entity>
                             </fetch>";
-            crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
-            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchDefaultAddresses));
+            //crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
+            return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchLinkedAddresses));
         }
 
-        public static void CreateNewDefaultAddress(Entity target, CrmServiceProvider crmServiceProvider,
-            string indirizzo,
-            string città,
-            string CAP,
-            string provincia = "",
-            string località = "",
-            EntityReference nazione = null)
+        public static void CreateNewDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, bool isAlreadyDefaultAddress, Entity preImage = null)
         {
-            crmServiceProvider.TracingService.Trace("Check", "Sono nella funzione CreateNewDefaultAddress"); /** <------------< TRACE >------------ */
+            Dictionary<string, string> mandatoryFieldsMapping = null;
+            Dictionary<string, string> optionalFieldsMapping = null;
 
+            //mappatura dei campi obbligatori o facoltativi di ACCOUNT
+            if (target.LogicalName == "account")
+            {
+                mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
+            }
 
-            Entity enAddress = new Entity(res_address.logicalName);
-            enAddress[res_address.res_addressField] = indirizzo;
-            enAddress[res_address.res_city] = città;
-            enAddress[res_address.res_postalcode] = CAP;
-            enAddress[res_address.res_province] = provincia;
-            enAddress[res_address.res_location] = località;
-            enAddress[res_address.res_countryid] = nazione;
+            //mappatura dei campi obbligatori o facoltativi di CONTACT
+            if (target.LogicalName == "contact")
+            {
+                mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
+            }
 
-            enAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+            Entity defaultAddress = new Entity(res_address.logicalName);
 
-            enAddress[res_address.res_iscustomeraddress] = true;
-            enAddress[res_address.res_isdefault] = true;
+            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla preimage
+            foreach (var field in mandatoryFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
 
-            crmServiceProvider.Service.Create(enAddress);
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                defaultAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+            }
+
+            //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
+            foreach (var field in optionalFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
+
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                defaultAddress[addressField] = customerValue ?? null;
+            }
+
+            //link col customer
+            defaultAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+
+            //flag
+            defaultAddress[res_address.res_iscustomeraddress] = true;
+
+            //se non c'è già un indirizzo con Default = SI, imposto il nuovo indirizzo a Default = SI
+            defaultAddress[res_address.res_isdefault] = !isAlreadyDefaultAddress;
+
+            crmServiceProvider.Service.Create(defaultAddress);
+        }
+
+        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity customerAddress, bool isDefault)
+        {
+            Dictionary<string, string> mandatoryFieldsMapping = null;
+            Dictionary<string, string> optionalFieldsMapping = null;
+
+            //mappatura dei campi obbligatori o facoltativi di ACCOUNT
+            if (target.LogicalName == "account")
+            {
+                mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
+            }
+
+            //mappatura dei campi obbligatori o facoltativi di CONTACT
+            if (target.LogicalName == "contact")
+            {
+                mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
+                optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
+            }
+
+            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla preimage
+            foreach (var field in mandatoryFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
+
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                customerAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+            }
+
+            //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
+            foreach (var field in optionalFieldsMapping)
+            {
+                string customerField = field.Key;
+                string addressField = field.Value;
+
+                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+
+                customerAddress[addressField] = customerValue ?? null;
+            }
+
+            crmServiceProvider.Service.Update(customerAddress);
         }
     }
 }
