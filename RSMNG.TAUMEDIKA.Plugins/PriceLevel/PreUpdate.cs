@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Update";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
