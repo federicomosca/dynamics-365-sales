@@ -384,16 +384,18 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let isHomage = formContext.getAttribute(_self.formModel.fields.res_ishomage).getValue();
 
         //sconto%1 not editable e valorizzato a 100
-        let disc1 = isHomage ? 100 : 0;
-        formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).setValue(disc1);
-        formContext.getControl(_self.formModel.fields.res_discountpercentage1).setDisabled(isHomage);
+        let disc1 = isHomage ? 100 : null;
+        formContext.getAttribute(_self.formModel.fields.res_discountpercent1).setValue(disc1);
+        formContext.getControl(_self.formModel.fields.res_discountpercent1).setDisabled(isHomage);
 
         //sconto%2 e sconto%3 not editable e valorizzati a 0
-        formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(isHomage);
-        formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(isHomage);
+        if (isHomage || !disc1) {
+            formContext.getControl(_self.formModel.fields.res_discountpercent2).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercent3).setDisabled(true);
 
-        formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(0);
-        formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(0);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercent2).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercent3).setValue(null);
+        }
 
         // ricalcolo Tot Imponibile -> Totale Iva-> Importo Totale
         let importo = formContext.getAttribute(_self.formModel.fields.baseamount).getValue();
