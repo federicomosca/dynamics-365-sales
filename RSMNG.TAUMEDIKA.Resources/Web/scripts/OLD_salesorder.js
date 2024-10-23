@@ -230,96 +230,12 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         _self.formModel.fields.quoteid
     ];
 
-    //--------------------------------< CONDIZIONI DI PAGAMENTO >-------------------------------//
-    _self.onChangeCondizioniPagamento = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
-        const condizioniPagamento = formContext.getAttribute(_self.formModel.fields.res_paymenttermid).getValue();
-        const campoBanca = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
-
-        //il campo Banca può essere visibile solo se è stata selezionata una Condizione di pagamento
-        if (condizioniPagamento) {
-            Xrm.WebApi.retrieveRecord("res_paymentterm", condizioniPagamento[0].id, "?$select=res_isbankvisible").then(
-                result => {
-                    //dopodiché si verifica il flag impostato nella condizione di pagamento: 'abilita visibilità banca'
-                    const isBankVisible = result.res_isbankvisible;
-
-                    campoBanca.setVisible(isBankVisible);
-
-                    //se il flag è impostato su false, il campo Banca viene nascosto e svuotato del valore
-                    if (!isBankVisible) { campoBanca.getAttribute().setValue(null); }
-                },
-                error => {
-                    console.log(error.message);
-                }
-            );
-        }
-        //se la Condizione di pagamento non è stata selezionata
-        else {
-
-            //imposto a null l'eventuale valore e nascondo il campo
-            campoBanca.getAttribute().setValue(null);
-            campoBanca.setVisible(false);
-        }
-    };
-
-    //-----------------------------------< SPESE ACCESSORIE >-----------------------------------//
+    //---------------------< CAMPI SPESA ACCESSORIA >---------------------
     //
     //
     //
     //
-    _self.retrieveAliquotaCodiceIVA = async codiceIvaId => {
-
-        const fetchCodiceIVASpesaAccessoria = [
-            "?fetchXml=<fetch>",
-            "  <entity name='res_vatnumber'>",
-            "    <attribute name='res_rate'/>",
-            "    <filter>",
-            "      <condition attribute='statecode' operator='eq' value='0'/>",
-            "      <condition attribute='res_vatnumberid' operator='eq' value='", codiceIvaId, "'/>",
-            "    </filter>",
-            "  </entity>",
-            "</fetch>"
-        ].join("");
-
-        try {
-            const result = await Xrm.WebApi.retrieveMultipleRecords("res_vatnumber", fetchCodiceIVASpesaAccessoria);
-            return result.entities[0].res_rate;
-        } catch (error) {
-            console.error("Errore nel recupero dell'aliquota codice IVA", error);
-        }
-    };
-    //---------------------------------------------------
-    _self.retrieveAggregatiRighe = async parentId => {
-
-        var fetchAggregati = [
-            "?fetchXml=<fetch aggregate='true'>",
-            "  <entity name='salesorderdetail'>",
-            "    <attribute name='res_taxableamount' alias='TotaleImponibile' aggregate='sum'/>",
-            "    <attribute name='tax' alias='TotaleIva' aggregate='sum'/>",
-            "    <filter>",
-            "      <condition attribute='salesorderid' operator='eq' value='", parentId, "'/>",
-            "    </filter>",
-            "  </entity>",
-            "</fetch>"
-        ].join("");
-
-        try {
-            const result = await Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchAggregati);
-            const aggregati = result.entities[0];
-            const totaleImponibile = aggregati.TotaleImponibile;
-            const totaleIva = aggregati.TotaleIva;
-
-            // ritorno un oggetto JSON con i valori aggregati
-            return {
-                righeTotaleImponibile: totaleImponibile,
-                righeTotaleIva: totaleIva
-            }
-        } catch (error) {
-            console.error("Errore nel recupero degli aggregati:", error);
-        }
-    };
-    //---------------------------------------------------
+    //------------------------< SPESA ACCESSORIA >------------------------ 
     _self.onChangeSpesaAccessoria = async executionContext => {
         const formContext = executionContext.getFormContext();
 
@@ -361,7 +277,62 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getAttribute(_self.formModel.fields.totalamount).setValue(null);
         }
     };
-    //---------------------------------------------------
+
+    //------------------< RETRIEVE ALIQUOTA CODICE IVA >------------------   
+    _self.retrieveAliquotaCodiceIVA = async codiceIvaId => {
+
+        const fetchCodiceIVASpesaAccessoria = [
+            "?fetchXml=<fetch>",
+            "  <entity name='res_vatnumber'>",
+            "    <attribute name='res_rate'/>",
+            "    <filter>",
+            "      <condition attribute='statecode' operator='eq' value='0'/>",
+            "      <condition attribute='res_vatnumberid' operator='eq' value='", codiceIvaId, "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        try {
+            const result = await Xrm.WebApi.retrieveMultipleRecords("res_vatnumber", fetchCodiceIVASpesaAccessoria);
+            return result.entities[0].res_rate;
+        } catch (error) {
+            console.error("Errore nel recupero dell'aliquota codice IVA", error);
+        }
+    };
+
+    //--------------------< RETRIEVE AGGREGATI RIGHE >--------------------   
+    _self.retrieveAggregatiRighe = async parentId => {
+
+        var fetchAggregati = [
+            "?fetchXml=<fetch aggregate='true'>",
+            "  <entity name='salesorderdetail'>",
+            "    <attribute name='res_taxableamount' alias='TotaleImponibile' aggregate='sum'/>",
+            "    <attribute name='tax' alias='TotaleIva' aggregate='sum'/>",
+            "    <filter>",
+            "      <condition attribute='salesorderid' operator='eq' value='", parentId, "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        try {
+            const result = await Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchAggregati);
+            const aggregati = result.entities[0];
+            const totaleImponibile = aggregati.TotaleImponibile;
+            const totaleIva = aggregati.TotaleIva;
+
+            // ritorno un oggetto JSON con i valori aggregati
+            return {
+                righeTotaleImponibile: totaleImponibile,
+                righeTotaleIva: totaleIva
+            }
+        } catch (error) {
+            console.error("Errore nel recupero degli aggregati:", error);
+        }
+    };
+
+    //------------------< CODICE IVA SPESA ACCESSORIA >-------------------
     _self.onChangeCodiceIvaSpesaAccessoria = async executionContext => {
         const formContext = executionContext.getFormContext();
 
@@ -420,7 +391,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             importoTotaleControl.getAttribute().setValue(importoTotale);
         }
     };
-    //---------------------------------------------------
+
+    //--------------------< IMPORTO SPESA ACCESSORIA >--------------------
     _self.onChangeImportoSpesaAccessoria = async (executionContext) => {
 
         const formContext = executionContext.getFormContext();
@@ -453,168 +425,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     //
     //
     //
-    //------------------------------------------------------------------------------------------//
-    //-----------------------------------< DATI SPEDIZIONE >------------------------------------//
     //
-    //
-    //
-    //
-    _self.onChangeSpedizione = function (executionContext, isEvent) {
-        const formContext = executionContext.getFormContext();
-        const spedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
-
-        //se spedizione == presso cliente, è valorizzato con true, altrimenti false
-        const isPressoCliente = spedizione == _self.formModel.fields.willcallValues.Indirizzo;
-
-        //campi spedizione di cui gestire visibilità e obbligatorietà
-        const campiSpedizione = [
-            _self.formModel.fields.res_shippingreference,
-            _self.formModel.fields.shipto_line1,
-            _self.formModel.fields.shipto_postalcode,
-            _self.formModel.fields.res_location,
-            _self.formModel.fields.shipto_city,
-            _self.formModel.fields.shipto_stateorprovince,
-            _self.formModel.fields.res_countryid
-        ];
-
-        //gestisco la visibilità dei campi a seconda del valore di 'spedizione'
-        campiSpedizione.forEach(campo => {
-            const control = formContext.getControl(campo);
-            control.setVisible(isPressoCliente);
-            if (!isPressoCliente) {
-                const attribute = control.getAttribute();
-                attribute.setValue(null);
-                attribute.setRequiredLevel("none");
-            }
-        });
-
-        if (!isPressoCliente) {
-            formContext.getControl("WebResource_postalcode").setVisible(false);
-            if (isEvent) { _self.onChangeCliente(executionContext); }
-        }
-    };
-    //---------------------------------------------------
-    _self.onChangeIndirizzo = function (executionContext) {
-        var formContext = executionContext.getFormContext();
-        let shipToLine1 = formContext.getAttribute(_self.formModel.fields.shipto_line1).getValue();
-
-        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
-        formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
-        formContext.getControl("WebResource_postalcode").setVisible(shipToLine1 !== null ? true : false);
-
-        if (shipToLine1 !== null) {
-
-            _self.setContextCapIframe(executionContext);
-        } else {
-
-            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
-        }
-
-    };
-    //---------------------------------------------------
-    _self.onChangeCAP = function (executionContext) {
-        var formContext = executionContext.getFormContext();
-        let shipToPostalCode = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
-
-        formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel(shipToPostalCode !== null ? "required" : "none");
-        formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(shipToPostalCode !== null ? false : true);
-
-    };
-    //---------------------------------------------------
-    _self.onChangeCittà = function (executionContext) {
-        var formContext = executionContext.getFormContext();
-        let shipToCity = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
-
-        formContext.getControl(_self.formModel.fields.res_location).setDisabled(shipToCity !== null ? false : true);
-        formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(shipToCity !== null ? false : true);
-        formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(shipToCity !== null ? false : true);
-
-    };
-    //
-    //
-    //
-    //
-    //-----------------------------------------------------------------------------------------//
-
-    //---------------------------------------< CLIENTE >---------------------------------------//
-    //
-    //
-    //
-    //
-    _self.filterCliente = executionContext => {
-        const formContext = executionContext.getFormContext();
-        const campoCliente = formContext.getControl(_self.formModel.fields.customerid);
-        if (!campoCliente) { console.error(`Controllo ${campoCliente} non trovato`); return; }
-
-        //  filtro gli account
-        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
-        campoCliente.addCustomFilter(accountFilter, "account");
-
-        //  filtro i contatti
-        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
-        campoCliente.addCustomFilter(contactFilter, "contact");
-
-    };
-    //---------------------------------------------------
-    _self.onChangeCliente = async function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
-        const cliente = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
-        const campiSpedizione = {
-            indirizzo: formContext.getAttribute(_self.formModel.fields.shipto_line1),
-            CAP: formContext.getAttribute(_self.formModel.fields.shipto_postalcode),
-            città: formContext.getAttribute(_self.formModel.fields.shipto_city),
-            località: formContext.getAttribute(_self.formModel.fields.res_location),
-            provincia: formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince),
-            nazione: formContext.getAttribute(_self.formModel.fields.res_countryid),
-            paese: formContext.getAttribute(_self.formModel.fields.shipto_country)
-        }
-
-        if (cliente !== null) { // willcall è un bool. richiede == per fare la conversione implicita
-            const indirizzi = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(cliente[0].id, true);
-
-            if (indirizzi != null && indirizzi.entities.length > 0) {
-
-                const indirizzoCliente = indirizzi.entities[0];
-
-                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
-
-                if (indirizzoCliente._res_countryid_value != null) {
-
-                    const countryLookup = [{
-                        id: indirizzoCliente["_res_countryid_value"],
-                        entityType: 'res_country',
-                        name: indirizzoCliente["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
-                    }];
-
-                    //una volta recuperato l'indirizzo del cliente, valorizzo i campi spedizione dell'offerta
-                    campiSpedizione.indirizzo.setValue(indirizzoCliente.res_address);
-                    campiSpedizione.CAP.setValue(indirizzoCliente.res_postalcode);
-                    campiSpedizione.città.setValue(indirizzoCliente.res_city);
-                    campiSpedizione.località.setValue(indirizzoCliente.res_location);
-                    campiSpedizione.provincia.setValue(indirizzoCliente.res_province);
-                    campiSpedizione.nazione.setValue(countryLookup);
-                    campiSpedizione.paese.setValue(indirizzoCliente["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
-                }
-                _self.updateAddressFieldsRequirements(executionContext);
-            }
-        } else {
-
-            //svuoto tutti i campi
-            Object.values(campiSpedizione).forEach(campo => {
-                campo.setValue(null);
-            });
-            _self.updateAddressFieldsRequirements(executionContext);
-        }
-    };
-    //
-    //
-    //
-    //
-    //-----------------------------------------------------------------------------------------//
-
-    //---------------------------------------------------
-    _self.addCustomViewListinoPrezzi = function (executionContext) {
+    //-----------Listino-prezzi-Custom-View--------------   
+    _self.addPriceLevelCustomView = function (executionContext) {
 
         let formContext = executionContext.getFormContext();
 
@@ -653,6 +466,135 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.pricelevelid).addCustomView(viewId, "pricelevel", viewDisplayName, fetchXml, layoutXml, true);
     };
     //---------------------------------------------------
+    _self.setValueDate = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+
+        formContext.getAttribute(_self.formModel.fields.res_date).setValue(new Date());
+    };
+    //-----------Condizione_di_pagamento-----------------
+    _self.onChangePaymentTermId = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+
+        let paymentLookup = formContext.getAttribute(_self.formModel.fields.res_paymenttermid).getValue();
+
+        if (paymentLookup !== null) {
+
+            Xrm.WebApi.retrieveRecord("res_paymentterm", paymentLookup[0].id, "?$select=res_isbankvisible").then(
+                function success(result) {
+                    if (result.res_isbankvisible === true) {
+
+                        formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(true);
+                    } else {
+                        formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).setValue(null);
+                        formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(false);
+                    }
+
+
+                },
+                function (error) {
+                    console.log(error.message);
+                    // handle error conditions
+                }
+            );
+
+        }
+        else {
+            formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).setValue(null);
+            formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(false);
+        }
+
+
+    };
+
+    //-----------Spedizione------------------------------
+    _self.onChangeWillCall = function (executionContext, isEvent) {
+
+        var formContext = executionContext.getFormContext();
+        let willCall = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
+
+        if (willCall == _self.formModel.fields.willcallValues.Indirizzo) {
+
+            formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
+            //formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_countryid).setVisible(true);
+            //formContext.getControl("WebResource_postalcode").setVisible(true);
+            //_self.setContextCapIframe(executionContext); 
+
+            if (isEvent) { _self.onChangeCustomer(executionContext); } // controlla se cliente ha un indirizzo default per settare in auto i campi spedizione
+        } else {
+            if (isEvent) {
+                formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.res_shippingreference).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
+                formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
+
+                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("none");
+                formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
+            }
+
+            formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(false);
+            formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(false);
+            formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(false);
+            formContext.getControl(_self.formModel.fields.shipto_city).setVisible(false);
+            formContext.getControl(_self.formModel.fields.res_location).setVisible(false);
+            formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(false);
+            formContext.getControl(_self.formModel.fields.res_countryid).setVisible(false);
+            formContext.getControl("WebResource_postalcode").setVisible(false);
+
+        }
+    };
+    //-----------Indirizzo-Spedizione--------------------
+    _self.onChangeShipToLine1 = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToLine1 = formContext.getAttribute(_self.formModel.fields.shipto_line1).getValue();
+
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
+        formContext.getControl("WebResource_postalcode").setVisible(shipToLine1 !== null ? true : false);
+
+        if (shipToLine1 !== null) {
+
+            _self.setContextCapIframe(executionContext);
+        } else {
+
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+        }
+
+    };
+    //-----------CAP-Spedizione--------------------------
+    _self.onChangeShipToPostalCode = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToPostalCode = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
+
+        formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel(shipToPostalCode !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(shipToPostalCode !== null ? false : true);
+
+    };
+    //----------Citta-Spedizione-------------------------
+    _self.onChangeShipToCity = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToCity = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
+
+        formContext.getControl(_self.formModel.fields.res_location).setDisabled(shipToCity !== null ? false : true);
+        formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(shipToCity !== null ? false : true);
+        formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(shipToCity !== null ? false : true);
+
+    };
+    //---------------------------------------------------
+    _self.onChangeAddress = function (executionContext) {
+        _self.onChangeShipToPostalCode(executionContext);
+        _self.onChangeShipToCity(executionContext);
+    };
+    //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
@@ -673,30 +615,91 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 }
             )
         }
+    }
+    //---------------------------------------------------
+    _self.filterPotentialCustomer = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
+        if (!potentialCustomerControl) { console.error(`Controllo ${potentialCustomerControl} non trovato`); return; }
+
+        //  filtro gli account
+        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
+        potentialCustomerControl.addCustomFilter(accountFilter, "account");
+
+        //  filtro i contatti
+        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
+        potentialCustomerControl.addCustomFilter(contactFilter, "contact");
+
     };
     //---------------------------------------------------
-    _self.setValueData = function (executionContext) {
-
+    _self.onChangeCustomer = async function (executionContext) {
         var formContext = executionContext.getFormContext();
+        console.log("on change customer");
+        let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
+        let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
 
-        formContext.getAttribute(_self.formModel.fields.res_date).setValue(new Date());
+        if (customerLookup !== null) { // willcall è un bool. richiede == per fare la conversione implicita
+
+            let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
+
+            if (addresses != null && addresses.entities.length > 0) {
+
+
+
+                let address = addresses.entities[0];
+
+                formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(address.res_address);
+                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(address.res_postalcode);
+                formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
+                formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
+                formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
+
+
+                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
+
+                if (address._res_countryid_value != null) {
+
+
+                    let countryLookup = [{
+                        id: address["_res_countryid_value"],
+                        entityType: 'res_country',
+                        name: address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
+                    }];
+
+                    formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
+                    formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
+
+
+                }
+
+                _self.updateAddressFieldsRequirements(executionContext);
+            }
+        } else {
+            formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
+
+            _self.updateAddressFieldsRequirements(executionContext);
+        }
     };
     //---------------------------------------------------
     _self.updateAddressFieldsRequirements = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-        const campoCittà = formContext.getControl(_self.formModel.fields.shipto_city);
+        var formContext = executionContext.getFormContext();
 
-        const CAP = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
-        const città = campoCittà.getAttribute().getValue();
 
-        _self.onChangeIndirizzo(executionContext);
+        _self.onChangeShipToLine1(executionContext);
 
-        //se il cap è valorizzato rendo il campo Città obbligatorio e modificabile
-        campoCittà.getAttribute().setRequiredLevel(CAP ? "required" : "none");
-        campoCittà.setDisabled(CAP ? false : true);
+        let cap = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
+        formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel(cap !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(cap != null ? false : true);
 
-        //gestisco i campi relativi al campo Città in base al fatto che sia valorizzato o meno
-        _self.disableCityRelated(executionContext, città ? false : true);
+        let citta = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
+        _self.disableCityRelated(executionContext, citta != null ? false : true);
+
     };
     //---------------------------------------------------
     _self.disableCityRelated = function (executionContext, isDisable) {
@@ -724,7 +727,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             }
         }
 
-        _self.setValueData(executionContext);
+        _self.setValueDate(executionContext);
 
         // Valorizza lookup in auto
         var fetchData = {
@@ -757,6 +760,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
                     formContext.getAttribute(_self.formModel.fields.pricelevelid).setValue(lookupValue);
                 }
+
             },
             function (error) {
                 console.log(error);
@@ -778,10 +782,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
 
         //----------------------------------------------
-        _self.onChangeSpedizione(executionContext, false);
-        _self.onChangeIndirizzo(executionContext);
-        _self.onChangeCAP(executionContext);
-        _self.onChangeCittà(executionContext);
+        _self.onChangeWillCall(executionContext, false);
+        _self.onChangeShipToLine1(executionContext);
+        _self.onChangeShipToPostalCode(executionContext);
+        _self.onChangeShipToCity(executionContext);
         //-----
         let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
 
@@ -840,7 +844,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.data.entity.addOnSave(_self.onSaveForm);
 
         //--------------------------------< CONDIZIONI DI PAGAMENTO >--------------------------------//
-        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.onChangeCondizioniPagamento);
+        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.onChangePaymentTermId);
 
         //-----------------------------------< SPESE ACCESSORIE >-----------------------------------//
         formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeSpesaAccessoria);
@@ -848,17 +852,16 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.freightamount).addOnChange(_self.onChangeImportoSpesaAccessoria);
 
         //-----------------------------------< DATI SPEDIZIONE >-----------------------------------//
-        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeSpedizione(executionContext, true); });
-        formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.onChangeIndirizzo);
-        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeCAP);
-        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeCittà);
+        formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.onChangeShipToLine1);
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeShipToPostalCode);
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeShipToCity);
+        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeWillCall(executionContext, true); });
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
 
-        //---------------------------------------< CLIENTE >---------------------------------------//
-        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterCliente);
-        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCliente);
 
+        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
         //Init function
-        _self.addCustomViewListinoPrezzi(executionContext);
+        _self.addPriceLevelCustomView(executionContext);
         _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {

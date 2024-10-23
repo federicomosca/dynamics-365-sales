@@ -122,21 +122,22 @@
     <Content Include="Web\pages\postalcode.html" />
     <Content Include="Web\pages\selectAgents.html" />
     <Content Include="Web\scripts\account.js" />
-    <Content Include="Web\scripts\OLD_quotedetail.js" />
+    <Content Include="Web\scripts\quote.js" />
     <Content Include="Web\scripts\quotedetail.js" />
     <Content Include="Web\scripts\product.js" />
     <Content Include="Web\scripts\res_commission.js" />
     <Content Include="Web\scripts\res_commission_ribbon.js" />
+    <Content Include="Web\scripts\salesorder.js" />
     <Content Include="Web\scripts\salesorderdetail.js" />
     <Content Include="Web\scripts\salesorder_ribbon.js" />
     <Content Include="Web\scripts\quote_ribbon.js" />
-    <Content Include="Web\scripts\quote.js" />
+    <Content Include="Web\scripts\OLD_quote.js" />
     <Content Include="Web\scripts\contact.js" />
     <Content Include="Web\scripts\pricelevel.js" />
     <Content Include="Web\scripts\pricelevel_ribbon.js" />
     <Content Include="Web\scripts\res_global.js" />
     <Content Include="Web\scripts\res_address.js" />
-    <Content Include="Web\scripts\salesorder.js" />
+    <Content Include="Web\scripts\OLD_salesorder.js" />
     <Content Include="Web\scripts\systemuser.js" />
   </ItemGroup>
   <ItemGroup>

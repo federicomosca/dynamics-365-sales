@@ -262,145 +262,56 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.formModel.fields.statuscodeValues.Persa_StateChiusa,
         _self.formModel.fields.statuscodeValues.Aggiornata_StateChiusa
     ];
+    _self.readOnlyFields = [
+        _self.formModel.fields.ordernumber,
+        _self.formModel.fields.res_origincode,
+        _self.formModel.fields.datefulfilled,
+        _self.formModel.fields.totallineitemamount,
+        _self.formModel.fields.totaldiscountamount,
+        _self.formModel.fields.totalamountlessfreight,
+        _self.formModel.fields.totaltax,
+        _self.formModel.fields.totalamount,
+        _self.formModel.fields.quoteid
+    ];
 
-
-    //---------------------------------------------------
-    _self.setDate = executionContext => {
+    //--------------------------------< CONDIZIONI DI PAGAMENTO >-------------------------------//
+    _self.onChangeCondizioniPagamento = function (executionContext) {
         const formContext = executionContext.getFormContext();
 
-        const dateControl = formContext.getControl(_self.formModel.fields.res_date);
+        const condizioniPagamento = formContext.getAttribute(_self.formModel.fields.res_paymenttermid).getValue();
+        const campoBanca = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
 
-        if (dateControl) {
-            const date = new Date();
-            if (dateControl.getAttribute().getValue() == null) {
-                dateControl.getAttribute().setValue(date);
-            }
-        }
-    };
-    //---------------------------------------------------
-    _self.setPriceLevelLookup = executionContext => {
-        const formContext = executionContext.getFormContext();
+        //il campo Banca può essere visibile solo se è stata selezionata una Condizione di pagamento
+        if (condizioniPagamento) {
+            Xrm.WebApi.retrieveRecord("res_paymentterm", condizioniPagamento[0].id, "?$select=res_isbankvisible").then(
+                result => {
+                    //dopodiché si verifica il flag impostato nella condizione di pagamento: 'abilita visibilità banca'
+                    const isBankVisible = result.res_isbankvisible;
 
-        const priceLevelControl = formContext.getControl(_self.formModel.fields.pricelevelid);
+                    campoBanca.setVisible(isBankVisible);
 
-        if (priceLevelControl) {
-            priceLevelControl.getAttribute().setRequiredLevel("required");
-
-            var fetchData = {
-                "res_isdefaultforagents": "1",
-                "statecode": "0"
-            };
-            var fetchXml = [
-                "?fetchXml=<fetch top='1'>",
-                "  <entity name='pricelevel'>",
-                "    <attribute name='pricelevelid'/>",
-                "    <attribute name='name'/>",
-                "    <filter>",
-                "      <condition attribute='res_isdefaultforagents' operator='eq' value='", fetchData.res_isdefaultforagents/*1*/, "'/>",
-                "      <condition attribute='statecode' operator='eq' value='", fetchData.statecode/*0*/, "'/>",
-                "    </filter>",
-                "  </entity>",
-                "</fetch>"
-            ].join("");
-
-            Xrm.WebApi.retrieveMultipleRecords("pricelevel", fetchXml).then(
-                priceLevel => {
-                    if (priceLevel.entities.length < 0) return;
-                    const priceLevelId = priceLevel.entities[0].pricelevelid ?? null;
-                    const priceLevelName = priceLevel.entities[0].name ?? null;
-
-                    if (!priceLevelId || !priceLevelName) {
-                        console.log("id or name missing")
-                        return;
-                    }
-
-                    const priceLevelLookUp = [{
-                        id: priceLevelId,
-                        name: priceLevelName,
-                        entityType: "pricelevel"
-                    }];
-
-                    priceLevelControl.getAttribute().setValue(priceLevelLookUp);
+                    //se il flag è impostato su false, il campo Banca viene nascosto e svuotato del valore
+                    if (!isBankVisible) { campoBanca.getAttribute().setValue(null); }
                 },
                 error => {
                     console.log(error.message);
                 }
             );
         }
-    };
+        //se la Condizione di pagamento non è stata selezionata
+        else {
 
-    //---------------------< CAMPI SPESA ACCESSORIA >---------------------
-    //
-    //
-    //
-    //
-    //------------------------< SPESA ACCESSORIA >------------------------ 
-    _self.onChangeSpesaAccessoria = async (executionContext, flag) => {
-        const formContext = executionContext.getFormContext();
-
-        let importoSpesaAccessoria;
-        let totaleImponibile;
-
-        const spesaAccessoriaControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
-        const totaleProdottiControl = formContext.getControl(_self.formModel.fields.totallineitemamount);
-        const totaleImponibileControl = formContext.getControl(_self.formModel.fields.totalamountlessfreight);
-        const codiceIvaControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);
-        const importoSpesaAccessoriaControl = formContext.getControl(_self.formModel.fields.freightamount);
-
-        const spesaAccessoria = spesaAccessoriaControl.getAttribute().getValue() ?? null;
-        const totaleProdotti = totaleProdottiControl.getAttribute().getValue() ?? null;
-
-        //se viene selezionata una spesa accessoria
-        if (spesaAccessoria) {
-
-            //abilito il campo importo spesa accessoria
-            importoSpesaAccessoriaControl.setDisabled(false);
-
-            //abilito il campo codice IVA spesa accessoria e lo imposto come obbligatorio
-            codiceIvaControl.setDisabled(false);
-            codiceIvaControl.getAttribute().setRequiredLevel("required");
-
-            //gestisco totale iva e importo totale (se il metodo viene chiamato alla modifica di un valore)
-            if (flag) {
-                const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoria[0].id, "?$select=res_amount");
-                importoSpesaAccessoria = spesaAccessoria.res_amount;
-
-                //imposto il suo ammontare al campo importo spesa accessoria
-                formContext.getAttribute(_self.formModel.fields.freightamount).setValue(importoSpesaAccessoria ?? null);
-
-                _self.onChangeCodiceIva(executionContext);
-
-                // ricalcolo totale imponibile: imp tot + spesa acc
-                totaleImponibile = totaleProdotti + importoSpesaAccessoria;
-                totaleImponibileControl.getAttribute().setValue(totaleImponibile != 0 ? totaleImponibile : null);
-            }
-
-            //se non è stata selezionata spesa accessoria
-        } else {
-
-            //rendo il campo facoltativo e non editabile
-            codiceIvaControl.getAttribute().setRequiredLevel("none");
-            codiceIvaControl.setDisabled(true);
-            importoSpesaAccessoriaControl.setDisabled(true);
-
-            //se sono onChange
-            if (flag) {
-                //svuoto il campo codice iva spesa accessoria
-                codiceIvaControl.getAttribute().setValue(null);
-
-                //svuoto il campo importo spesa accessoria
-                importoSpesaAccessoriaControl.getAttribute().setValue(null);
-
-                //e sottraggo l'iva calcolata sulla spesa accessoria al totale iva e all'importo totale
-                _self.onChangeCodiceIva(executionContext);
-
-                // ricalcolo totale imponibile: imp tot + spesa acc
-                totaleImponibile = totaleProdotti + importoSpesaAccessoria;
-                totaleImponibileControl.getAttribute().setValue(totaleImponibile != 0 ? totaleImponibile : null);
-            }
+            //imposto a null l'eventuale valore e nascondo il campo
+            campoBanca.getAttribute().setValue(null);
+            campoBanca.setVisible(false);
         }
     };
-    //------------------< RETRIEVE ALIQUOTA CODICE IVA >------------------   
+
+    //-----------------------------------< SPESE ACCESSORIE >-----------------------------------//
+    //
+    //
+    //
+    //
     _self.retrieveAliquotaCodiceIVA = async codiceIvaId => {
 
         const fetchCodiceIVASpesaAccessoria = [
@@ -422,7 +333,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             console.error("Errore nel recupero dell'aliquota codice IVA", error);
         }
     };
-    //--------------------< RETRIEVE AGGREGATI RIGHE >--------------------   
+    //---------------------------------------------------
     _self.retrieveAggregatiRighe = async parentId => {
 
         var fetchAggregati = [
@@ -452,86 +363,116 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             console.error("Errore nel recupero degli aggregati:", error);
         }
     };
-    //------------------< CODICE IVA SPESA ACCESSORIA >-------------------
-    _self.onChangeCodiceIva = async executionContext => {
+    //---------------------------------------------------
+    _self.onChangeSpesaAccessoria = async executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const codiceIvaControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                    //codice iva spesa accessoria
-        const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
-        const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
-        let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue() ?? 0;
-        let totaleImponibile;
-        let importoTotale;
+        //svuoto il campo Codice IVA Spesa Accessoria
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setValue(null);
+
+        const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+
+        if (spesaAccessoria !== null) {
+
+            const result = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoria[0].id, "?$select=res_amount");
+            const importoSpesaAccessoria = result.res_amount;
+
+            //rendo modificabili i campi Codice IVA Spesa Accessoria e Importo spesa accessoria
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(false);
+            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(false);
+
+            //rendo obbligatorio il campo Codice IVA Spesa Accessoria
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("required");
+
+            //valorizzo il campo importo spesa accessoria e invoco il metodo per gestire i campi correlati al cambio dell'importo
+            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(importoSpesaAccessoria);
+            _self.onChangeImportoSpesaAccessoria(executionContext);
+
+        } else {
+            //se ho svuotato Spesa accessoria...
+
+            //rendo facoltativo il codice iva e svuoto il campo importo spesa accessoria
+            formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel("none");
+            formContext.getAttribute(_self.formModel.fields.freightamount).setValue(null);
+
+            //e li rendo non editabili
+            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.freightamount).setDisabled(true);
+
+            //svuoto i campi Totale imponibile, Totale IVA e Importo totale
+            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.totaltax).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.totalamount).setValue(null);
+        }
+    };
+    //---------------------------------------------------
+    _self.onChangeCodiceIvaSpesaAccessoria = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const codiceIvaSpesaAccessoriaControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);
+        const spesaAccessoriaControl = formContext.getControl(_self.formModel.fields.res_additionalexpenseid);
+        const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);
+        const importoTotaleControl = formContext.getControl(_self.formModel.fields.totalamount);
+        const importoSpesaAccessoriaControl = formContext.getControl(_self.formModel.fields.freightamount);
+        const totaleImponibileControl = formContext.getControl(_self.formModel.fields.totalamountlessfreight);
 
         /**
-         * all'onChange del campo codice iva
          * calcolo la spesa accessoria con applicata l'aliquota
          * recupero il totale iva di tutte le righe offerta associate
          * e imposto il risultato nel campo totale iva dell'offerta
          */
-        const vatNumberLookup = codiceIvaControl.getAttribute().getValue();
-        const vatNumberId = vatNumberLookup ? vatNumberLookup[0].id : null;
+        const codiceIvaLookup = codiceIvaSpesaAccessoriaControl.getAttribute().getValue();
+        const spesaAccessoriaLookup = spesaAccessoriaControl.getAttribute().getValue();
 
-        const parentId = formContext.data.entity.getId();
+        const codiceIvaId = codiceIvaLookup ? codiceIvaLookup[0].id : null;
+        const spesaAccessoriaId = spesaAccessoriaLookup ? spesaAccessoriaLookup[0].id : null;
 
         //retrieve della somma del Totale IVA di tutte le righe offerta
+        const parentId = formContext.data.entity.getId();
+
         const { righeTotaleImponibile, righeTotaleIva } = await _self.retrieveAggregatiRighe(parentId);
+        let importoSpesaAccessoria = importoSpesaAccessoriaControl.getAttribute().getValue() ?? 0;
 
         //se è stato selezionato il codice iva spesa accessoria
-        if (vatNumberId) {
-            let vatNumber = await Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberId, "?$select=res_rate")
-            const aliquotaCodiceIVA = vatNumber ? vatNumber.res_rate : 0;
+        if (codiceIvaId) {
+            const codiceIvaSpesaAccessoria = await Xrm.WebApi.retrieveRecord("res_vatnumber", codiceIvaId, "?$select=res_rate");
+            const aliquotaCodiceIVA = codiceIvaSpesaAccessoria?.res_rate ?? 0;
 
-            //recupero l'importo della spesa accessoria
-            //let additionalExpense = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseId, "?$select=res_amount");
-            //importoSpesaAccessoria = additionalExpense ? additionalExpense.res_amount : 0;
+            if (!importoSpesaAccessoria) {
+                const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoriaId, "?$select=res_amount")
+                importoSpesaAccessoria = spesaAccessoria ? spesaAccessoria.res_amount : 0;
+            }
 
             //calcolo l'iva sulla spesa accessoria
-            if (importoSpesaAccessoria && aliquotaCodiceIVA) {
-                const ivaSpesaAccessoria = importoSpesaAccessoria * (aliquotaCodiceIVA / 100);
+            const ivaSpesaAccessoria = importoSpesaAccessoria * (aliquotaCodiceIVA / 100);
 
-                //totale iva offerta (iva della spesa accessoria + totale righe offerta)
-                const totaleIVA = righeTotaleIva + ivaSpesaAccessoria;
+            const totaleImponibile = righeTotaleImponibile ?? 0 + importoSpesaAccessoria;
+            const totaleIVA = righeTotaleIva ?? 0 + ivaSpesaAccessoria;
+            const importoTotale = totaleImponibile + totaleIVA;
 
-                //imposto il valore calcolato nel campo Totale IVA
-                totalTaxControl.getAttribute().setValue(totaleIVA != 0 ? totaleIVA : null);
+            totaleImponibileControl.getAttribute().setValue(totaleImponibile);
+            totalTaxControl.getAttribute().setValue(totaleIVA);
+            importoTotaleControl.getAttribute().setValue(importoTotale);
 
-                totaleImponibile = righeTotaleImponibile + importoSpesaAccessoria;
-                formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile != 0 ? totaleImponibile : null);
-
-                importoTotale = totaleImponibile + totaleIVA;
-                totalAmountControl.getAttribute().setValue(importoTotale != 0 ? importoTotale : null);
-            } else throw console.error("additional expense amount or vat number are missing");
         } else {
-            /**
-             * se non è stato selezionato il codice iva spesa accessoria
-             * imposto il totale iva delle righe offerta senza l'iva sulla spesa accessoria
-             */
-            totalTaxControl.getAttribute().setValue(righeTotaleIva != 0 ? righeTotaleIva : null);
 
-            /**
-             * sottraggo l'eventuale iva della spesa accessoria all'importo totale
-             */
-            totaleImponibile = righeTotaleImponibile + importoSpesaAccessoria;
+            const totaleImponibile = righeTotaleImponibile ?? 0 + importoSpesaAccessoria;
+            const importoTotale = righeTotaleIva ?? 0 + totaleImponibile;
 
-            importoTotale = righeTotaleIva + totaleImponibile;
-
-            totalAmountControl.getAttribute().setValue(importoTotale != 0 ? importoTotale : null);
-
-            // ricalcolo Totale Imponibile  (imp tot + imp spesa acc)
-            formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile != 0 ? totaleImponibile : null);
+            totalTaxControl.getAttribute().setValue(righeTotaleIva);
+            totaleImponibileControl.getAttribute().setValue(totaleImponibile);
+            importoTotaleControl.getAttribute().setValue(importoTotale);
         }
     };
-    //--------------------< IMPORTO SPESA ACCESSORIA >--------------------
-    _self.onChangeImportoSpesaAccessoria = async function (executionContext) {
+    //---------------------------------------------------
+    _self.onChangeImportoSpesaAccessoria = async (executionContext) => {
+
         const formContext = executionContext.getFormContext();
         const importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue() ?? 0;
 
         //--------------------------------< RECUPERO I VALORI PER CALCOLARE IL TOTALE IMPONIBILE >--------------------------------//
         const parentId = formContext.data.entity.getId();
         const { righeTotaleImponibile, righeTotaleIva } = await _self.retrieveAggregatiRighe(parentId);
-        console.log(righeTotaleImponibile);
-        console.log(righeTotaleIva);
 
         //--------------------------------< RECUPERO L'ALIQUOTA DEL CODICE IVA SPESA ACCESSORIA >--------------------------------//
         const codiceIVASpesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue(); //Codice IVA Spesa Accessoria
@@ -542,178 +483,217 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             const codiceIvaId = codiceIVASpesaAccessoria[0].id;
 
             const aliquota = await _self.retrieveAliquotaCodiceIVA(codiceIvaId);
-            console.log(aliquota);
-
-            totaleImponibile = righeTotaleImponibile /* aka totale prodotti */ + importoSpesaAccessoria;
-            totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
-        } else { totaleImponibile = importoSpesaAccessoria; }
-
+            totaleImponibile = righeTotaleImponibile /* aka totale prodotti */ ?? 0 + importoSpesaAccessoria;
+            totaleIva = righeTotaleIva ?? 0 + (importoSpesaAccessoria * (aliquota / 100));
+        }
+        totaleImponibile = importoSpesaAccessoria;
         const importoTotale = totaleImponibile + totaleIva;
 
         formContext.getAttribute(_self.formModel.fields.totaltax).setValue(totaleIva != 0 ? totaleIva : null);
         formContext.getAttribute(_self.formModel.fields.totalamountlessfreight).setValue(totaleImponibile != 0 ? totaleImponibile : null);
         formContext.getAttribute(_self.formModel.fields.totalamount).setValue(importoTotale != 0 ? importoTotale : null);
     };
-    //---------------------------------------------------
-    _self.setPostalCodeRelatedFieldsRequirement = executionContext => {
+    //
+    //
+    //
+    //
+    //------------------------------------------------------------------------------------------//
+    //-----------------------------------< DATI SPEDIZIONE >------------------------------------//
+    //
+    //
+    //
+    //
+    _self.onChangeSpedizione = function (executionContext, isEvent) {
         const formContext = executionContext.getFormContext();
+        const spedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
 
-        const postalCodeControl = formContext.getControl(_self.formModel.fields.shipto_postalcode);
-        const cityControl = formContext.getControl(_self.formModel.fields.shipto_city);
+        //se spedizione == presso cliente, è valorizzato con true, altrimenti false
+        const isPressoCliente = spedizione == _self.formModel.fields.willcallValues.Indirizzo;
 
-        if (postalCodeControl) {
-            if (!postalCodeControl.getAttribute().getValue()) {
-                cityControl.getAttribute().setRequiredLevel("none");
-                cityControl.setDisabled(true);
-            } else {
-                cityControl.getAttribute().setRequiredLevel("required");
-                cityControl.setDisabled(false);
-            }
-        }
-    };
-    //---------------------------------------------------
-    _self.handleWillCallRelatedFields = executionContext => {
-        const formContext = executionContext.getFormContext();
-
-        const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
-
-        /**
-         * mostro/nascondo tutti i campi relativi al campo Spedizione
-         * e gestisco obbligatorietà e read-only
-         */
-        const willCallControlsVisibility = [
+        //campi spedizione di cui gestire visibilità e obbligatorietà
+        const campiSpedizione = [
             _self.formModel.fields.res_shippingreference,
             _self.formModel.fields.shipto_line1,
             _self.formModel.fields.shipto_postalcode,
             _self.formModel.fields.res_location,
             _self.formModel.fields.shipto_city,
             _self.formModel.fields.shipto_stateorprovince,
-            _self.formModel.fields.res_countryid,
-        ];
-
-        const willCallControlsRequirement = [
-            _self.formModel.fields.shipto_line1,
-            _self.formModel.fields.shipto_postalcode,
-            _self.formModel.fields.shipto_city,
-        ];
-
-        willCallControlsVisibility.forEach(field => {
-            const control = formContext.getControl(field);
-            if (!control) throw new Error(`${field} field is missing`);
-
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
-                formContext.getControl("WebResource_postalcode").setVisible(true);
-                control.setVisible(true);
-                _self.setContextCapIframe(executionContext);
-            }
-
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
-                formContext.getControl("WebResource_postalcode").setVisible(false);
-                control.setVisible(false);
-                control.getAttribute().setValue(null)
-            }
-        });
-
-        willCallControlsRequirement.forEach(field => {
-            const control = formContext.getControl(field);
-
-            if (!control) throw new Error(`${field} field is missing`);
-
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
-                control.getAttribute().setRequiredLevel("required");
-            }
-
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
-                control.getAttribute().setRequiredLevel("none");
-            }
-
-        });
-
-        this.setCityRelatedFieldsEditability(executionContext);
-    };
-    //---------------------------------------------------
-    _self.setCityRelatedFieldsEditability = executionContext => {
-        const formContext = executionContext.getFormContext();
-
-        const shipToCityControl = formContext.getControl(_self.formModel.fields.shipto_city);
-        const shipToCityValue = shipToCityControl ? shipToCityControl.getAttribute().getValue() ?? null : null;
-
-        /**
-         * se Città spedizione è valorizzato, i campi correlati (Località, Provincia, Nazione spedizione) sono editabili
-         */
-        const shipToCityRelatedFields = [
-            _self.formModel.fields.res_location,
-            _self.formModel.fields.shipto_stateorprovince,
             _self.formModel.fields.res_countryid
         ];
 
-        shipToCityRelatedFields.forEach(field => {
-            const control = formContext.getControl(field);
-            if (!control) { throw new Error(`${field} field is missing`); }
-
-            if (shipToCityValue) { control.setDisabled(false); } else { control.setDisabled(true); }
+        //gestisco la visibilità dei campi a seconda del valore di 'spedizione'
+        campiSpedizione.forEach(campo => {
+            const control = formContext.getControl(campo);
+            control.setVisible(isPressoCliente);
+            if (!isPressoCliente) {
+                const attribute = control.getAttribute();
+                attribute.setValue(null);
+                attribute.setRequiredLevel("none");
+            }
         });
 
-    };
-    //---------------------------------------------------
-    _self.setBankVisibility = executionContext => {
-        const formContext = executionContext.getFormContext();
-        const bankControl = formContext.getControl(_self.formModel.fields.res_bankdetailsid);
-
-        /**
-         * controllo visibilità campo Banca
-         */
-        if (bankControl) {
-            const paymentTermControl = formContext.getControl("res_paymenttermid");
-            if (paymentTermControl) {
-                const paymentTermId = paymentTermControl.getAttribute().getValue() ? paymentTermControl.getAttribute().getValue()[0].id : null;
-                if (paymentTermId) {
-                    const paymentTermIdCleaned = paymentTermId.replace(/[{}]/g, "");
-                    Xrm.WebApi.retrieveRecord("res_paymentterm", paymentTermIdCleaned, "?$select=res_isbankvisible").then(
-                        paymentTerm => {
-                            const flag = paymentTerm.res_isbankvisible ?? null;
-                            bankControl.setVisible(flag);
-                        },
-                        error => {
-                            console.log(error.message)
-                        }
-                    );
-                } else {
-                    bankControl.setVisible(false);
-                }
-            }
+        if (!isPressoCliente) {
+            formContext.getControl("WebResource_postalcode").setVisible(false);
+            if (isEvent) { _self.onChangeCliente(executionContext); }
         }
     };
     //---------------------------------------------------
-    _self.checkPotentialCustomerData = async executionContext => {
+    _self.onChangeIndirizzo = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToLine1 = formContext.getAttribute(_self.formModel.fields.shipto_line1).getValue();
+
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
+        formContext.getControl("WebResource_postalcode").setVisible(shipToLine1 !== null ? true : false);
+
+        if (shipToLine1 !== null) {
+
+            _self.setContextCapIframe(executionContext);
+        } else {
+
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
+        }
+
+    };
+    //---------------------------------------------------
+    _self.onChangeCAP = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToPostalCode = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
+
+        formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel(shipToPostalCode !== null ? "required" : "none");
+        formContext.getControl(_self.formModel.fields.shipto_city).setDisabled(shipToPostalCode !== null ? false : true);
+
+    };
+    //---------------------------------------------------
+    _self.onChangeCittà = function (executionContext) {
+        var formContext = executionContext.getFormContext();
+        let shipToCity = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
+
+        formContext.getControl(_self.formModel.fields.res_location).setDisabled(shipToCity !== null ? false : true);
+        formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(shipToCity !== null ? false : true);
+        formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(shipToCity !== null ? false : true);
+    };
+    //
+    //
+    //
+    //
+    //-----------------------------------------------------------------------------------------//
+
+    //---------------------------------------< CLIENTE >---------------------------------------//
+    //
+    //
+    //
+    //
+    _self.filterCliente = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const campoCliente = formContext.getControl(_self.formModel.fields.customerid);
+        if (!campoCliente) { console.error(`Controllo ${campoCliente} non trovato`); return; }
+
+        //  filtro gli account
+        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
+        campoCliente.addCustomFilter(accountFilter, "account");
+
+        //  filtro i contatti
+        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
+        campoCliente.addCustomFilter(contactFilter, "contact");
+
+    };
+    //---------------------------------------------------
+    _self.onChangeCliente = async function (executionContext) {
         const formContext = executionContext.getFormContext();
 
-        const isInvoiceRequestedControl = formContext.getControl(_self.formModel.fields.res_isinvoicerequested);
-        const isInvoiceRequested = isInvoiceRequestedControl ? isInvoiceRequestedControl.getAttribute().getValue() ?? null : null;
+        const cliente = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
+        const campiSpedizione = {
+            indirizzo: formContext.getAttribute(_self.formModel.fields.shipto_line1),
+            CAP: formContext.getAttribute(_self.formModel.fields.shipto_postalcode),
+            città: formContext.getAttribute(_self.formModel.fields.shipto_city),
+            località: formContext.getAttribute(_self.formModel.fields.res_location),
+            provincia: formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince),
+            nazione: formContext.getAttribute(_self.formModel.fields.res_countryid),
+            paese: formContext.getAttribute(_self.formModel.fields.shipto_country)
+        }
 
-        if (isInvoiceRequested) {
-            const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
-            const potentialCustomerId = potentialCustomerControl ? potentialCustomerControl.getAttribute().getValue() ? potentialCustomerControl.getAttribute().getValue()[0].id : null : null;
+        if (cliente !== null) { // willcall è un bool. richiede == per fare la conversione implicita
+            const indirizzi = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(cliente[0].id, true);
 
-            if (potentialCustomerId) {
-                try {
-                    const missingData = await RSMNG.TAUMEDIKA.GLOBAL.retrievePotentialCustomerMissingData(formContext, potentialCustomerId);
-                    //se mancano dei dati
-                    if (missingData.length > 0) {
-                        const missingDataString = missingData.join(", ");
-                        const notification = "Per acquisire l'offerta è necessario compilare i seguenti campi del potenziale cliente: " + missingDataString;
-                        formContext.ui.setFormNotification(notification, "WARNING", "missingDataNotification");
-                    } else {
-                        formContext.ui.clearFormNotification("missingDataNotification");
-                    }
-                } catch (error) {
-                    console.error("Error checking potential customer data:", error);
-                    formContext.ui.setFormNotification("Si è verificato un errore durante il controllo dei dati del cliente.", "ERROR", "errorNotification");
+            if (indirizzi != null && indirizzi.entities.length > 0) {
+
+                const indirizzoCliente = indirizzi.entities[0];
+
+                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
+
+                if (indirizzoCliente._res_countryid_value != null) {
+
+                    const countryLookup = [{
+                        id: indirizzoCliente["_res_countryid_value"],
+                        entityType: 'res_country',
+                        name: indirizzoCliente["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
+                    }];
+
+                    //una volta recuperato l'indirizzo del cliente, valorizzo i campi spedizione dell'offerta
+                    campiSpedizione.indirizzo.setValue(indirizzoCliente.res_address);
+                    campiSpedizione.CAP.setValue(indirizzoCliente.res_postalcode);
+                    campiSpedizione.città.setValue(indirizzoCliente.res_city);
+                    campiSpedizione.località.setValue(indirizzoCliente.res_location);
+                    campiSpedizione.provincia.setValue(indirizzoCliente.res_province);
+                    campiSpedizione.nazione.setValue(countryLookup);
+                    campiSpedizione.paese.setValue(indirizzoCliente["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
                 }
+                _self.updateAddressFieldsRequirements(executionContext);
             }
         } else {
-            formContext.ui.clearFormNotification("missingDataNotification");
+
+            //svuoto tutti i campi
+            Object.values(campiSpedizione).forEach(campo => {
+                campo.setValue(null);
+            });
+            _self.updateAddressFieldsRequirements(executionContext);
         }
+    };
+    //
+    //
+    //
+    //
+    //-----------------------------------------------------------------------------------------//
+
+    //---------------------------------------------------
+    _self.addCustomViewListinoPrezzi = function (executionContext) {
+
+        let formContext = executionContext.getFormContext();
+
+        let viewDisplayName = "Listino prezzi agenti";
+        const viewId = "00000000-0000-0000-0000-000000000001";
+
+        var fetchData = {
+            "statecode": "0",
+            "res_scopetypecodes": "100000000",
+            "res_scopetypecodes2": "100000000"
+        };
+        var fetchXml = [
+            "<fetch>",
+            "  <entity name='pricelevel'>",
+            "    <attribute name='pricelevelid'/>",
+            "    <attribute name='name'/>",
+            "    <filter type='and'>",
+            "      <condition attribute='statecode' operator='eq' value='", fetchData.statecode/*0*/, "'/>",
+            "      <filter type='or'>",
+            "        <condition attribute='res_scopetypecodes' operator='eq' value='", fetchData.res_scopetypecodes/*100000000*/, "'/>",
+            "        <condition attribute='res_scopetypecodes' operator='contain-values'>",
+            "          <value>", fetchData.res_scopetypecodes2/*100000000*/, "</value>",
+            "        </condition>",
+            "      </filter>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
+
+        var layoutXml = "<grid name='resultset' object='1' jump='pricelevelid' select='1' icon='1' preview='1'>" +
+            "  <row name='result' id='pricelevelid'>" +
+            "    <cell name='name' width='300' />" +
+            "  </row>" +
+            "</grid>";
+
+        formContext.getControl(_self.formModel.fields.pricelevelid).addCustomView(viewId, "pricelevel", viewDisplayName, fetchXml, layoutXml, true);
     };
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
@@ -728,6 +708,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             country: _self.formModel.fields.res_countryid
         }
 
+
         if (wrControl) {
             wrControl.getContentWindow().then(
                 function (contentWindow) {
@@ -737,101 +718,151 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.onChangeAddress = executionContext => {
-        _self.handleWillCallRelatedFields(executionContext);
-    };
-    //---------------------------------------------------
-    _self.filterPotentialCustomer = executionContext => {
+    _self.setValueData = function (executionContext) {
         const formContext = executionContext.getFormContext();
-        const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
-        if (!potentialCustomerControl) { console.error(`Controllo ${potentialCustomerControl} non trovato`); return; }
 
-        //  filtro gli account
-        const accountFilter = "<filter><condition attribute='statecode' operator='eq' value='0' /></filter>";
-        potentialCustomerControl.addCustomFilter(accountFilter, "account");
-        console.log("Filtro account applicato");
-
-        //  filtro i contatti
-        const contactFilter = "<filter><condition attribute='contactid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";
-        potentialCustomerControl.addCustomFilter(contactFilter, "contact");
-        console.log("Filtro contatti applicato");
+        formContext.getAttribute(_self.formModel.fields.res_date).setValue(new Date());
     };
     //---------------------------------------------------
-    _self.onChangeCustomer = async function (executionContext) {
+    _self.updateAddressFieldsRequirements = function (executionContext) {
+        const formContext = executionContext.getFormContext();
+        const campoCittà = formContext.getControl(_self.formModel.fields.shipto_city);
+
+        const CAP = formContext.getAttribute(_self.formModel.fields.shipto_postalcode).getValue();
+        const città = campoCittà.getAttribute().getValue();
+
+        _self.onChangeIndirizzo(executionContext);
+
+        //se il cap è valorizzato rendo il campo Città obbligatorio e modificabile
+        campoCittà.getAttribute().setRequiredLevel(CAP ? "required" : "none");
+        campoCittà.setDisabled(CAP ? false : true);
+
+        //gestisco i campi relativi al campo Città in base al fatto che sia valorizzato o meno
+        _self.disableCityRelated(executionContext, città ? false : true);
+    };
+    //---------------------------------------------------
+    _self.disableCityRelated = function (executionContext, isDisable) {
         var formContext = executionContext.getFormContext();
 
-        console.log("on change customer");
-        let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
-        //let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
+        formContext.getControl(_self.formModel.fields.res_location).setDisabled(isDisable);
+        formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setDisabled(isDisable);
+        formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
+    };
+    //---------------------------------------------------
+    _self.onLoadCreateForm = async function (executionContext) {
 
-        if (customerLookup !== null) { // && tipoSpedizione == _self.formModel.fields.willcallValues.Indirizzo
+        var formContext = executionContext.getFormContext();
 
-            let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
+        /**
+         * se Spedizione == Indirizzo, il campo Indirizzo è required
+         */
+        const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
+        const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
+        if (willCallControl) {
+            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+                if (shipToLine1Control) {
+                    shipToLine1Control.getAttribute().setRequiredLevel("required");
+                }
+            }
+        }
 
-            if (addresses != null && addresses.entities.length > 0) {
+        _self.setValueData(executionContext);
 
+        // Valorizza lookup in auto
+        var fetchData = {
+            "res_isdefaultforagents": "1",
+            "statecode": "0"
+        };
+        var fetchXml = [
+            "?fetchXml=<fetch top='1'>",
+            "  <entity name='pricelevel'>",
+            "    <attribute name='pricelevelid'/>",
+            "    <attribute name='name' />",
+            "    <filter>",
+            "      <condition attribute='res_isdefaultforagents' operator='eq' value='", fetchData.res_isdefaultforagents/*1*/, "'/>",
+            "      <condition attribute='statecode' operator='eq' value='", fetchData.statecode/*0*/, "'/>",
+            "    </filter>",
+            "  </entity>",
+            "</fetch>"
+        ].join("");
 
+        Xrm.WebApi.retrieveMultipleRecords("pricelevel", fetchXml).then(
+            function success(results) {
+                console.log(results);
+                if (results.entities.length > 0) {
 
-                let address = addresses.entities[0];
-
-                formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(address.res_address);
-                formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(address.res_postalcode);
-                formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
-                formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
-                formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
-
-                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
-
-
-                if (address._res_countryid_value != null) {
-
-
-                    let countryLookup = [{
-                        id: address["_res_countryid_value"],
-                        entityType: 'res_country',
-                        name: address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]
+                    var lookupValue = [{
+                        id: results.entities[0].pricelevelid,
+                        name: results.entities[0].name,
+                        entityType: "pricelevel"
                     }];
 
-                    formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
-                    formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
-
-
+                    formContext.getAttribute(_self.formModel.fields.pricelevelid).setValue(lookupValue);
                 }
-
-
+            },
+            function (error) {
+                console.log(error);
             }
-        } else {
-            formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.res_location).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
-
-
-        }
-        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
-        _self.setCityRelatedFieldsEditability(executionContext);
-        _self.handleWillCallRelatedFields(executionContext);
+        );
     };
     //---------------------------------------------------
-    _self.onChangeWillCall = function (executionContext) {
+    _self.onLoadUpdateForm = async function (executionContext) {
+
         var formContext = executionContext.getFormContext();
 
-        let willCall = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
+        //--- Blocca/Sblocca i campi in base a Utente-Agente e Motivo Stato---
+        let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
 
-        if (willCall == _self.formModel.fields.willcallValues.Indirizzo) {
-            _self.onChangeCustomer(executionContext);
+        if (currStatus == _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttivo || currStatus == _self.formModel.fields.statuscodeValues.Approvato_StateAttivo) {
+
+            let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
         }
 
-        _self.handleWillCallRelatedFields(executionContext);
+        //----------------------------------------------
+        _self.onChangeSpedizione(executionContext, false);
+        _self.onChangeIndirizzo(executionContext);
+        _self.onChangeCAP(executionContext);
+        _self.onChangeCittà(executionContext);
+        //-----
+        let additionlExpenseId = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).setRequiredLevel(additionlExpenseId !== null ? "required" : "none");
+
+        const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
+        formContext.getControl(_self.formModel.fields.freightamount).setDisabled(spesaAccessoria ? false : true);
+        formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(spesaAccessoria ? false : true);
+        //-----
+
+        let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
+        let paymenttermid = formContext.getAttribute(_self.formModel.fields.res_paymenttermid).getValue();
+
+        if (bankdetailsid !== null) {
+            formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(true);
+        }
+        else if (bankdetailsid === null && paymenttermid === null) {
+            formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(false);
+        }
+        else if (bankdetailsid === null && paymenttermid !== null) {
+            // bankdetails non è obbligatorio, quindi faccio controllo in caso in cui l'utente non inserisce nessun valore
+
+            Xrm.WebApi.retrieveRecord("res_paymentterm", paymenttermid[0].id, "?$select=res_isbankvisible").then(
+                function success(result) {
+                    formContext.getControl(_self.formModel.fields.res_bankdetailsid).setVisible(result.res_isbankvisible);
+                },
+                function (error) {
+                    console.log(error.message);
+                }
+            );
+        }
+
     };
     //---------------------------------------------------
-    /*
-    Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
-    per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
-    */
+    _self.onLoadReadyOnlyForm = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
     _self.onSaveForm = function (executionContext) {
         if (executionContext.getEventArgs().getSaveMode() == 70) {
             executionContext.getEventArgs().preventDefault();
@@ -839,92 +870,37 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.onLoadCreateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        _self.onChangeSpesaAccessoria(executionContext, false);
-
-        _self.handleWillCallRelatedFields(executionContext);
-        _self.setCityRelatedFieldsEditability(executionContext);
-        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
-    };
-    //---------------------------------------------------
-    _self.onLoadUpdateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        _self.onChangeSpesaAccessoria(executionContext, false);
-
-        _self.handleWillCallRelatedFields(executionContext);
-        _self.setCityRelatedFieldsEditability(executionContext);
-        _self.setPostalCodeRelatedFieldsRequirement(executionContext);
-
-        let statuscodeValue = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
-
-        if (_self.lockFieldStatus.includes(statuscodeValue)) {
-
-            formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
-            formContext.getControl("WebResource_postalcode").setVisible(false);
-        }
-    };
-    //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        _self.checkPotentialCustomerData(executionContext);
-
-        let statuscodeValue = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
-
-        if (_self.lockFieldStatus.includes(statuscodeValue)) {
-
-            formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
-            formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
-            formContext.getControl("WebResource_postalcode").setVisible(false);
-        }
-    };
-    /* 
-    Ricordare di aggiungere la keyword anche ai metodi richiamati dall'onLoadForm se l'await avviene dentro di essi\
-    */
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
         await import('../res_scripts/res_global.js');
 
         //init formContext
-        const formContext = executionContext.getFormContext();
+        var formContext = executionContext.getFormContext();
 
         //Init event
         formContext.data.entity.addOnSave(_self.onSaveForm);
 
         //--------------------------------< CONDIZIONI DI PAGAMENTO >--------------------------------//
-        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.setBankVisibility);
+        formContext.getAttribute(_self.formModel.fields.res_paymenttermid).addOnChange(_self.onChangeCondizioniPagamento);
 
         //-----------------------------------< SPESE ACCESSORIE >-----------------------------------//
-        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(() => { _self.onChangeSpesaAccessoria(executionContext, true) });
-        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeCodiceIva); //codice IVA spesa accessoria
+        formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).addOnChange(_self.onChangeSpesaAccessoria);
+        formContext.getAttribute(_self.formModel.fields.res_vatnumberid).addOnChange(_self.onChangeCodiceIvaSpesaAccessoria);
         formContext.getAttribute(_self.formModel.fields.freightamount).addOnChange(_self.onChangeImportoSpesaAccessoria);
 
         //-----------------------------------< DATI SPEDIZIONE >-----------------------------------//
-        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.setPostalCodeRelatedFieldsRequirement);
-        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
-        //formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.handleWillCallRelatedFields);
-        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.onChangeWillCall);
-        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
+        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeSpedizione(executionContext, true); });
+        formContext.getAttribute(_self.formModel.fields.shipto_line1).addOnChange(_self.onChangeIndirizzo);
+        formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeCAP);
+        formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeCittà);
 
-        formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
-        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
-
-        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
+        //---------------------------------------< CLIENTE >---------------------------------------//
+        formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterCliente);
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCliente);
 
         //Init function
-        _self.setDate(executionContext);
-        _self.setPriceLevelLookup(executionContext);
-
-        _self.setBankVisibility(executionContext);
-        _self.checkPotentialCustomerData(executionContext);
+        _self.addCustomViewListinoPrezzi(executionContext);
         _self.setContextCapIframe(executionContext);
 
         switch (formContext.ui.getFormType()) {
@@ -935,7 +911,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 _self.onLoadUpdateForm(executionContext);
                 break;
             case RSMNG.Global.CRM_FORM_TYPE_READONLY:
-            case RSMNG.Global.CRM_FORM_TYPE_DISABLED:
                 _self.onLoadReadyOnlyForm(executionContext);
                 break;
             case RSMNG.Global.CRM_FORM_TYPE_QUICKCREATE:
