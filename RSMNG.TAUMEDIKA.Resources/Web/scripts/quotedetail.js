@@ -326,12 +326,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
                     console.log("passed not a finite number to the getManualDiscountAmount");
                 }
             }
-
         }
-
-
         return manualDiscount;
-
     };
     //---------------------------------------------------
     _self.getTotalDiscountPercentage = function (executionContext) {

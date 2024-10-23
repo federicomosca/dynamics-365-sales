@@ -104,54 +104,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         }
     };
 
-
-    _self.onSaveForm = function (executionContext) {
-        if (executionContext.getEventArgs().getSaveMode() == 70) {
-            executionContext.getEventArgs().preventDefault();
-            return;
-        }
-    };
-    //---------------------------------------------------
-    _self.onLoadCreateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        _self.onChangeProduct(executionContext);
-
-
-
-    };
-    //---------------------------------------------------
-    _self.onLoadUpdateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-
-        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
-        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
-
-        if (disc1 == 0) {
-            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(true);
-            formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
-
-            formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
-        }
-        else {
-            if (disc2 == 0) {
-                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
-                formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
-            }
-            else {
-                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(false);
-            }
-            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
-        }
-    };
-    //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
-    };
     //---------------------------------------------------
     _self.onChangeUomId = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -615,9 +567,53 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
 
         return baseAmount;
     };
-
     //---------------------------------------------------
+    _self.onSaveForm = function (executionContext) {
+        if (executionContext.getEventArgs().getSaveMode() == 70) {
+            executionContext.getEventArgs().preventDefault();
+            return;
+        }
+    };
+    //---------------------------------------------------
+    _self.onLoadCreateForm = async function (executionContext) {
 
+        var formContext = executionContext.getFormContext();
+
+        _self.onChangeProduct(executionContext);
+
+    };
+    //---------------------------------------------------
+    _self.onLoadUpdateForm = async function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+
+        let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
+        let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
+
+        if (disc1 == 0) {
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+        }
+        else {
+            if (disc2 == 0) {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(true);
+                formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).setValue(null);
+            }
+            else {
+                formContext.getControl(_self.formModel.fields.res_discountpercentage3).setDisabled(false);
+            }
+            formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
+        }
+    };
+    //---------------------------------------------------
+    _self.onLoadReadyOnlyForm = function (executionContext) {
+
+        var formContext = executionContext.getFormContext();
+    };
+    //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {
 
         //init lib
