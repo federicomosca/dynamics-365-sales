@@ -116,6 +116,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         address1_line1.setRequiredLevel(address1_city.getValue() != null || address1_postalcode.getValue() != null ? "required" : "none");
         address1_postalcode.setRequiredLevel(address1_line1.getValue() != null ? "required" : "none");
         address1_city_obj.setDisabled(address1_postalcode.getValue() != null ? false : true);
+        address1_city.setRequiredLevel(address1_line1.getValue() != null ? "required" : "none");
         res_location_obj.setDisabled(address1_city.getValue() != null ? false : true);
         address1_stateorprovince_obj.setDisabled(address1_city.getValue() != null ? false : true);
         address1_country_obj.setDisabled(true);
