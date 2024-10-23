@@ -111,7 +111,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
                         totaleImponibile = importo - scontoTotale;
-                        if (!isHomage) { totaleIva = importo * (aliquota / 100); } else { totaleIva = null; }
+                        if (!isHomage) { totaleIva = importo * (aliquota / 100); } else { totaleIva = 0; }
                         importoTotale = totaleImponibile + totaleIva;
                     }
                 }
