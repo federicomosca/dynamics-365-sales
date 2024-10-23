@@ -103,7 +103,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                         //dalla fetch
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                        crmServiceProvider.TracingService.Trace(codiceIvaGuid.ToString());
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
                         aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
