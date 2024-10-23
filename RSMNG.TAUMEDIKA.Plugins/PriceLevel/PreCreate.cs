@@ -51,7 +51,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
 
                 if (!string.IsNullOrEmpty(field))
                 {
-                    Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, target.Id, field);
+                    Utility.CheckIsDefault(crmServiceProvider.Service, crmServiceProvider, target.Id, field);
                 }
             }
             #endregion

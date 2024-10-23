@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
             PluginMessage = "Update";
             PluginPrimaryEntityName = pricelevel.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -38,7 +38,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
 
             if (stato == (int)pricelevel.statecodeValues.Attivo)
             {
-                if (target.Contains(pricelevel.res_isdefaultforagents) ||
+                if (target.Contains(pricelevel.res_isdefaultforwebsite) ||
                     target.Contains(pricelevel.res_iserpimport) ||
                     target.Contains(pricelevel.res_isdefaultforagents))
                 {
@@ -56,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PriceLevel
                     if (isDefaultPerWebsite) { field = "Default per sito web"; }
 
                     if (PluginActiveTrace) ts.Trace($"Field: {field}");                             /* <--------------------------< Trace >-- */
-                    Utility.checkIsDefault(crmServiceProvider.Service, crmServiceProvider, preImage.Id, field);
+                    Utility.CheckIsDefault(crmServiceProvider.Service, crmServiceProvider, preImage.Id, field);
                 }
             }
             #endregion
