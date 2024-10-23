@@ -39,6 +39,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
+            bool isHomage = target.ContainsAttributeNotNull(salesorderdetail.res_ishomage) ? target.GetAttributeValue<bool>(salesorderdetail.res_ishomage) : false;
+
+
             EntityReference codiceIva = null;
             decimal aliquota = 0;
             decimal scontoTotale;
@@ -106,7 +109,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
                         totaleImponibile = importo - scontoTotale;
-                        totaleIva = importo * (aliquota / 100);
+                        if (!isHomage) { totaleIva = importo * (aliquota / 100); } else { totaleIva = 0; }
                         importoTotale = totaleImponibile + totaleIva;
                     }
                 }
