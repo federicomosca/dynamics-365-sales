@@ -27,6 +27,8 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
             res_accountnaturecode: "res_accountnaturecode",
             ///Codice fiscale
             res_taxcode: "res_taxcode",
+            ///SDI
+            res_sdi: "res_sdi",
             ///Partita IVA
             res_vatnumber: "res_vatnumber",
             ///Indirizzo
@@ -133,6 +135,60 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         address1_country.setValue(res_countryid.getValue() != null ? res_countryid.getValue()[0].name : null);
     };
     //---------------------------------------------------
+    _self.checkCodiceFiscale = function (executionContext) {
+        const formContext = executionContext.getFormContext();
+
+        //clear della notifica
+        const campoCodiceFiscale = formContext.getControl(_self.formModel.fields.res_taxcode);
+        campoCodiceFiscale.clearNotification('CODICE_FISCALE_NOT_16');
+
+        //recupero il codice fiscale e controllo la lunghezza
+        const inputCodiceFiscale = campoCodiceFiscale.getAttribute().getValue();
+        const isCodiceFiscale16 = inputCodiceFiscale ? inputCodiceFiscale.length === 16 : null;
+
+        //verifico che sia stato compilato altrimenti non proseguo
+        if (isCodiceFiscale16 === null) return;
+
+        //se non è esattamente 16 caratteri, notifico
+        if (!isCodiceFiscale16) {
+
+            const notification = {
+                messages: ['Il codice fiscale inserito non è composto da 16 caratteri.'],
+                notificationLevel: 'RECOMMENDATION',
+                uniqueId: 'CODICE_FISCALE_NOT_16'
+            }
+
+            campoCodiceFiscale.addNotification(notification);
+        }
+    }
+    //---------------------------------------------------
+    _self.checkSDI = function (executionContext) {
+        const formContext = executionContext.getFormContext();
+
+        //clear della notifica
+        const campoSDI = formContext.getControl(_self.formModel.fields.res_sdi);
+        campoSDI.clearNotification('SDI_NOT_7');
+
+        //recupero il codice SDI e controllo la lunghezza
+        const inputSDI = campoSDI.getAttribute().getValue();
+        const isSdi7 = inputSDI ? inputSDI.length === 7 : null;
+
+        //verifico che sia stato compilato altrimenti non proseguo
+        if (isSdi7 === null) return;
+
+        //se non è esattamente 7 caratteri, notifico
+        if (!isSdi7) {
+
+            const notification = {
+                messages: ['Il codice SDI inserito non è composto da 7 caratteri.'],
+                notificationLevel: 'RECOMMENDATION',
+                uniqueId: 'SDI_NOT_7'
+            }
+
+            campoSDI.addNotification(notification);
+        }
+    }
+    //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
@@ -202,10 +258,14 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.onChangeAddress);
         formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.onChangeAddress);
         formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
+        formContext.getAttribute(_self.formModel.fields.res_taxcode).addOnChange(_self.checkCodiceFiscale);
+        formContext.getAttribute(_self.formModel.fields.res_sdi).addOnChange(_self.checkSDI);
 
         //Init function
         _self.onChangeVatNumber(executionContext);
         _self.onChangeAddress(executionContext);
+        _self.checkCodiceFiscale(executionContext);
+        _self.checkSDI(executionContext);
 
         //Init IFrame
         _self.setContextCapIframe(executionContext);
