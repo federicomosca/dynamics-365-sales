@@ -48,7 +48,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
                     if (linkedAddressesCollection.Entities.Count == 0)
                     {
                         //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
-                        Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress);
+                        Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress);
                     }
                 }
                 else throw new ApplicationException("Se il campo Indirizzo è valorizzato, i campi CAP e Città sono obbligatori.");

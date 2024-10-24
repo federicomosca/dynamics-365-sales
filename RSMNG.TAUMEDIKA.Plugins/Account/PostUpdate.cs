@@ -30,7 +30,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
                 if (preImage != null && preImage.Contains("accountid"))
                 {
-
                     #region Creazione/aggiornamento indirizzo di default
                     PluginRegion = "Creazione/aggiornamento indirizzo di default";
 
@@ -65,28 +64,32 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         if (linkedAddressesCollection.Entities.Count == 0)
                         {
                             //creo il nuovo indirizzo con indirizzo scheda cliente si e default si
-                            Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
+                            Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                         }
                         else
                         {
-                            //ho trovato almeno un indirizzo
-                            Entity defaultAddress = linkedAddressesCollection.Entities[0];
+                            //ho trovato almeno un indirizzo, non può essere indirizzo scheda cliente
+                            //dunque è per forza default
 
-                            defaultAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
-                            defaultAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out bool isDefault);
+                            Entity linkedAddress = linkedAddressesCollection.Entities[0];
 
-                            //se è indirizzo scheda cliente = si
-                            if (isCustomerAddress)
-                            {
-                                //se è indirizzo scheda cliente, aggiorno coi nuovi dati e imposto default a false se c'è già un indirizzo di default
-                                Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, defaultAddress, isDefault);
-                            }
-                            else
-                            {
-                                //se non è indirizzo scheda cliente, è per forza default (altrimenti la fetch non l'avrebbe trovato)
-                                isAlreadyDefaultAddress = true;
-                                Utility.CreateNewDefaultAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
-                            }
+                            //dunque devo aggiornare l'indirizzo scheda cliente
+
+
+                            //linkedAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
+                            //linkedAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out isAlreadyDefaultAddress);
+
+                            ////se c'è già un indirizzo scheda cliente
+                            //if (isCustomerAddress)
+                            //{
+                            //    //aggiorno coi nuovi dati
+                            //    Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, linkedAddress);
+                            //}
+                            //else //se non c'è già un indirizzo scheda cliente
+                            //{
+                            //    isAlreadyDefaultAddress = true; //è per forza default, altrimenti la fetch non l'avrebbe trovato
+                            //    Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
+                            //}
                         }
                     }
                     #endregion

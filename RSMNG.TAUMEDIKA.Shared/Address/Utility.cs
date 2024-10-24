@@ -72,20 +72,20 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchLinkedAddresses));
         }
 
-        public static void CreateNewDefaultAddress(CrmServiceProvider crmServiceProvider, Entity target, bool isAlreadyDefaultAddress, Entity preImage = null)
+        public static void CreateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity parent, bool isAlreadyDefaultAddress, Entity parentPreImage = null)
         {
             Dictionary<string, string> mandatoryFieldsMapping = null;
             Dictionary<string, string> optionalFieldsMapping = null;
 
             //mappatura dei campi obbligatori o facoltativi di ACCOUNT
-            if (target.LogicalName == "account")
+            if (parent.LogicalName == "account")
             {
                 mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
                 optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
             }
 
             //mappatura dei campi obbligatori o facoltativi di CONTACT
-            if (target.LogicalName == "contact")
+            if (parent.LogicalName == "contact")
             {
                 mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
                 optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
@@ -93,15 +93,15 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
             Entity defaultAddress = new Entity(res_address.logicalName);
 
-            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla preimage
+            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla parentPreImage
             foreach (var field in mandatoryFieldsMapping)
             {
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                defaultAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+                defaultAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
             }
 
             //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
@@ -110,13 +110,13 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                defaultAddress[addressField] = customerValue ?? null;
+                defaultAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
             }
 
             //link col customer
-            defaultAddress[res_address.res_customerid] = new EntityReference(target.LogicalName, target.Id);
+            defaultAddress[res_address.res_customerid] = new EntityReference(parent.LogicalName, parent.Id);
 
             //flag
             defaultAddress[res_address.res_iscustomeraddress] = true;
@@ -127,34 +127,34 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             crmServiceProvider.Service.Create(defaultAddress);
         }
 
-        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity target, Entity preImage, Entity customerAddress, bool isDefault)
+        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity parent, Entity parentPreImage, Entity customerAddress)
         {
             Dictionary<string, string> mandatoryFieldsMapping = null;
             Dictionary<string, string> optionalFieldsMapping = null;
 
             //mappatura dei campi obbligatori o facoltativi di ACCOUNT
-            if (target.LogicalName == "account")
+            if (parent.LogicalName == "account")
             {
                 mandatoryFieldsMapping = accountToAddressMandatoryFieldsMapping;
                 optionalFieldsMapping = accountToAddressOptionalFieldsMapping;
             }
 
             //mappatura dei campi obbligatori o facoltativi di CONTACT
-            if (target.LogicalName == "contact")
+            if (parent.LogicalName == "contact")
             {
                 mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
                 optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
             }
 
-            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla preimage
+            //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla parentPreImage
             foreach (var field in mandatoryFieldsMapping)
             {
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                customerAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+                customerAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
             }
 
             //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
@@ -163,9 +163,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                target.TryGetAttributeValue<object>(customerField, out var customerValue);
+                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                customerAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
+                customerAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
             }
 
             crmServiceProvider.Service.Update(customerAddress);
