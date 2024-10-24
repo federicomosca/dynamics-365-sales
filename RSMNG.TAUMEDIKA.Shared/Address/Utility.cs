@@ -165,7 +165,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
                 target.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                customerAddress[addressField] = customerValue ?? null;
+                customerAddress[addressField] = customerValue ?? preImage.GetAttributeValue<object>(customerField);
             }
 
             crmServiceProvider.Service.Update(customerAddress);
