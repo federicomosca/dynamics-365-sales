@@ -127,7 +127,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             crmServiceProvider.Service.Create(defaultAddress);
         }
 
-        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity parent, Entity parentPreImage, Entity customerAddress)
+        public static void UpdateCustomerAddress(CrmServiceProvider crmServiceProvider, Entity parent, Entity parentPreImage, Guid customerAddressId)
         {
             Dictionary<string, string> mandatoryFieldsMapping = null;
             Dictionary<string, string> optionalFieldsMapping = null;
@@ -145,6 +145,8 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 mandatoryFieldsMapping = contactToAddressMandatoryFieldsMapping;
                 optionalFieldsMapping = contactToAddressOptionalFieldsMapping;
             }
+
+            Entity customerAddress = new Entity(res_address.logicalName, customerAddressId);
 
             //valorizzo i campi obbligatori, se sono stati cancellati con un work-around li prendo dalla parentPreImage
             foreach (var field in mandatoryFieldsMapping)

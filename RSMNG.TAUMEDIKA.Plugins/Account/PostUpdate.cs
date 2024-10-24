@@ -68,28 +68,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         }
                         else
                         {
-                            //ho trovato almeno un indirizzo, non può essere indirizzo scheda cliente
-                            //dunque è per forza default
+                            //ho trovato almeno un indirizzo, può essere indirizzo scheda cliente
 
-                            Entity linkedAddress = linkedAddressesCollection.Entities[0];
+                            //
 
-                            //dunque devo aggiornare l'indirizzo scheda cliente
-
-
-                            //linkedAddress.TryGetAttributeValue<bool>(res_address.res_iscustomeraddress, out bool isCustomerAddress);
-                            //linkedAddress.TryGetAttributeValue<bool>(res_address.res_isdefault, out isAlreadyDefaultAddress);
-
-                            ////se c'è già un indirizzo scheda cliente
-                            //if (isCustomerAddress)
-                            //{
-                            //    //aggiorno coi nuovi dati
-                            //    Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, linkedAddress);
-                            //}
-                            //else //se non c'è già un indirizzo scheda cliente
-                            //{
-                            //    isAlreadyDefaultAddress = true; //è per forza default, altrimenti la fetch non l'avrebbe trovato
-                            //    Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
-                            //}
+                            Entity customerAddress = linkedAddressesCollection.Entities[0];
+                            Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, customerAddress.Id);
                         }
                     }
                     #endregion
