@@ -347,11 +347,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const codiceIvaControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);
         const importoSpesaAccessoriaControl = formContext.getControl(_self.formModel.fields.freightamount);
 
-        const spesaAccessoria = spesaAccessoriaControl.getAttribute().getValue() ?? null;
+        const spesaAccessoriaLookup = spesaAccessoriaControl.getAttribute().getValue() ?? null;
         const totaleProdotti = totaleProdottiControl.getAttribute().getValue() ?? null;
 
         //se viene selezionata una spesa accessoria
-        if (spesaAccessoria) {
+        if (spesaAccessoriaLookup) {
 
             //abilito il campo importo spesa accessoria
             importoSpesaAccessoriaControl.setDisabled(false);
@@ -362,7 +362,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             //gestisco totale iva e importo totale (se il metodo viene chiamato alla modifica di un valore)
             if (flag) {
-                const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoria[0].id, "?$select=res_amount");
+                const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoriaLookup[0].id, "?$select=res_amount");
                 importoSpesaAccessoria = spesaAccessoria.res_amount;
 
                 //imposto il suo ammontare al campo importo spesa accessoria
@@ -530,23 +530,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //--------------------------------< RECUPERO I VALORI PER CALCOLARE IL TOTALE IMPONIBILE >--------------------------------//
         const parentId = formContext.data.entity.getId();
         const { righeTotaleImponibile, righeTotaleIva } = await _self.retrieveAggregatiRighe(parentId);
-        console.log(righeTotaleImponibile);
-        console.log(righeTotaleIva);
 
         //--------------------------------< RECUPERO L'ALIQUOTA DEL CODICE IVA SPESA ACCESSORIA >--------------------------------//
         const codiceIVASpesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_vatnumberid).getValue(); //Codice IVA Spesa Accessoria
-        let totaleIva = 0;
-        let totaleImponibile = 0;
+        const totaleImponibile = righeTotaleImponibile /* aka totale prodotti */ + importoSpesaAccessoria;
+        let totaleIva = righeTotaleIva;
 
         if (codiceIVASpesaAccessoria) {
             const codiceIvaId = codiceIVASpesaAccessoria[0].id;
-
             const aliquota = await _self.retrieveAliquotaCodiceIVA(codiceIvaId);
-            console.log(aliquota);
 
-            totaleImponibile = righeTotaleImponibile /* aka totale prodotti */ + importoSpesaAccessoria;
-            totaleIva = righeTotaleIva + (importoSpesaAccessoria * (aliquota / 100));
-        } else { totaleImponibile = importoSpesaAccessoria; }
+            totaleIva += (importoSpesaAccessoria * (aliquota / 100));
+        }
 
         const importoTotale = totaleImponibile + totaleIva;
 
