@@ -25,6 +25,25 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
 
             return ret;
         }
+        static void AddParentWithChildren(ref Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> parentChildDict, KeyValuePair<string, Guid> parent, List<KeyValuePair<string, Guid>> children)
+        {
+            // Se il padre non esiste nel dizionario, lo aggiungiamo con la lista dei figli
+            if (!parentChildDict.ContainsKey(parent))
+            {
+                parentChildDict[parent] = new List<KeyValuePair<string, Guid>>();
+            }
+
+            // Aggiungiamo i figli, ma solo se non sono già presenti nella lista del padre
+            foreach (var child in children)
+            {
+                // Controlla se il figlio è già nella lista
+                if (!parentChildDict[parent].Contains(child))
+                {
+                    parentChildDict[parent].Add(child);
+                }
+            }
+        }
+
         public static Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> GetProductFamily(IOrganizationService service)
         {
             // Definizione della query FetchXML
@@ -80,9 +99,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
 
                     children.Add(new KeyValuePair<string, Guid>(childProductNumber, childProductId));
                 }
-
+                AddParentWithChildren(ref productHierarchy, parentKey, children);
                 // Aggiungi il genitore e i figli al dizionario
-                productHierarchy[parentKey] = children;
+                //productHierarchy[parentKey] = children;
             }
 
             return productHierarchy;
