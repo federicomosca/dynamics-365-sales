@@ -49,8 +49,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
             {account.res_countryid, res_address.res_countryid}
         };
 
-        //recupero eventuali indirizzi attivi del cliente con Default = SI o Indirizzo scheda cliente = SI
-        public static EntityCollection GetLinkedAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
+        public static EntityCollection GetAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid? updatedAddressId = null)
         {
             //crmServiceProvider.TracingService.Trace("Sono nella funzione GetLinkedAddresses"); /** <------------< TRACE >------------ */
 

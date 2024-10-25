@@ -75,7 +75,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
 
                 if (customerId != Guid.Empty)
                 {
-                    EntityCollection defaultAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, customerId);
+                    EntityCollection defaultAddressesCollection = Utility.GetAddresses(crmServiceProvider, customerId);
 
                     //controllo se ci sono già indirizzi di default
                     if (defaultAddressesCollection.Entities.Count > 0)

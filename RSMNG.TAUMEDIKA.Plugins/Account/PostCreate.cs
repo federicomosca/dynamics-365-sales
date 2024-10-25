@@ -39,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 if (!string.IsNullOrEmpty(CAP) || !string.IsNullOrEmpty(città))
                 {
                     //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
-                    EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
+                    EntityCollection linkedAddressesCollection = Utility.GetAddresses(crmServiceProvider, target.Id);
 
                     //se non trovo nemmeno un indirizzo
                     if (linkedAddressesCollection.Entities.Count == 0)

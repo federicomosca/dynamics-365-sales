@@ -141,7 +141,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Address
                 if (erCustomer.Id != null)
                 {
                     //recupero eventuali record con Default = SI
-                    EntityCollection linkedAddresses = Utility.GetLinkedAddresses(crmServiceProvider, erCustomer.Id);
+                    EntityCollection linkedAddresses = Utility.GetAddresses(crmServiceProvider, erCustomer.Id);
 
                     if (linkedAddresses.Entities.Count > 0)
                     {

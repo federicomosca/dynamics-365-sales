@@ -30,10 +30,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
                 if (preImage != null && preImage.Contains("accountid"))
                 {
-                    #region Creazione/aggiornamento indirizzo di default
-                    PluginRegion = "Creazione/aggiornamento indirizzo di default";
-
-                    bool isAlreadyDefaultAddress = false;
+                    #region Creazione/aggiornamento Indirizzo scheda cliente
+                    PluginRegion = "Creazione/aggiornamento Indirizzo scheda cliente";
 
                     List<string> campiIndirizzo = new List<string>{
                         account.address1_line1,
@@ -58,22 +56,37 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     if (isAddressUpdated)
                     {
                         //recupero gli indirizzi correlati
-                        EntityCollection linkedAddressesCollection = Utility.GetLinkedAddresses(crmServiceProvider, target.Id);
+                        EntityCollection indirizzi = Utility.GetAddresses(crmServiceProvider, target.Id);
+                        bool isAlreadyDefaultAddress = false;
+                        Entity indirizzo = null;
 
-                        //se non trovo nemmeno un indirizzo
-                        if (linkedAddressesCollection.Entities.Count == 0)
+                        //indirizzi = 0 > creo indirizzo con Indirizzo scheda cliente = true e Default = true
+                        if (indirizzi.Entities.Count == 0)
                         {
-                            //creo il nuovo indirizzo con indirizzo scheda cliente si e default si
                             Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                         }
-                        else
+
+                        //indirizzi = 1 > Indirizzo scheda cliente == false ? lo creo : lo aggiorno
+                        else if (indirizzi.Entities.Count == 1)
                         {
-                            //ho trovato almeno un indirizzo, può essere indirizzo scheda cliente
+                            indirizzo = indirizzi.Entities[0];
+                            bool isIndirizzoSchedaCliente = indirizzo.GetAttributeValue<bool>(res_address.res_iscustomeraddress);
 
-                            //
+                            if (!isIndirizzoSchedaCliente)
+                            {
+                                Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
+                            }
+                            else
+                            {
+                                Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, indirizzo.Id);
+                            }
+                        }
 
-                            Entity customerAddress = linkedAddressesCollection.Entities[0];
-                            Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, customerAddress.Id);
+                        //indirizzi = 2 > linq .Where(Indirizzo scheda cliente == true) e lo aggiorno
+                        else if (indirizzi.Entities.Count == 2)
+                        {
+                            indirizzo = indirizzi.Entities.SingleOrDefault(address => address.GetAttributeValue<bool>(res_address.res_iscustomeraddress) == true);
+                            Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, indirizzo.Id);
                         }
                     }
                     #endregion
