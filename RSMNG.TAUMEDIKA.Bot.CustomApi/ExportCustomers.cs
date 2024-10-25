@@ -6,6 +6,7 @@ using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting.Contexts;
@@ -87,6 +88,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             <attribute name=""{account.res_vatnumber}"" />
                             <attribute name=""{account.telephone1}"" />
                             <attribute name=""{account.res_mobilenumber}"" />
+                            <attribute name=""{account.res_bankdetailsid}"" />
                             <filter>
                               <condition attribute=""{account.statecode}"" operator=""in"">
                                 {fetchData.statecode}
@@ -95,7 +97,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             </filter>
                           </entity>
                         </fetch>";
-                        List<Entity> lCustomers =  crmServiceProvider.Service.RetrieveAll(fetchXml);
+                        List<Entity> lCustomers = crmServiceProvider.Service.RetrieveAll(fetchXml);
                         crmServiceProvider.TracingService.Trace($"Query:{fetchXml}");
                         #endregion
 
@@ -117,7 +119,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                       Prov = entity.ContainsAttributeNotNull(account.address1_stateorprovince) ? entity.GetAttributeValue<string>(account.address1_stateorprovince) : "",
                                       Regione = "",
                                       Nazione = entity.ContainsAttributeNotNull(account.address1_country) ? entity.GetAttributeValue<string>(account.address1_country) : "",
-                                      CodDestinatarioFattElettr = entity.ContainsAttributeNotNull(account.res_sdi) ? entity.GetAttributeValue<string>(account.res_sdi) : "",
+                                      CodDestinatarioFattElettr = entity.ContainsAttributeNotNull(account.res_sdi) ? entity.GetAttributeValue<string>(account.res_sdi) : entity.ContainsAttributeNotNull(account.emailaddress3) ? entity.GetAttributeValue<string>(account.emailaddress3) : "",
                                       Referente = entity.ContainsAttributeNotNull(account.primarycontactid) ? Shared.Contact.Utility.GetName(crmServiceProvider.Service, entity.GetAttributeValue<EntityReference>(account.primarycontactid).Id) : "",
                                       Tel = entity.ContainsAttributeNotNull(account.telephone1) ? entity.GetAttributeValue<string>(account.telephone1) : "",
                                       Cell = entity.ContainsAttributeNotNull(account.res_mobilenumber) ? entity.GetAttributeValue<string>(account.res_mobilenumber) : "",
@@ -170,14 +172,43 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         }
                         crmServiceProvider.TracingService.Trace($"contenutofile:{csvBuilder.ToString()}");
 
-                        // Converte la stringa CSV in un array di byte
-                        byte[] csvBytes = Encoding.UTF8.GetBytes(csvBuilder.ToString());
 
-                        // Converte la stringa CSV in un array di byte
-                        byte[] jsonBytes = Encoding.UTF8.GetBytes(customersJSON.ToString());
+                        ////// Converte la stringa CSV in un array di byte
+                        //byte[] csvBytes = Encoding.UTF8.GetBytes(csvBuilder.ToString());
+
+                        ////// Converte la stringa CSV in un array di byte
+                        //byte[] jsonBytes = Encoding.UTF8.GetBytes(customersJSON.ToString());
+
+                        //// Crea un Data URI
+                        //string customersFileDataUri = "data:text/csv;base64," + Convert.ToBase64String(csvBytes);
+
+
+                        //// Converte la stringa CSV in un array di byte
+                        byte[] csvBytes = null;
+
+                        //// Converte la stringa CSV in un array di byte
+                        byte[] jsonBytes = null;
 
                         // Crea un Data URI
-                        string customersFileDataUri = "data:text/csv;base64," + Convert.ToBase64String(csvBytes);
+                        string customersFileDataUri = null;
+
+                        using (MemoryStream memoryStream = new MemoryStream())
+                        {
+                            // Usa StreamWriter per scrivere la stringa nel MemoryStream con codifica UTF-8
+                            using (StreamWriter writer = new StreamWriter(memoryStream, Encoding.UTF8))
+                            {
+                                writer.Write(csvBuilder.ToString());
+                                writer.Flush(); // Assicurati che tutti i dati siano scritti nel MemoryStream
+                                memoryStream.Position = 0; // Resetta la posizione per leggere dall'inizio
+                            }
+                            csvBytes = memoryStream.ToArray();
+
+                            jsonBytes = Encoding.UTF8.GetBytes(customersJSON.ToString());
+
+                            // Converti il contenuto del MemoryStream in una stringa Base64
+                            customersFileDataUri = "data:text/csv;base64," + Convert.ToBase64String(csvBytes);
+
+                        }
                         #endregion
 
                         #region definisco la data corretta
