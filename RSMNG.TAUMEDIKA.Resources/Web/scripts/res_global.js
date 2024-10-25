@@ -304,7 +304,10 @@ if (typeof (RSMNG.TAUMEDIKA.GLOBAL) == "undefined") {
 
         parent.Xrm.WebApi.execute(execute_res_ClientAction_Request).then(
             response => {
-                if (response.ok) { return response.json(); }
+                if (response.ok) {
+                    _self.refreshFormAndRibbon();
+                    return response.json();
+                }
             }
         ).then(responseBody => {
             const result = JSON.parse(responseBody.jsonDataOutput);

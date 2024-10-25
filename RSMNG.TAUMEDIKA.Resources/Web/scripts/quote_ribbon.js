@@ -131,7 +131,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "NOT_APPROVED":
                     RSMNG.TAUMEDIKA.GLOBAL.invokeClientActionFromButton(actionName, quoteId, statecode = status == "APPROVED" ? 1 : 3, statuscode = status == "APPROVED" ? 3 : 5);
                     formContext.getControl("WebResource_postalcode").setVisible(false);
-                    RSMNG.TAUMEDIKA.GLOBAL.refreshFormAndRibbon();
                     break;
             }
         }
