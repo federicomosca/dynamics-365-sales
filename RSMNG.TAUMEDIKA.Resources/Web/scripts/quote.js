@@ -830,6 +830,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.addSubgridEventListener = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const gridContext = formContext.getControl("quotedetailsGrid");
+
+        if (!gridContext) {
+            setTimeout(() => { this.addSubgridEventListener(executionContext); }, 500);
+            return;
+        }
+        gridContext.addOnLoad(_self.subgridEventListener);
+    };
+    //---------------------------------------------------
+    _self.subgridEventListener = executionContext => {
+        const formContext = executionContext.getFormContext();
+        formContext.data.refresh();
+    };
+    //---------------------------------------------------
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -842,8 +858,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     };
     //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
-
-        var formContext = executionContext.getFormContext();
 
         _self.onChangeSpesaAccessoria(executionContext, false);
 
@@ -883,6 +897,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
         }
+
+        _self.addSubgridEventListener(executionContext);
     };
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = async function (executionContext) {
