@@ -52,6 +52,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		/// </summary>
 		public static string res_name => "res_name";
 
+		/// <summary>
+		/// Display Name: N° Riga,
+		/// Type: Integer,
+		/// Description: 
+		/// </summary>
+		public static string res_rownum => "res_rownum";
+
 
 		/// <summary>
 		/// Values for field Stato

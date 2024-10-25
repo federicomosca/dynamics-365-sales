@@ -14,6 +14,8 @@ RSMNG.TAUMEDIKA.DataModel.res_dataintegrationdetail = {
 	res_integrationrow: "res_integrationrow",
 	///Name
 	res_name: "res_name",
+	///N° Riga
+	res_rownum: "res_rownum",
 
 	/// Values for field Stato
 	statecodeValues: {

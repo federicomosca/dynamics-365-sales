@@ -46,6 +46,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_name => "res_name";
 
 		/// <summary>
+		/// Display Name: Note,
+		/// Type: Memo,
+		/// Description: 
+		/// </summary>
+		public static string res_note => "res_note";
+
+		/// <summary>
 		/// Display Name: Aliquota,
 		/// Type: Decimal,
 		/// Description: 

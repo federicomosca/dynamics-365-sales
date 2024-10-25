@@ -96,85 +96,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 Shared.Product.ImportProductDanea importProductDanea = RSMNG.Plugins.Controller.Deserialize<Shared.Product.ImportProductDanea>(res_integrationrow);
 
                                 #region Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale
-                                PluginRegion = "Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale";
-                                EntityReference erProductFamily = null;
-                                KeyValuePair<string, Guid> categoryKey = default(KeyValuePair<string, Guid>);
-                                KeyValuePair<string, Guid> subCategoryKey = default(KeyValuePair<string, Guid>);
-                                if (importProductDanea.Categoria != null
-                                    && importProductDanea.EntitaPrincipale != null
-                                    && !importProductDanea.Categoria.Codice.Equals(importProductDanea.EntitaPrincipale.Codice))
+                                try
                                 {
-                                    var foundCategory = dCategory
-                                        .Where(entry => entry.Key.Key.Equals(importProductDanea.Categoria.Codice, StringComparison.OrdinalIgnoreCase))
-                                        .FirstOrDefault();
-                                    if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
+                                    PluginRegion = "Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale";
+                                    EntityReference erProductFamily = null;
+                                    KeyValuePair<string, Guid> categoryKey = default(KeyValuePair<string, Guid>);
+                                    KeyValuePair<string, Guid> subCategoryKey = default(KeyValuePair<string, Guid>);
+                                    if (importProductDanea.Categoria != null
+                                        && importProductDanea.EntitaPrincipale != null
+                                        && !importProductDanea.Categoria.Codice.Equals(importProductDanea.EntitaPrincipale.Codice))
                                     {
-                                        Entity enProductFamily = new Entity(product.logicalName);
-                                        enProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
-                                        enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
-                                        enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
-                                        enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                        erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
-
-                                        //Pubblico la categoria
-                                        Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
-
-                                        //Inserisco la nuova categoria del dictionary
-                                        categoryKey = new KeyValuePair<string, Guid>(importProductDanea.Categoria.Codice, erProductFamily.Id);
-                                        dCategory[categoryKey] = new List<KeyValuePair<string, Guid>>();
-                                    }
-                                    else
-                                    {
-                                        erProductFamily = new EntityReference(product.logicalName, foundCategory.Key.Value);
-                                        categoryKey = foundCategory.Key;
-                                    }
-                                }
-                                if (importProductDanea.EntitaPrincipale != null)
-                                {
-                                    if (erProductFamily != null && !categoryKey.Equals(default(KeyValuePair<string, Guid>)))
-                                    {
-                                        //Cerco la sotto categoria
-                                        var foundSubCategory = dCategory
-                                            .Where(entry => entry.Key.Key.Equals(categoryKey.Key, StringComparison.OrdinalIgnoreCase)) // Filtra per nome del padre
-                                            .SelectMany(entry => entry.Value.Select(child => new { Parent = entry.Key, Child = child }))
-                                            .FirstOrDefault(x => x.Child.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase)); // Filtra per nome del figlio
-
-                                        if (foundSubCategory == null)
-                                        {
-                                            //Creo la sotto categoria legata alla categoria
-                                            Entity enSubProductFamily = new Entity(product.logicalName);
-                                            enSubProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
-                                            enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
-                                            enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
-                                            enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
-                                            enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
-                                            erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
-
-                                            //Pubblico la sotto categoria
-                                            Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
-
-                                            //Inserisco la nuova categoria del dictionary
-                                            subCategoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
-                                            dCategory[categoryKey].Add(subCategoryKey);
-                                        }
-                                        else
-                                        {
-                                            erProductFamily = new EntityReference(product.logicalName, foundSubCategory.Child.Value);
-                                            subCategoryKey = foundSubCategory.Child;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        //Cerco la catagoria
                                         var foundCategory = dCategory
-                                            .Where(entry => entry.Key.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase))
+                                            .Where(entry => entry.Key.Key.Equals(importProductDanea.Categoria.Codice, StringComparison.OrdinalIgnoreCase))
                                             .FirstOrDefault();
                                         if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
                                         {
                                             Entity enProductFamily = new Entity(product.logicalName);
                                             enProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
-                                            enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
-                                            enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                            enProductFamily.Attributes.Add(product.name, importProductDanea.Categoria.Nome);
+                                            enProductFamily.Attributes.Add(product.productnumber, importProductDanea.Categoria.Codice);
                                             enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
                                             erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
 
@@ -182,21 +122,81 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
 
                                             //Inserisco la nuova categoria del dictionary
-                                            categoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
+                                            categoryKey = new KeyValuePair<string, Guid>(importProductDanea.Categoria.Codice, erProductFamily.Id);
                                             dCategory[categoryKey] = new List<KeyValuePair<string, Guid>>();
                                         }
                                         else
                                         {
-                                            categoryKey = foundCategory.Key;
                                             erProductFamily = new EntityReference(product.logicalName, foundCategory.Key.Value);
+                                            categoryKey = foundCategory.Key;
                                         }
                                     }
-                                }
-                                #endregion
+                                    if (importProductDanea.EntitaPrincipale != null)
+                                    {
+                                        if (erProductFamily != null && !categoryKey.Equals(default(KeyValuePair<string, Guid>)))
+                                        {
+                                            //Cerco la sotto categoria
+                                            var foundSubCategory = dCategory
+                                                .Where(entry => entry.Key.Key.Equals(categoryKey.Key, StringComparison.OrdinalIgnoreCase)) // Filtra per nome del padre
+                                                .SelectMany(entry => entry.Value.Select(child => new { Parent = entry.Key, Child = child }))
+                                                .FirstOrDefault(x => x.Child.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase)); // Filtra per nome del figlio
 
-                                #region Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti
-                                try
-                                {
+                                            if (foundSubCategory == null)
+                                            {
+                                                //Creo la sotto categoria legata alla categoria
+                                                Entity enSubProductFamily = new Entity(product.logicalName);
+                                                enSubProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
+                                                enSubProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
+                                                enSubProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                                enSubProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
+                                                enSubProductFamily.Attributes.Add(product.parentproductid, erProductFamily);
+                                                erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enSubProductFamily));
+
+                                                //Pubblico la sotto categoria
+                                                Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
+
+                                                //Inserisco la nuova categoria del dictionary
+                                                subCategoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
+                                                dCategory[categoryKey].Add(subCategoryKey);
+                                            }
+                                            else
+                                            {
+                                                erProductFamily = new EntityReference(product.logicalName, foundSubCategory.Child.Value);
+                                                subCategoryKey = foundSubCategory.Child;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //Cerco la catagoria
+                                            var foundCategory = dCategory
+                                                .Where(entry => entry.Key.Key.Equals(importProductDanea.EntitaPrincipale.Codice, StringComparison.OrdinalIgnoreCase))
+                                                .FirstOrDefault();
+                                            if (foundCategory.Equals(default(KeyValuePair<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>)))
+                                            {
+                                                Entity enProductFamily = new Entity(product.logicalName);
+                                                enProductFamily.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
+                                                enProductFamily.Attributes.Add(product.name, importProductDanea.EntitaPrincipale.Nome);
+                                                enProductFamily.Attributes.Add(product.productnumber, importProductDanea.EntitaPrincipale.Codice);
+                                                enProductFamily.Attributes.Add(product.productstructure, new OptionSetValue((int)product.productstructureValues.Famigliadiprodotti));
+                                                erProductFamily = new EntityReference(product.logicalName, crmServiceProvider.Service.Create(enProductFamily));
+
+                                                //Pubblico la categoria
+                                                Helper.SetStateCode(crmServiceProvider.Service, product.logicalName, erProductFamily.Id, (int)product.statecodeValues.Attivo, (int)product.statuscodeValues.Attivo_StateAttivo);
+
+                                                //Inserisco la nuova categoria del dictionary
+                                                categoryKey = new KeyValuePair<string, Guid>(importProductDanea.EntitaPrincipale.Codice, erProductFamily.Id);
+                                                dCategory[categoryKey] = new List<KeyValuePair<string, Guid>>();
+                                            }
+                                            else
+                                            {
+                                                categoryKey = foundCategory.Key;
+                                                erProductFamily = new EntityReference(product.logicalName, foundCategory.Key.Value);
+                                            }
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti
                                     PluginRegion = "Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti";
                                     //Cerco il prodotto
                                     Entity enProduct = Shared.Product.Utility.GetProduct(crmServiceProvider.Service, importProductDanea.Codice);

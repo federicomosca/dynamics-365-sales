@@ -12,6 +12,8 @@ RSMNG.TAUMEDIKA.DataModel.res_vatnumber = {
 	res_description: "res_description",
 	///Nome
 	res_name: "res_name",
+	///Note
+	res_note: "res_note",
 	///Aliquota
 	res_rate: "res_rate",
 	///Codice IVA
