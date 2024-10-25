@@ -309,7 +309,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 UnitaDiVendita = lUomSchedule.Count > 0 ? new Shared.Product.LookUp() { Entity = lUomSchedule[0].LogicalName, Id = lUomSchedule[0].Id, Text = lUomSchedule[0].GetAttributeValue<string>(uomschedule.name) } : null,
                                 UnitaPredefinita = eUom != null ? new Shared.Product.LookUp() { Entity = eUom.LogicalName, Id = eUom.Id, Text = eUom.GetAttributeValue<string>(uom.name) } : null,
                                 Categoria = lCategories.Count == 2 ? new ProductCategoryDanea() { Codice = lCategories[0], Nome = lCategories[0] } : null,
-                                EntitaPrincipale = lCategories.Count == 0 ? null : lCategories.Count <= 2 ? new ProductCategoryDanea() { Codice = lCategories[lCategories.Count == 1 ? 0 : 1], Nome = lCategories[lCategories.Count == 1 ? 0 : 1] } : null,
+                                EntitaPrincipale = lCategories.Count == 0 ? null : lCategories.Count <= 2 ? new ProductCategoryDanea() { Codice = lCategories.Count == 1? lCategories[0]: string.Join(" - ", lCategories), Nome = lCategories[lCategories.Count == 1 ? 0 : 1] } : null,
                                 CodiceIVA = eVatNumber != null ? new Shared.Product.LookUp() { Entity = eVatNumber.LogicalName, Id = eVatNumber.Id, Text = eVatNumber.GetAttributeValue<string>(res_vatnumber.res_name) } : null,
                                 PesoLordo = null,
                                 PesoNetto = null,
