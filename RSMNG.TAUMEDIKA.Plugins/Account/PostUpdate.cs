@@ -66,12 +66,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         //indirizzi = 0 > creo indirizzo con Indirizzo scheda cliente = true e Default = true
                         if (indirizzi.Entities.Count == 0)
                         {
+                            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Results == 0"); }
+
                             Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                         }
 
                         //indirizzi = 1 > Indirizzo scheda cliente == false ? lo creo : lo aggiorno
                         else if (indirizzi.Entities.Count == 1)
                         {
+                            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Results == 1"); }
+
                             indirizzo = indirizzi.Entities[0];
 
                             if (PluginActiveTrace) { foreach (var x in indirizzo.Attributes) { crmServiceProvider.TracingService.Trace($"{x.Key}: {x.Value}"); } }
@@ -91,6 +95,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         //indirizzi = 2 > linq .Where(Indirizzo scheda cliente == true) e lo aggiorno
                         else if (indirizzi.Entities.Count == 2)
                         {
+                        if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Results == 2"); }
+
                             indirizzo = indirizzi.Entities.SingleOrDefault(address => address.GetAttributeValue<bool>(res_address.res_iscustomeraddress) == true);
 
                             if (PluginActiveTrace) { foreach (var x in indirizzo.Attributes) { crmServiceProvider.TracingService.Trace($"{x.Key}: {x.Value}"); } }

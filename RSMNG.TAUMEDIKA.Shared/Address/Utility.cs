@@ -66,7 +66,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                                 </filter>
                               </entity>
                             </fetch>";
-            //crmServiceProvider.TracingService.Trace(fetchDefaultAddresses);
+            crmServiceProvider.TracingService.Trace(fetchLinkedAddresses);
             return crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchLinkedAddresses));
         }
         public static EntityCollection GetAddresses(CrmServiceProvider crmServiceProvider, Guid customerIdString, Guid updatedAddressId)
