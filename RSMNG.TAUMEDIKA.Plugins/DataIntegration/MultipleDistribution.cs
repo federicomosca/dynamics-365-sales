@@ -88,7 +88,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                     foreach (Entity enDataIntegrationDetail in ecDataIntegrationDetail.Entities)
                     {
                         string res_integrationrow = enDataIntegrationDetail.GetAttributeValue<string>(res_dataintegrationdetail.res_integrationrow);
-
+                        int res_rownum = enDataIntegrationDetail.GetAttributeValue<int>(res_dataintegrationdetail.res_rownum);
                         switch (integrationAction)
                         {
                             case (int)res_dataintegration.res_integrationactionValues.Articoli:
@@ -265,7 +265,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     crmServiceProvider.Service.Update(enDataIntegrationDetail);
                                     #endregion
 
-                                    detailMessage += $@"{Environment.NewLine}- Errore: {e.Message}";
+                                    detailMessage += $@"{Environment.NewLine}- {res_rownum} - Errore: {e.Message}";
                                 }
                                 #endregion
                                 break;

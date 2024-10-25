@@ -20,6 +20,7 @@ namespace RSMNG.TAUMEDIKA.Shared.DataIntegrationDetail
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
             <fetch top=""{numberRows}"">
               <entity name=""{res_dataintegrationdetail.logicalName}"">
+                <attribute name=""{res_dataintegrationdetail.res_rownum}"" />
                 <attribute name=""{res_dataintegrationdetail.res_integrationrow}"" />
                 <filter>
                   <condition attribute=""{res_dataintegrationdetail.statuscode}"" operator=""eq"" value=""{fetchData.statuscode}"" />
