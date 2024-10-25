@@ -56,6 +56,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         return potentialCustomerId ?? null;
     };
     //--------------------------------------------------
+    _self.hasQuoteDetails = formContext => {
+        const subgrid = formContext.getControl("quotedetailsGrid");
+        if (subgrid && subgrid.getGrid()) {
+            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
+        }
+    }
+    //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
 
@@ -66,21 +73,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             let visible = false;
 
             const agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            const hasQuoteDetails = _self.hasQuoteDetails(formContext);
 
             switch (status) {
 
                 case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.BOZZA && agent === true) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && agent === true && hasQuoteDetails) { visible = true; } break;
 
                 case "APPROVED": //approvata
-                    if (currentStatus === _self.STATUS.BOZZA && (agent === false || agent === null)) { visible = true; }
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null)) { visible = true; } break;
+                    if (currentStatus === _self.STATUS.BOZZA && (agent === false || agent === null) && hasQuoteDetails) { visible = true; }
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null) && hasQuoteDetails) { visible = true; } break;
 
                 case "NOT_APPROVED": //non approvata
                     if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null)) { visible = true; } break;
 
                 case "CREATE_ORDER": //crea ordine
-                    if (currentStatus === _self.STATUS.APPROVATA) {
+                    if (currentStatus === _self.STATUS.APPROVATA && hasQuoteDetails) {
                         visible = true;
                         try {
                             //controllo se mancano dati nell'anagrafica del potenziale cliente
@@ -122,7 +130,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             switch (status) {
                 case "APPROVAL":
 
-                    
                     Sales.QuoteRibbonActions.Instance.activateQuote();
                     formContext.getControl("WebResource_postalcode").setVisible(false);
                     break;

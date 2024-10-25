@@ -823,6 +823,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleWillCallRelatedFields(executionContext);
     };
     //---------------------------------------------------
+    _self.hasQuoteDetails = formContext => {
+        const subgrid = formContext.getControl("quotedetailsGrid");
+        if (subgrid && subgrid.getGrid()) {
+            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
+        }
+    }
+    //---------------------------------------------------
     /*
     Utilizzare la keyword async se si utilizza uno o più metodi await dentro la funzione onSaveForm
     per rendere il salvataggio asincrono (da attivare sull'app dynamics!)
@@ -846,8 +853,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
-
         var formContext = executionContext.getFormContext();
+
+        formContext.ui.clearFormNotification("HAS_QUOTE_DETAILS");
 
         _self.onChangeSpesaAccessoria(executionContext, false);
 
@@ -862,6 +870,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
             formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
             formContext.getControl("WebResource_postalcode").setVisible(false);
+        }
+
+        const hasQuoteDetails = _self.hasQuoteDetails(formContext);
+        if (!hasQuoteDetails) {
+
+            const notification = {
+                message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
+                level: "INFO",
+                uniqueId: "HAS_QUOTE_DETAILS"
+            };
+
+            formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
         }
     };
     //---------------------------------------------------
