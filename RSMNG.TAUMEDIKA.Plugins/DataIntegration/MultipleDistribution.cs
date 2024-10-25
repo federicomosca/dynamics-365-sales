@@ -100,7 +100,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 EntityReference erProductFamily = null;
                                 KeyValuePair<string, Guid> categoryKey = default(KeyValuePair<string, Guid>);
                                 KeyValuePair<string, Guid> subCategoryKey = default(KeyValuePair<string, Guid>);
-                                if (importProductDanea.Categoria != null)
+                                if (importProductDanea.Categoria != null
+                                    && importProductDanea.EntitaPrincipale != null
+                                    && !importProductDanea.Categoria.Codice.Equals(importProductDanea.EntitaPrincipale.Codice))
                                 {
                                     var foundCategory = dCategory
                                         .Where(entry => entry.Key.Key.Equals(importProductDanea.Categoria.Codice, StringComparison.OrdinalIgnoreCase))

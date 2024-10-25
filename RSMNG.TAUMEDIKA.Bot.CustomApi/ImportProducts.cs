@@ -94,6 +94,9 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         // Crea un List<string[]> per memorizzare le righe
                         List<List<string>> rows = new List<List<string>>();
 
+                        ////Sostituisco CRLF con un carattere
+                        //csvContent = csvContent.Replace(Environment.NewLine, "§§");
+
                         // Leggi il contenuto CSV riga per riga utilizzando StringReader
                         using (StringReader sr = new StringReader(csvContent))
                         {
@@ -239,12 +242,20 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             PluginRegion = "Controllo la categoria per determinare il raggruppamento";
                             string category = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.EntitaPrincipale)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.EntitaPrincipale)).position] : null;
                             string delimiter = "  »  ";
-                            List<string> lCategories = string.IsNullOrEmpty(category)? new List<string>(): category.Split(new string[] { delimiter }, StringSplitOptions.None)?.ToList();
+                            List<string> lCategories = string.IsNullOrEmpty(category) ? new List<string>() : category.Split(new string[] { delimiter }, StringSplitOptions.None)?.ToList();
 
                             //Definisco l'unità di misura
                             PluginRegion = "Definisco l'unità di misura";
                             string sUom = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaPredefinita)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaPredefinita)).position] : null;
-                            Entity eUom = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower());
+                            Entity eUom = null;
+                            if (sUom == "")
+                            {
+                                eUom = lUom.FirstOrDefault(u => u.GetAttributeValue<bool>(uom.res_isdefault) == true);
+                            }
+                            else
+                            {
+                                eUom = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower());
+                            }
                             Entity eBaseUom = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom));
 
                             if (eUom == null)
@@ -269,6 +280,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             PluginRegion = "Definisco il Prezzo di listino";
                             crmServiceProvider.TracingService.Trace(row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)).position]);
                             string priceList = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)).position] : "0";
+                            priceList = string.IsNullOrEmpty(priceList) ? "0" : priceList;
 
                             // Rimuovi il simbolo di valuta e gli spazi
                             string cleanedPriceList = priceList.Replace("€", "").Trim();
