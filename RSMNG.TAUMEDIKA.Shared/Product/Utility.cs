@@ -39,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
                 <attribute name=""{product.productnumber}"" />
                 <attribute name=""{product.productid}"" />
                 <filter>
-                  <condition attribute=""{product.parentproductid}"" operator=""null"" />
+                  <condition entityname=""childproduct"" attribute=""{product.parentproductid}"" operator=""not-null"" />
                   <condition attribute=""{product.productstructure}"" operator=""eq"" value=""{fetchData.productstructure}"" />
                   <condition attribute=""{product.statecode}"" operator=""in"">{fetchData.statecode}</condition>
                 </filter>
