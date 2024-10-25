@@ -18,11 +18,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
             PluginMessage = "Update";
             PluginPrimaryEntityName = DataModel.account.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"{target.LogicalName}: {PluginStage}, {PluginMessage}"); }
 
             if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
             {
@@ -57,6 +59,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     {
                         //recupero gli indirizzi correlati
                         EntityCollection indirizzi = Utility.GetAddresses(crmServiceProvider, target.Id);
+                        if (PluginActiveTrace) { foreach (var x in indirizzi.Entities) { foreach (var y in x.Attributes) { crmServiceProvider.TracingService.Trace($"{y.Key}: {y.Value}"); } } }
                         bool isAlreadyDefaultAddress = false;
                         Entity indirizzo = null;
 
@@ -70,6 +73,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         else if (indirizzi.Entities.Count == 1)
                         {
                             indirizzo = indirizzi.Entities[0];
+
+                            if (PluginActiveTrace) { foreach (var x in indirizzo.Attributes) { crmServiceProvider.TracingService.Trace($"{x.Key}: {x.Value}"); } }
+
                             bool isIndirizzoSchedaCliente = indirizzo.GetAttributeValue<bool>(res_address.res_iscustomeraddress);
 
                             if (!isIndirizzoSchedaCliente)
@@ -86,6 +92,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                         else if (indirizzi.Entities.Count == 2)
                         {
                             indirizzo = indirizzi.Entities.SingleOrDefault(address => address.GetAttributeValue<bool>(res_address.res_iscustomeraddress) == true);
+
+                            if (PluginActiveTrace) { foreach (var x in indirizzo.Attributes) { crmServiceProvider.TracingService.Trace($"{x.Key}: {x.Value}"); } }
+
                             Utility.UpdateCustomerAddress(crmServiceProvider, target, preImage, indirizzo.Id);
                         }
                     }
