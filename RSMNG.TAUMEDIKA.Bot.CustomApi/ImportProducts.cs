@@ -95,7 +95,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         List<List<string>> rows = new List<List<string>>();
 
                         ////Sostituisco CRLF con un carattere
-                        //csvContent = csvContent.Replace(Environment.NewLine, "§§").Replace("\n", " ").Replace("§§", Environment.NewLine);
+                        csvContent = csvContent.Replace("\r\n", "CRLF_PLACEHOLDER").Replace("\n", " ").Replace("CRLF_PLACEHOLDER", "\r\n");
 
                         // Leggi il contenuto CSV riga per riga utilizzando StringReader
                         using (StringReader sr = new StringReader(csvContent))
