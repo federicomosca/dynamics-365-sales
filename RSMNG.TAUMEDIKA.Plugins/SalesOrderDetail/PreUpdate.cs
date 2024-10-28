@@ -52,8 +52,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             if (target.ContainsAttributeNotNull(salesorderdetail.res_vatnumberid) ||
                 target.Contains(salesorderdetail.quantity) ||
-                target.Contains(quotedetail.manualdiscountamount) ||
-                target.Contains(quotedetail.priceperunit)
+                target.Contains(salesorderdetail.manualdiscountamount) ||
+                target.Contains(salesorderdetail.priceperunit)
                 )
             {
                 codiceIva = postImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid);
