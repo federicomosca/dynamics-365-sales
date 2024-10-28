@@ -52,7 +52,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
-            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || target.Contains(quotedetail.quantity))
+            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || 
+                target.Contains(quotedetail.quantity) || 
+                target.Contains(quotedetail.manualdiscountamount) ||
+                target.Contains(quotedetail.priceperunit)
+                )
             {
                 codiceIva = postImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
 

@@ -383,6 +383,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         } else {
             formContext.getAttribute(_self.formModel.fields.priceperunit).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.ispriceoverridden).setValue(false);
+            formContext.getControl(_self.formModel.fields.priceperunit).setDisabled(true);
 
             _self.setBaseAmount(executionContext, { quantita: quantity, prezzoUnitario: null });
         }
