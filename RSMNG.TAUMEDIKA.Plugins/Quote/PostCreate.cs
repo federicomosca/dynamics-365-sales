@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.quote.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
