@@ -45,18 +45,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 DataModel.quote.pricelevelid,               //listino prezzi [en]
                 DataModel.quote.res_date,                   //data
                 DataModel.quote.res_isinvoicerequested,     //richiesta fattura
-                "res_paymenttermid",                        //condizioni di pagamento
-                DataModel.quote.res_deposit,                //acconto
-                DataModel.quote.res_vatnumberid,            //spesa accessoria
-                DataModel.quote.res_additionalexpenseid,    //codice iva spesa accessoria
+                DataModel.quote.res_paymenttermid,          //condizioni di pagamento        // MANCA
+                DataModel.quote.res_deposit,                //acconto                        // MANCA
+                DataModel.quote.res_vatnumberid,            //spesa accessoria              // MANCA
+                DataModel.quote.res_additionalexpenseid,    //codice iva spesa accessoria   // MANCA
                 DataModel.quote.willcall,                   //spedizione (flag)
-                DataModel.quote.res_shippingreference,
+                DataModel.quote.res_shippingreference,                                       // MANCA
                 DataModel.quote.shipto_line1,
                 DataModel.quote.shipto_postalcode,
                 DataModel.quote.shipto_city,
-                DataModel.quote.res_location,
+                DataModel.quote.shipto_country,                                            // MANCA
+                DataModel.quote.res_location,                                              // MANCA
                 DataModel.quote.shipto_stateorprovince,
-                DataModel.quote.res_countryid,
+                DataModel.quote.res_countryid,                                             // MANCA
                 DataModel.quote.totallineitemamount,        //totale prodotti
                 DataModel.quote.totalamountlessfreight,     //totale imponibile
                 DataModel.quote.freightamount,              //importo spesa accessoria
@@ -66,16 +67,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 DataModel.quote.opportunityid,              //opportunità
                 DataModel.quote.customerid,                 //potenziale cliente
                 DataModel.quote.description,                //descrizione
-                DataModel.quote.res_internalusecomment      //commento uso interno
+                DataModel.quote.res_internalusecomment,      //commento uso interno         // MANCA
+                DataModel.quote.res_bankdetailsid                                     // DA VER
+                
                 );
 
             Entity enSalesOrder = new Entity(DataModel.salesorder.logicalName);
 
             foreach (string column in quoteColumnSet.Columns)
             {
+                
                 if (target.ContainsAttributeNotNull(column))
                 {
+                    crmServiceProvider.TracingService.Trace("column: " + column + " contains");
                     enSalesOrder[column] = target.GetAttributeValue<object>(column) ?? null;
+                } else
+                {
+                    crmServiceProvider.TracingService.Trace("column: " + column + " not contains");
                 }
             }
 
