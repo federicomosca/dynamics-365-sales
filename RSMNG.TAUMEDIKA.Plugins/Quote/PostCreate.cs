@@ -40,16 +40,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             EntityReference erQuote = target.ToEntityReference();
 
             ColumnSet quoteColumnSet = new ColumnSet(
-                DataModel.quote.name,
-                DataModel.quote.transactioncurrencyid,
-                DataModel.quote.pricelevelid,
-                DataModel.quote.res_date,
-                DataModel.quote.res_isinvoicerequested,
-                "res_paymenttermid",
-                DataModel.quote.res_deposit,
-                DataModel.quote.res_vatnumberid,
-                DataModel.quote.res_additionalexpenseid,
-                DataModel.quote.willcall,
+                DataModel.quote.name,                       //nome
+                DataModel.quote.transactioncurrencyid,      //valuta
+                DataModel.quote.pricelevelid,               //listino prezzi [en]
+                DataModel.quote.res_date,                   //data
+                DataModel.quote.res_isinvoicerequested,     //richiesta fattura
+                "res_paymenttermid",                        //condizioni di pagamento
+                DataModel.quote.res_deposit,                //acconto
+                DataModel.quote.res_vatnumberid,            //spesa accessoria
+                DataModel.quote.res_additionalexpenseid,    //codice iva spesa accessoria
+                DataModel.quote.willcall,                   //spedizione (flag)
                 DataModel.quote.res_shippingreference,
                 DataModel.quote.shipto_line1,
                 DataModel.quote.shipto_postalcode,
@@ -57,33 +57,36 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                 DataModel.quote.res_location,
                 DataModel.quote.shipto_stateorprovince,
                 DataModel.quote.res_countryid,
-                DataModel.quote.totallineitemamount,
-                DataModel.quote.totalamountlessfreight,
-                DataModel.quote.freightamount,
-                DataModel.quote.totaltax,
-                DataModel.quote.totalamount,
-                DataModel.quote.totaldiscountamount,
-                DataModel.quote.opportunityid,
-                DataModel.quote.customerid,
-                DataModel.quote.description,
-                DataModel.quote.res_internalusecomment
+                DataModel.quote.totallineitemamount,        //totale prodotti
+                DataModel.quote.totalamountlessfreight,     //totale imponibile
+                DataModel.quote.freightamount,              //importo spesa accessoria
+                DataModel.quote.totaltax,                   //totale iva
+                DataModel.quote.totalamount,                //importo totale
+                DataModel.quote.totaldiscountamount,        //scontototale
+                DataModel.quote.opportunityid,              //opportunità
+                DataModel.quote.customerid,                 //potenziale cliente
+                DataModel.quote.description,                //descrizione
+                DataModel.quote.res_internalusecomment      //commento uso interno
                 );
 
-            Entity salesorder = new Entity(DataModel.salesorder.logicalName);
+            Entity enSalesOrder = new Entity(DataModel.salesorder.logicalName);
 
             foreach (string column in quoteColumnSet.Columns)
             {
-                if (target.Contains(column) && target.GetAttributeValue<object>(column) != null)
+                if (target.ContainsAttributeNotNull(column))
                 {
-                    salesorder[column] = target.GetAttributeValue<object>(column);
+                    enSalesOrder[column] = target.GetAttributeValue<object>(column) ?? null;
                 }
             }
 
-            salesorder[DataModel.salesorder.quoteid] = erQuote;
-            salesorder[DataModel.salesorder.statecode] = new OptionSetValue((int)DataModel.salesorder.statecodeValues.Attivo);
-            salesorder[DataModel.salesorder.statuscode] = new OptionSetValue((int)DataModel.salesorder.statuscodeValues.Approvato_StateAttivo);
+            //lookup
+            enSalesOrder[DataModel.salesorder.quoteid] = erQuote;
 
-            crmServiceProvider.Service.Create(salesorder);
+            //stato
+            enSalesOrder[DataModel.salesorder.statecode] = new OptionSetValue((int)DataModel.salesorder.statecodeValues.Attivo);
+            enSalesOrder[DataModel.salesorder.statuscode] = new OptionSetValue((int)DataModel.salesorder.statuscodeValues.Approvato_StateAttivo);
+
+            crmServiceProvider.Service.Create(enSalesOrder);
             #endregion
         }
     }
