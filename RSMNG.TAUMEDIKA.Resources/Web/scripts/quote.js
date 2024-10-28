@@ -263,7 +263,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.formModel.fields.statuscodeValues.Aggiornata_StateChiusa
     ];
 
-
     //---------------------------------------------------
     _self.setDate = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -835,7 +834,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const gridContext = formContext.getControl("quotedetailsGrid");
 
         if (!gridContext) {
-            setTimeout(() => { this.addSubgridEventListener(executionContext); }, 500);
+            setTimeout(() => { this.onLoadUpdateForm(executionContext); }, 500);
             return;
         }
         gridContext.addOnLoad(_self.subgridEventListener);
@@ -843,7 +842,14 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //---------------------------------------------------
     _self.subgridEventListener = executionContext => {
         const formContext = executionContext.getFormContext();
-        formContext.data.refresh();
+
+        const entityOptions = {
+            entityName: formContext.data.entity.getEntityName(),
+            entityId: formContext.data.entity.getId()
+        };
+
+        if (false) //disattivo il refresh perché viene effettuato in loop
+            Xrm.Navigation.openForm(entityOptions);
     };
     //---------------------------------------------------
     /*
@@ -897,7 +903,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
         }
-
         _self.addSubgridEventListener(executionContext);
     };
     //---------------------------------------------------
