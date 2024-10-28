@@ -244,7 +244,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             string delimiter = "  »  ";
                             List<string> lCategories = string.IsNullOrEmpty(category) ? new List<string>() : category.Split(new string[] { delimiter }, StringSplitOptions.None)?.ToList();
 
-                            //Definisco l'unità di misura
+                            //Definisco l'unità di misura Predefinita
                             PluginRegion = "Definisco l'unità di misura";
                             string sUom = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaPredefinita)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaPredefinita)).position] : null;
                             Entity eUom = null;
@@ -270,6 +270,33 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 lUom.Add(eUom);
                             }
 
+
+                            //Definisco l'unità di misura Peso
+                            PluginRegion = "Definisco l'unità di misura";
+                            string sUomPeso = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaDimisuraPeso)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaDimisuraPeso)).position] : null;
+                            Entity eUomPeso = null;
+                            if (sUom == "")
+                            {
+                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<bool>(uom.res_isdefault) == true);
+                            }
+                            else
+                            {
+                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower());
+                            }
+                            Entity eBaseUomPeso = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom));
+
+                            if (eUomPeso == null)
+                            {
+                                //Creo l'unita di misura
+                                eUomPeso = new Entity(uom.logicalName);
+                                eUomPeso.Attributes.Add(uom.uomscheduleid, lUomSchedule[0].ToEntityReference());
+                                eUomPeso.Attributes.Add(uom.name, sUomPeso);
+                                eUomPeso.Attributes.Add(uom.quantity, new decimal(1));
+                                eUomPeso.Attributes.Add(uom.baseuom, eBaseUom.ToEntityReference());
+                                crmServiceProvider.Service.Create(eUomPeso);
+                                lUom.Add(eUomPeso);
+                            }
+
                             //Definisco il Codice Iva
                             PluginRegion = "Definisco il Codice Iva";
                             string sVatNumber = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.CodiceIVA)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.CodiceIVA)).position] : null;
@@ -287,6 +314,30 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                             // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
                             decimal priceListOk = Decimal.Parse(cleanedPriceList, NumberStyles.Number, new CultureInfo("it-IT"));
+
+                            // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
+                            string pesoLordo = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoLordo)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoLordo)).position] : null;
+                            decimal? pesoLordoOk = null;
+                            if (pesoLordo != null)
+                            {
+                                pesoLordoOk = Decimal.Parse(pesoLordo, NumberStyles.Number, new CultureInfo("it-IT"));
+                            }
+
+                            // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
+                            string pesoNetto = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoNetto)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoNetto)).position] : null;
+                            decimal? pesoNettoOk = null;
+                            if (pesoNetto != null)
+                            {
+                                pesoNettoOk = Decimal.Parse(pesoNetto, NumberStyles.Number, new CultureInfo("it-IT"));
+                            }
+
+                            // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
+                            string volumeCM3 = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeCm3)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeCm3)).position] : null;
+                            decimal? volumeCM3Ok = null;
+                            if (volumeCM3 != null)
+                            {
+                                volumeCM3Ok = Decimal.Parse(volumeCM3, NumberStyles.Number, new CultureInfo("it-IT"));
+                            }
 
                             PluginRegion = "Definisco la Tipologia";
                             string productTypeCode = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.Tipologia)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.Tipologia)).position] : null;
@@ -309,12 +360,12 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 UnitaDiVendita = lUomSchedule.Count > 0 ? new Shared.Product.LookUp() { Entity = lUomSchedule[0].LogicalName, Id = lUomSchedule[0].Id, Text = lUomSchedule[0].GetAttributeValue<string>(uomschedule.name) } : null,
                                 UnitaPredefinita = eUom != null ? new Shared.Product.LookUp() { Entity = eUom.LogicalName, Id = eUom.Id, Text = eUom.GetAttributeValue<string>(uom.name) } : null,
                                 Categoria = lCategories.Count == 2 ? new ProductCategoryDanea() { Codice = lCategories[0], Nome = lCategories[0] } : null,
-                                EntitaPrincipale = lCategories.Count == 0 ? null : lCategories.Count <= 2 ? new ProductCategoryDanea() { Codice = lCategories.Count == 1? lCategories[0]: string.Join(" - ", lCategories), Nome = lCategories[lCategories.Count == 1 ? 0 : 1] } : null,
+                                EntitaPrincipale = lCategories.Count == 0 ? null : lCategories.Count <= 2 ? new ProductCategoryDanea() { Codice = lCategories.Count == 1 ? lCategories[0] : string.Join(" - ", lCategories), Nome = lCategories[lCategories.Count == 1 ? 0 : 1] } : null,
                                 CodiceIVA = eVatNumber != null ? new Shared.Product.LookUp() { Entity = eVatNumber.LogicalName, Id = eVatNumber.Id, Text = eVatNumber.GetAttributeValue<string>(res_vatnumber.res_name) } : null,
-                                PesoLordo = null,
-                                PesoNetto = null,
-                                VolumeCm3 = null,
-                                UnitaDimisuraPeso = null,
+                                PesoLordo = pesoLordoOk,
+                                PesoNetto = pesoNettoOk,
+                                VolumeCm3 = volumeCM3Ok,
+                                UnitaDimisuraPeso = eUomPeso != null ? new Shared.Product.LookUp() { Entity = eUomPeso.LogicalName, Id = eUomPeso.Id, Text = eUomPeso.GetAttributeValue<string>(uom.name) } : null,
                                 PrezzoDiListino = priceListOk,
                                 Tipologia = new Shared.Product.Option() { Text = null, Value = null, ExternalValue = productTypeCode }
                             };
