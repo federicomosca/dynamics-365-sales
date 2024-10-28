@@ -95,9 +95,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                 PluginRegion = "Deserializzo l'integrationRow dei prodotti";
                                 Shared.Product.ImportProductDanea importProductDanea = RSMNG.Plugins.Controller.Deserialize<Shared.Product.ImportProductDanea>(res_integrationrow);
 
-                                #region Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale
                                 try
                                 {
+                                    #region Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale
                                     PluginRegion = "Creo le famiglie di Prodotti in base alla Categoria e Entita pricipale";
                                     EntityReference erProductFamily = null;
                                     KeyValuePair<string, Guid> categoryKey = default(KeyValuePair<string, Guid>);
@@ -197,13 +197,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     #endregion
 
                                     #region Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti
-                                    PluginRegion = "Creo Prodotto sotto una famiglia o una sottofamiglia di prodotti";
+                                    PluginRegion = "Creo/Aggiorno Prodotto sotto una famiglia o una sottofamiglia di prodotti";
                                     //Cerco il prodotto
+                                    Entity enProductUpt = null;
                                     if (!string.IsNullOrEmpty(importProductDanea.Codice))
                                     {
                                         Entity enProduct = Shared.Product.Utility.GetProduct(crmServiceProvider.Service, importProductDanea.Codice);
 
-                                        Entity enProductUpt = new Entity(product.logicalName);
+                                        enProductUpt = new Entity(product.logicalName);
                                         enProductUpt.Attributes.Add(product.res_origincode, importProductDanea.Origine.Value != null ? new OptionSetValue((int)importProductDanea.Origine.Value) : null);
                                         enProductUpt.Attributes.Add(product.name, importProductDanea.Nome);
                                         if (!categoryKey.Equals(default(KeyValuePair<string, Guid>)))
@@ -250,6 +251,33 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                             crmServiceProvider.Service.Update(enProductUpt);
                                         }
                                     }
+                                    #endregion
+
+                                    #region Creo/Aggiorno la vece di listino corrispondente al prodotto
+                                    if (enProductUpt != null)
+                                    {
+                                        KeyAttributeCollection idxProductPriceLevel = new KeyAttributeCollection
+                                        {
+                                            { productpricelevel.pricelevelid, erPriceLevelERP },
+                                            { productpricelevel.productid, enProductUpt.ToEntityReference() },
+                                            { productpricelevel.uomid,new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id)}
+                                        };
+                                        Entity enProductPriceLevel = new Entity(productpricelevel.logicalName, idxProductPriceLevel);
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.pricelevelid, erPriceLevelERP);
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.productid, enProductUpt.ToEntityReference());
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.uomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.quantitysellingcode, new OptionSetValue((int)productpricelevel.quantitysellingcodeValues.Intera));
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.pricingmethodcode, new OptionSetValue((int)productpricelevel.pricingmethodcodeValues.Importoforfettario));
+                                        enProductPriceLevel.Attributes.Add(productpricelevel.amount, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : new Money(0));
+                                        
+                                        //Effettuo l'upsert della voce di listino
+                                        UpsertRequest requestProductPriceLevel = new UpsertRequest()
+                                        {
+                                            Target = enProductPriceLevel
+                                        };
+                                        UpsertResponse responseProductPriceLevel = (UpsertResponse)crmServiceProvider.Service.Execute(requestProductPriceLevel);
+                                    }
+                                    #endregion
                                     integrationsNumber++;
 
                                     #region Aggiorno lo stato del DataIntegrationDetail in distribuito
@@ -270,7 +298,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
 
                                     detailMessage += $@"{Environment.NewLine}- {res_rownum} - Errore: {e.Message}";
                                 }
-                                #endregion
                                 break;
                             case (int)res_dataintegration.res_integrationactionValues.DocumentiRicevute:
                                 PluginRegion = "Deserializzo l'integrationRow delle ricevute";
