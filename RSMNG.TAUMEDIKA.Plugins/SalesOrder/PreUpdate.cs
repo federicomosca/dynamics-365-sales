@@ -216,6 +216,39 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
             }
             #endregion
+
+            #region Data
+            
+            EntityReference erQuote = target.Contains(salesorder.quoteid) ? target.GetAttributeValue<EntityReference>(salesorder.quoteid) : preImage.GetAttributeValue<EntityReference>(salesorder.quoteid);
+            DateTime? date = target.Contains(salesorder.res_date) ? target.GetAttributeValue<DateTime?>(salesorder.res_date) : preImage.GetAttributeValue<DateTime?>(salesorder.res_date);
+
+            if(date == null && erQuote != null)
+            {
+
+                var fetchData = new
+                {
+                    quoteid = erQuote.Id,
+                };
+                var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                    <fetch>
+                                      <entity name=""quoteclose"">
+                                        <attribute name=""actualend"" />
+                                        <filter>
+                                          <condition attribute=""quoteid"" operator=""eq"" value=""{fetchData.quoteid}"" />
+                                        </filter>
+                                      </entity>
+                                    </fetch>";
+
+                EntityCollection ecQuoteClose = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
+
+                if (ecQuoteClose.Entities.Count > 0 && ecQuoteClose.Entities[0].ContainsAttributeNotNull("actualend"))
+                {                    
+                    target[salesorder.res_date] = ecQuoteClose.Entities[0].GetAttributeValue<DateTime>("actualend");
+                }
+
+                    
+            }
+            #endregion
         }
     }
 }
