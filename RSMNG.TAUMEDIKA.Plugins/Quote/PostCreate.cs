@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.quote.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -75,7 +75,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             {
                 if (target.ContainsAttributeNotNull(column))
                 {
-                    enSalesOrder[column] = target.GetAttributeValue<object>(column) ?? null;
+                    var attribute = target.GetAttributeValue<object>(column) ?? null;
+                    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"{column}: {attribute}"); }
+                    enSalesOrder[column] = attribute;
                 }
             }
 

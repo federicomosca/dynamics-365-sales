@@ -439,8 +439,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         try {
             const result = await Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchAggregati);
             const aggregati = result.entities[0];
-            const totaleImponibile = aggregati.TotaleImponibile;
-            const totaleIva = aggregati.TotaleIva;
+            const totaleImponibile = aggregati.TotaleImponibile ?? 0;
+            const totaleIva = aggregati.TotaleIva ?? 0;
 
             // ritorno un oggetto JSON con i valori aggregati
             return {
@@ -458,7 +458,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const codiceIvaControl = formContext.getControl(_self.formModel.fields.res_vatnumberid);                    //codice iva spesa accessoria
         const totalTaxControl = formContext.getControl(_self.formModel.fields.totaltax);                            //totale iva
         const totalAmountControl = formContext.getControl(_self.formModel.fields.totalamount);                      //importo totale
-        let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue() ?? 0;
+        let importoSpesaAccessoria = formContext.getAttribute(_self.formModel.fields.freightamount).getValue();
         let totaleImponibile;
         let importoTotale;
 
@@ -506,6 +506,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
              * se non è stato selezionato il codice iva spesa accessoria
              * imposto il totale iva delle righe offerta senza l'iva sulla spesa accessoria
              */
+
             totalTaxControl.getAttribute().setValue(righeTotaleIva != 0 ? righeTotaleIva : null);
 
             /**
@@ -907,7 +908,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
 
         //------< subgrid >------//
-        const quoteDetailsCount = await _self.getQuoteDetailsCount(subgrid);
+        const subgrid = formContext.getControl('quotedetailsGrid').getGrid() ?? null;
+        const quoteDetailsCount = subgrid ? await _self.getQuoteDetailsCount(subgrid) : null;
         if (quoteDetailsCount === 0) {
 
             const notification = {
