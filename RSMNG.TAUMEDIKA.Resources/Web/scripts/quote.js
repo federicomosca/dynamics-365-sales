@@ -822,12 +822,26 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleWillCallRelatedFields(executionContext);
     };
     //---------------------------------------------------
-    _self.hasQuoteDetails = formContext => {
-        const subgrid = formContext.getControl("quotedetailsGrid");
-        if (subgrid && subgrid.getGrid()) {
-            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
-        }
-    }
+    _self.getQuoteDetailsCount = formContext => {
+        return new Promise((resolve, reject) => {
+            const subgrid = formContext.getControl("quotedetailsGrid");
+
+            if (!subgrid) {
+                reject("Subgrid not found");
+                return;
+            }
+
+            subgrid.addOnLoad(() => {
+                const grid = subgrid.getGrid();
+                if (grid) {
+                    const count = grid.getTotalRecordCount();
+                    resolve(count);  // Restituisce il conteggio dei record quando disponibile
+                } else {
+                    reject("Grid not loaded.");
+                }
+            });
+        });
+    };
     //---------------------------------------------------
     _self.addSubgridEventListener = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -892,8 +906,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             formContext.getControl("WebResource_postalcode").setVisible(false);
         }
 
-        const hasQuoteDetails = _self.hasQuoteDetails(formContext);
-        if (!hasQuoteDetails) {
+        //------< subgrid >------//
+        const quoteDetailsCount = await _self.getQuoteDetailsCount(subgrid);
+        if (quoteDetailsCount === 0) {
 
             const notification = {
                 message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
@@ -903,6 +918,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
         }
+
         _self.addSubgridEventListener(executionContext);
     };
     //---------------------------------------------------
