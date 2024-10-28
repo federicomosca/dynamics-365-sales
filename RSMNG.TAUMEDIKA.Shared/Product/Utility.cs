@@ -58,7 +58,6 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
                 <attribute name=""{product.productnumber}"" />
                 <attribute name=""{product.productid}"" />
                 <filter>
-                  <condition entityname=""childproduct"" attribute=""{product.parentproductid}"" operator=""not-null"" />
                   <condition attribute=""{product.productstructure}"" operator=""eq"" value=""{fetchData.productstructure}"" />
                   <condition attribute=""{product.statecode}"" operator=""in"">{fetchData.statecode}</condition>
                 </filter>
@@ -74,6 +73,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
                 </link-entity>
               </entity>
             </fetch>";
+
+            //                  <condition entityname=""childproduct"" attribute=""{product.parentproductid}"" operator=""not-null"" />
+
             // Esecuzione della query FetchXML
             EntityCollection result = service.RetrieveMultiple(new FetchExpression(fetchXml));
 
@@ -81,18 +83,31 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>> productHierarchy = new Dictionary<KeyValuePair<string, Guid>, List<KeyValuePair<string, Guid>>>();
 
             // Elaborazione dei risultati
-            foreach (var entity in result.Entities)
+            foreach (Entity entity in result.Entities)
             {
-                // Ottieni il numero e l'ID del prodotto genitore
-                string parentProductNumber = entity.GetAttributeValue<string>(product.productnumber);
-                Guid parentProductId = entity.Id;
+                string parentProductNumber = string.Empty;
+                Guid parentProductId = Guid.Empty;
+                bool isChildren = true;
+                if (entity.ContainsAttributeNotNull(product.productnumber))
+                {
+                    // Ottieni il numero e l'ID del prodotto genitore
+                    parentProductNumber = entity.GetAttributeValue<string>(product.productnumber);
+                    parentProductId = entity.Id;
+                }
+                else if (entity.Contains($"childproduct.{product.productid}"))
+                {
+                    parentProductNumber = entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productnumber}").Value.ToString();
+                    parentProductId = (Guid)entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productid}").Value;
+                    isChildren = false;
+                }
 
                 // Chiave del prodotto genitore (numero + ID)
                 var parentKey = new KeyValuePair<string, Guid>(parentProductNumber, parentProductId);
 
                 // Verifica se ci sono figli (dalla link-entity alias 'childproduct')
                 var children = new List<KeyValuePair<string, Guid>>();
-                if (entity.Contains($"childproduct.{product.productid}"))
+                
+                if (isChildren && entity.Contains($"childproduct.{product.productid}"))
                 {
                     var childProductNumber = entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productnumber}").Value.ToString();
                     var childProductId = (Guid)entity.GetAttributeValue<AliasedValue>($"childproduct.{product.productid}").Value;
@@ -127,7 +142,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             EntityCollection result = service.RetrieveMultiple(new FetchExpression(fetchXml));
             if (result?.Entities?.Count > 0)
             {
-                product=result.Entities[0];
+                product = result.Entities[0];
             }
             return product;
         }
@@ -170,7 +185,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
     [DataContract]
     public class Option
     {
-        [DataMember] public int? Value {  get; set; }
+        [DataMember] public int? Value { get; set; }
         [DataMember] public string ExternalValue { get; set; }
         [DataMember] public string Text { get; set; }
     }
@@ -180,6 +195,6 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
     {
         [DataMember] public Guid Id { get; set; }
         [DataMember] public string Text { get; set; }
-        [DataMember] public string Entity {  get; set; }
+        [DataMember] public string Entity { get; set; }
     }
 }
