@@ -171,7 +171,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
         [DataMember] public string CodiceABarre { get; set; }
         [DataMember] public decimal? PesoLordo { get; set; }
         [DataMember] public decimal? PesoNetto { get; set; }
-        [DataMember] public decimal? VolumeCm3 { get; set; }
+        [DataMember] public decimal? VolumeImballo { get; set; }
         [DataMember] public LookUp UnitaDimisuraPeso { get; set; }
         [DataMember] public ProductCategoryDanea Categoria { get; set; }
     }

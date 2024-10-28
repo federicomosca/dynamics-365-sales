@@ -95,7 +95,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         List<List<string>> rows = new List<List<string>>();
 
                         ////Sostituisco CRLF con un carattere
-                        csvContent = csvContent.Replace("\r\n", "CRLF_PLACEHOLDER").Replace("\n", " ").Replace("CRLF_PLACEHOLDER", "\r\n");
+                        //csvContent = csvContent.Replace("\r\n", "CRLF_PLACEHOLDER").Replace("\n", " ").Replace("CRLF_PLACEHOLDER", "\r\n");
 
                         // Leggi il contenuto CSV riga per riga utilizzando StringReader
                         using (StringReader sr = new StringReader(csvContent))
@@ -272,16 +272,16 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
 
                             //Definisco l'unità di misura Peso
-                            PluginRegion = "Definisco l'unità di misura";
+                            PluginRegion = "Definisco l'unità di misura del peso";
                             string sUomPeso = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaDimisuraPeso)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.UnitaDimisuraPeso)).position] : null;
                             Entity eUomPeso = null;
-                            if (sUom == "")
+                            if (sUomPeso == "")
                             {
                                 eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<bool>(uom.res_isdefault) == true);
                             }
                             else
                             {
-                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower());
+                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUomPeso.ToLower());
                             }
                             Entity eBaseUomPeso = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom));
 
@@ -316,27 +316,30 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             decimal priceListOk = Decimal.Parse(cleanedPriceList, NumberStyles.Number, new CultureInfo("it-IT"));
 
                             // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
+                            PluginRegion = "Definisco il Peso Lordo";
                             string pesoLordo = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoLordo)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoLordo)).position] : null;
                             decimal? pesoLordoOk = null;
-                            if (pesoLordo != null)
+                            if (!string.IsNullOrEmpty(pesoLordo))
                             {
                                 pesoLordoOk = Decimal.Parse(pesoLordo, NumberStyles.Number, new CultureInfo("it-IT"));
                             }
 
                             // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
+                            PluginRegion = "Definisco il Peso Netto";
                             string pesoNetto = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoNetto)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PesoNetto)).position] : null;
                             decimal? pesoNettoOk = null;
-                            if (pesoNetto != null)
+                            if (!string.IsNullOrEmpty(pesoNetto))
                             {
                                 pesoNettoOk = Decimal.Parse(pesoNetto, NumberStyles.Number, new CultureInfo("it-IT"));
                             }
 
                             // Converte la stringa in decimal utilizzando la cultura italiana (dove la virgola è il separatore decimale)
-                            string volumeCM3 = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeCm3)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeCm3)).position] : null;
-                            decimal? volumeCM3Ok = null;
-                            if (volumeCM3 != null)
+                            PluginRegion = "Definisco il Volume Imballo";
+                            string volumeImballo = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeImballo)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.VolumeImballo)).position] : null;
+                            decimal? volumeImballoOk = null;
+                            if (!string.IsNullOrEmpty(volumeImballo))
                             {
-                                volumeCM3Ok = Decimal.Parse(volumeCM3, NumberStyles.Number, new CultureInfo("it-IT"));
+                                volumeImballoOk = Decimal.Parse(volumeImballo, NumberStyles.Number, new CultureInfo("it-IT"));
                             }
 
                             PluginRegion = "Definisco la Tipologia";
@@ -364,7 +367,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 CodiceIVA = eVatNumber != null ? new Shared.Product.LookUp() { Entity = eVatNumber.LogicalName, Id = eVatNumber.Id, Text = eVatNumber.GetAttributeValue<string>(res_vatnumber.res_name) } : null,
                                 PesoLordo = pesoLordoOk,
                                 PesoNetto = pesoNettoOk,
-                                VolumeCm3 = volumeCM3Ok,
+                                VolumeImballo = volumeImballoOk,
                                 UnitaDimisuraPeso = eUomPeso != null ? new Shared.Product.LookUp() { Entity = eUomPeso.LogicalName, Id = eUomPeso.Id, Text = eUomPeso.GetAttributeValue<string>(uom.name) } : null,
                                 PrezzoDiListino = priceListOk,
                                 Tipologia = new Shared.Product.Option() { Text = null, Value = null, ExternalValue = productTypeCode }
