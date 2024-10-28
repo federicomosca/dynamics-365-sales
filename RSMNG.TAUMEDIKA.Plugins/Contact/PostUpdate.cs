@@ -81,6 +81,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
 
                         if (!isIndirizzoSchedaCliente)
                         {
+                            isAlreadyDefaultAddress = true;
                             Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress, preImage);
                         }
                         else
