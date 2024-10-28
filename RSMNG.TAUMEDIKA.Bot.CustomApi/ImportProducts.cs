@@ -119,10 +119,19 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             field.position = rows[configuration.header_line].IndexOf(field.name);
                         }
 
+                        //Rimuovo l'intestazione
+                        rows = rows.Skip(1).ToList();
+
                         //Rimuovo le righe in eccesso
                         if (rows.Count > 2)
                         {
-                            rows = rows.Skip(1).Take(rows.Count - 2).ToList();
+                            // Calcola il numero di righe rimanenti
+                            int righeRimanenti = rows.Count - configuration.number_lines_remove;
+
+                            // Usa Take per mantenere solo le righe rimanenti
+                            rows = rows.Take(righeRimanenti).ToList();
+
+                            //rows = rows.Skip(1).Take(rows.Count - 2).ToList();
                         }
 
                         crmServiceProvider.TracingService.Trace($"NumeroRigheDopo:{rows.Count}");
@@ -292,7 +301,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 eUomPeso.Attributes.Add(uom.uomscheduleid, lUomSchedule[0].ToEntityReference());
                                 eUomPeso.Attributes.Add(uom.name, sUomPeso);
                                 eUomPeso.Attributes.Add(uom.quantity, new decimal(1));
-                                eUomPeso.Attributes.Add(uom.baseuom, eBaseUom.ToEntityReference());
+                                eUomPeso.Attributes.Add(uom.baseuom, eBaseUomPeso.ToEntityReference());
                                 crmServiceProvider.Service.Create(eUomPeso);
                                 lUom.Add(eUomPeso);
                             }
