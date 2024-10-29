@@ -42,7 +42,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
-            bool isHomage = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
+            bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
 
             EntityReference codiceIva = null;
             decimal aliquota = 0;
@@ -51,6 +51,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal totaleImponibile = 0;
             decimal totaleIva = 0;
             decimal importoTotale = 0;
+
 
             if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || 
                 target.Contains(quotedetail.quantity) || 
@@ -66,9 +67,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                totaleImponibile = importo - scontoTotale;
-                totaleIva = importo * (aliquota / 100);
+                
+                totaleImponibile = omaggio ? 0 : importo - scontoTotale;
+                totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                 importoTotale = totaleImponibile + totaleIva;
+
+              
             }
             else
             {
@@ -113,9 +117,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                        totaleImponibile = importo - scontoTotale;
-                        if (!isHomage) { totaleIva = importo * (aliquota / 100); } else { totaleIva = 0; }
+                        totaleImponibile = omaggio ? 0 : importo - scontoTotale;
+                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;                        
                         importoTotale = totaleImponibile + totaleIva;
+
+                       
                     }
                 }
             }

@@ -39,7 +39,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
-            bool isHomage = target.ContainsAttributeNotNull(salesorderdetail.res_ishomage) ? target.GetAttributeValue<bool>(salesorderdetail.res_ishomage) : false;
+            bool omaggio = target.ContainsAttributeNotNull(salesorderdetail.res_ishomage) ? target.GetAttributeValue<bool>(salesorderdetail.res_ishomage) : false;
 
 
             EntityReference codiceIva = null;
@@ -64,8 +64,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                totaleImponibile = importo - scontoTotale;
-                totaleIva = importo * (aliquota / 100);
+                totaleImponibile = omaggio ? 0 : importo - scontoTotale;
+                totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                 importoTotale = totaleImponibile + totaleIva;
             }
             else
@@ -111,8 +111,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                        totaleImponibile = importo - scontoTotale;
-                        if (!isHomage) { totaleIva = importo * (aliquota / 100); } else { totaleIva = 0; }
+                        totaleImponibile = omaggio ? 0 : importo - scontoTotale;
+                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
                     }
                 }

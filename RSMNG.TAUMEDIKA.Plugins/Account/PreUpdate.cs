@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RSMNG.TAUMEDIKA;
+using RSMNG.TAUMEDIKA.DataModel;
 
 namespace RSMNG.TAUMEDIKA.Plugins.Account
 {
@@ -21,13 +22,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+            Entity postImage = target.GetPostImage(preImage);
+
 
             #region Controllo Codice fiscale
             PluginRegion = "Controllo Codice fiscale";
             if (target.ContainsAttributeNotNull(DataModel.account.res_taxcode))
             {
-                
-                bool isExist = RSMNG.TAUMEDIKA.Shared.Account.Utility.CheckFiscalCode(crmServiceProvider.Service, (string)target.Attributes[DataModel.account.res_taxcode],target.Id);
+
+                bool isExist = RSMNG.TAUMEDIKA.Shared.Account.Utility.CheckFiscalCode(crmServiceProvider.Service, (string)target.Attributes[DataModel.account.res_taxcode], target.Id);
                 if (isExist)
                 {
                     throw new ApplicationException("il codice fiscale inserito è associato ad un'altro account.");
@@ -37,17 +41,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
 
             #region Imposto in automatico il campo Nazione testo
             PluginRegion = "Imposto in automatico il campo Nazione testo";
-            if (crmServiceProvider.PluginContext.PreEntityImages.Contains("PreImage"))
+
+            if (target.Contains(account.res_countryid))
             {
-                Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
+                EntityReference erCountry = target.GetAttributeValue<EntityReference>(account.res_countryid);
 
-                Entity postImage = target.GetPostImage(preImage);
-
-                postImage.TryGetAttributeValue<EntityReference>(DataModel.account.res_countryid, out EntityReference erCountry);
                 string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : null;
 
-                target[DataModel.account.address1_country] = countryName;
+
+                target[account.address1_country] = countryName;
             }
+
+
+            
+
+            
+
             #endregion
         }
     }
