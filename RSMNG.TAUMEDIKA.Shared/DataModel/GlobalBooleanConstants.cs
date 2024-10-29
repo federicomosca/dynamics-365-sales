@@ -499,12 +499,12 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
-		/// Should propose new knowledge article constants.
+		/// Deve proporre un nuovo articolo della Knowledge Base constants.
 		/// </summary>
 		public enum proposeknowledge_incidentresolutionValues
 		{
 			No = 0,
-			Yes = 1
+			Si = 1
 		}
 
 		/// <summary>

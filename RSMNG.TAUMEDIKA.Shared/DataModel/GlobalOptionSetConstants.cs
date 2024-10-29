@@ -862,7 +862,6 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			ContactLeads = 22,
 			Contatto = 2,
 			Contattodiritto = 7272,
-			Copilotknowledgeinteraction = 11214,
 			CronologiadeidatideldispositivoIoT = 10412,
 			CronologiadiregistrazionedispositivoIoT = 10414,
 			DefinizionedeicomandideldispositivoIoT = 10411,
@@ -875,6 +874,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Fattura = 1090,
 			ImpostazioniIoT = 10420,
 			Indirizzoconcorrente = 1004,
+			InterazioneKnowledgeBaseCopilot = 11214,
 			IstanzadelproviderIoT = 10419,
 			IstanzaKPIdicontrattodiservizio = 9752,
 			Istanzaproprieta = 1333,
@@ -2431,6 +2431,22 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			nessuno = 419550000,
 			riassegnata = 419550002,
 			risolta = 419550001
+		}
+
+		/// <summary>
+		/// sessionoutcomereason constants.
+		/// </summary>
+		public enum msdyn_sessionoutcomereasonValues
+		{
+			agentTransferConfiguredByAuthor = 419560007,
+			agentTransferFromQuestionMaxAttempts = 419560008,
+			agentTransferRequestedByUser = 419560005,
+			agentTransferWithoutError = 419560004,
+			noError = 419560000,
+			resolved = 419560006,
+			systemError = 419560002,
+			userError = 419560001,
+			userExit = 419560003
 		}
 
 		/// <summary>

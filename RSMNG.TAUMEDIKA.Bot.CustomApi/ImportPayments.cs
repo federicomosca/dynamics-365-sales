@@ -284,13 +284,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             Entity ePaymentTerm = null;
                             if (!string.IsNullOrEmpty(sPaymentTerm))
                             {
-                                ePaymentTerm = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_paymentterm.res_name) == sPaymentTerm);
+                                ePaymentTerm = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_paymentterm.res_name).ToLower() == sPaymentTerm.ToLower());
                                 if (ePaymentTerm == null)
                                 {
                                     ePaymentTerm = new Entity(res_paymentterm.logicalName);
                                     ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
                                     Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
                                     ePaymentTerm.Id = ePaymentTermId;
+                                    lPaymentTerm.Add(ePaymentTerm);
                                 }
                             }
 
@@ -307,6 +308,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     eBankDetails.Attributes.Add(res_bankdetails.res_name, sBankDetails);
                                     Guid eBankDetailsId = crmServiceProvider.Service.Create(eBankDetails);
                                     eBankDetails.Id = eBankDetailsId;
+                                    lBankDetails.Add(eBankDetails);
                                 }
                             }
 
@@ -323,6 +325,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     ePaymentMethods.Attributes.Add(res_paymentmethod.res_nome, sPaymentMethods);
                                     Guid ePaymentMethodsId = crmServiceProvider.Service.Create(ePaymentMethods);
                                     ePaymentMethods.Id = ePaymentMethodsId;
+                                    lPaymentMethods.Add(ePaymentMethods);
                                 }
                             }
 

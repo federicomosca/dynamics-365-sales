@@ -122,6 +122,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string quantitysellingcode => "quantitysellingcode";
 
 		/// <summary>
+		/// Display Name: Origine,
+		/// Type: Picklist,
+		/// Values:
+		/// Dynamics: 100000000,
+		/// ERP: 100000001,
+		/// Description: 
+		/// </summary>
+		public static string res_origine => "res_origine";
+
+		/// <summary>
 		/// Display Name: Valore di arrotondamento,
 		/// Type: Money,
 		/// Description: Valore di arrotondamento per il listino prezzi.
@@ -217,6 +227,15 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Intera = 2,
 			Interaefrazionaria = 3,
 			Nondefinita = 1
+		}
+
+		/// <summary>
+		/// Values for field Origine
+		/// <summary>
+		public enum res_origineValues
+		{
+			Dynamics = 100000000,
+			ERP = 100000001
 		}
 
 		/// <summary>
