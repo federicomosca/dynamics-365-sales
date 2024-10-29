@@ -449,6 +449,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_paymenttermid, importInvoiceDanea.Pagamento != null ? new EntityReference(importInvoiceDanea.Pagamento.Entity, importInvoiceDanea.Pagamento.Id) : null);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_bankdetailsid, importInvoiceDanea.CoordBancarie != null ? new EntityReference(importInvoiceDanea.CoordBancarie.Entity, importInvoiceDanea.CoordBancarie.Id) : null);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_note, importInvoiceDanea.Commento);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_su)
 
                                     //Effettuo l'upsert del documento - Fatture
                                     UpsertRequest requestDocumentInvoiceUpt = new UpsertRequest()
@@ -493,7 +494,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
 
                                     PluginRegion = "Creo il pagamento";
                                     Entity ePaymentScheduleUpt = new Entity(res_paymentschedule.logicalName);
-                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_subject, importPaymentDanea.Cliente != null ? importPaymentDanea.Cliente.Text : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_subject, importPaymentDanea.Soggetto);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_clientid, importPaymentDanea.Cliente != null ? new EntityReference(importPaymentDanea.Cliente.Entity, importPaymentDanea.Cliente.Id) : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_customernumber, importPaymentDanea.CodCliente);
 
