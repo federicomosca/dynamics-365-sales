@@ -29,6 +29,8 @@ if (typeof (RSMNG.TAUMEDIKA.SYSTEMUSER) == "undefined") {
             res_isagente: "res_isagente",
             ///Disabilita calcolo provvigioni
             res_iscommissioncalculationdisabled: "res_iscommissioncalculationdisabled",
+            // % Commissione
+            res_commissionpercentage: "res_commissionpercentage"
         },
         tabs: {
 
@@ -37,7 +39,54 @@ if (typeof (RSMNG.TAUMEDIKA.SYSTEMUSER) == "undefined") {
 
         }
     };
+    //---------------------------------------------------
+    _self.onChangeIsAgente = function (executionContext, isEvent) {
+        var formContext = executionContext.getFormContext();
 
+        let isAgente = formContext.getAttribute(_self.formModel.fields.res_isagente).getValue();
+
+        formContext.getControl(_self.formModel.fields.res_agentnumber).setDisabled(isAgente == true ? false : true);
+        formContext.getAttribute(_self.formModel.fields.res_agentnumber).setRequiredLevel(isAgente == true ? "required" : "none");
+
+        formContext.getControl(_self.formModel.fields.res_iscommissioncalculationdisabled).setVisible(isAgente == true ? true : false);
+        formContext.getControl(_self.formModel.fields.res_iscommissioncalculationdisabled).setDisabled(isAgente == true ? false : true);
+
+
+        if (isEvent == true && isAgente == false) {
+            formContext.getAttribute(_self.formModel.fields.res_agentnumber).setValue(null);
+            formContext.getAttribute(_self.formModel.fields.res_iscommissioncalculationdisabled).setValue(false);
+
+        }
+    }
+    //---------------------------------------------------
+    _self.handleAgentRelatedFieldsProperties = executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const campoAgente = formContext.getControl(_self.formModel.fields.res_isagente);
+        const campoCodiceAgente = formContext.getControl(_self.formModel.fields.res_agentnumber);
+        const campoPercentualeCommissione = formContext.getControl(_self.formModel.fields.res_commissionpercentage);
+
+        const isAgente = campoAgente.getAttribute().getValue() == 1;
+
+        if (isAgente) {
+            campoCodiceAgente.setVisible(true);
+            campoCodiceAgente.setDisabled(false);
+            campoCodiceAgente.getAttribute().setRequiredLevel("required");
+
+            campoPercentualeCommissione.setVisible(true);
+            campoPercentualeCommissione.setDisabled(false);
+            campoPercentualeCommissione.getAttribute().setRequiredLevel("required");
+        } else {
+            campoCodiceAgente.setDisabled(true);
+            campoCodiceAgente.getAttribute().setRequiredLevel("none");
+            campoCodiceAgente.getAttribute().setValue(null);
+
+            campoPercentualeCommissione.setDisabled(true);
+            campoPercentualeCommissione.getAttribute().setRequiredLevel("none");
+            campoPercentualeCommissione.getAttribute().setValue(null);
+        }
+    }
+    //---------------------------------------------------
     _self.onSaveForm = function (executionContext) {
         if (executionContext.getEventArgs().getSaveMode() == 70) {
             executionContext.getEventArgs().preventDefault();
@@ -63,25 +112,6 @@ if (typeof (RSMNG.TAUMEDIKA.SYSTEMUSER) == "undefined") {
         var formContext = executionContext.getFormContext();
     };
     //---------------------------------------------------
-    _self.onChangeIsAgente = function (executionContext, isEvent) {
-        var formContext = executionContext.getFormContext();
-
-        let isAgente = formContext.getAttribute(_self.formModel.fields.res_isagente).getValue();
-
-        formContext.getControl(_self.formModel.fields.res_agentnumber).setDisabled(isAgente == true ? false : true);
-        formContext.getAttribute(_self.formModel.fields.res_agentnumber).setRequiredLevel(isAgente == true ?  "required" : "none");
-
-        formContext.getControl(_self.formModel.fields.res_iscommissioncalculationdisabled).setVisible(isAgente == true ? true : false);
-        formContext.getControl(_self.formModel.fields.res_iscommissioncalculationdisabled).setDisabled(isAgente == true ? false : true);
-
-
-        if (isEvent == true && isAgente == false) {
-            formContext.getAttribute(_self.formModel.fields.res_agentnumber).setValue(null);
-            formContext.getAttribute(_self.formModel.fields.res_iscommissioncalculationdisabled).setValue(false);
-
-        }
-    }
-    //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {
 
 
@@ -92,9 +122,12 @@ if (typeof (RSMNG.TAUMEDIKA.SYSTEMUSER) == "undefined") {
 
         //Init event
         formContext.getAttribute(_self.formModel.fields.res_isagente).addOnChange(() => { _self.onChangeIsAgente(executionContext, true); });
+        formContext.getAttribute(_self.formModel.fields.res_isagente).addOnChange(_self.handleAgentRelatedFieldsProperties);
 
         //Init function
         _self.onChangeIsAgente(executionContext, false);
+
+        _self.handleAgentRelatedFieldsProperties(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
