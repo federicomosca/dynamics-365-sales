@@ -57,8 +57,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
             EntityReference erCliente;
             string codiceCliente;
             string nomeCliente = string.Empty;
-            DateTime data;
-            decimal totaleDocumento;
+            string data;
+            string totaleDocumento;
 
             string nome;
 
@@ -92,19 +92,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
 
                 //--------------------< data >----------------------//
                 data = target.Contains(res_document.res_date) ?
-                    target.GetAttributeValue<DateTime>(res_document.res_date) : preImage.GetAttributeValue<DateTime>(res_document.res_date);
+                    target.GetAttributeValue<DateTime>(res_document.res_date).ToString("dd/MM/yyyy") : preImage.GetAttributeValue<DateTime>(res_document.res_date).ToString("dd/MM/yyyy");
 
                 //--------------------< totale documento >----------------------//
                 totaleDocumento = target.Contains(res_document.res_documenttotal) ?
-                    target.GetAttributeValue<Money>(res_document.res_documenttotal).Value : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value;
+                    target.GetAttributeValue<Money>(res_document.res_documenttotal).Value.ToString("F2") : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value.ToString("F2");
 
                 //--------------------< valorizzo il campo nome >----------------------//
                 //nome = $"{codiceCliente} - {nomeCliente} - {data.ToString("dd/MM/yyyy")} - {totaleDocumento.ToString("F2")}";
 
                 nome = !string.IsNullOrEmpty(codiceCliente) ? codiceCliente + " - " : null;
                 nome += !string.IsNullOrEmpty(nomeCliente) ? nomeCliente : null;
-                nome += data != null ? " - " + data.ToString("dd/MM/yyyy") : null;
-                nome += totaleDocumento != 0 ? " - " + totaleDocumento.ToString("F2") : null;
+                nome += !string.IsNullOrEmpty(data) ? " - " + data : null;
+                nome += !string.IsNullOrEmpty(totaleDocumento) ? " - " + totaleDocumento : null;
 
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
 
