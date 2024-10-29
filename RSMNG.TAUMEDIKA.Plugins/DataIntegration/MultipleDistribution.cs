@@ -262,7 +262,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.pricelevelid, erPriceLevelERP);
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.productid, enProductUpt.ToEntityReference());
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.uomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
-                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.quantitysellingcode, new OptionSetValue((int)productpricelevel.quantitysellingcodeValues.Intera));
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.quantitysellingcode, new OptionSetValue((int)productpricelevel.quantitysellingcodeValues.Interaefrazionaria));
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.pricingmethodcode, new OptionSetValue((int)productpricelevel.pricingmethodcodeValues.Importoforfettario));
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.amount, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : new Money(0));
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.res_origine, new OptionSetValue((int)productpricelevel.res_origineValues.ERP));
