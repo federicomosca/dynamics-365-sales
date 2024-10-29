@@ -30,6 +30,8 @@ RSMNG.TAUMEDIKA.DataModel.productpricelevel = {
 	productpricelevelid: "productpricelevelid",
 	///Quantità minima di vendita
 	quantitysellingcode: "quantitysellingcode",
+	///Origine
+	res_origine: "res_origine",
 	///Valore di arrotondamento
 	roundingoptionamount: "roundingoptionamount",
 	///Valore di arrotondamento (Base)
@@ -64,6 +66,12 @@ RSMNG.TAUMEDIKA.DataModel.productpricelevel = {
 		Intera: 2,
 		Interaefrazionaria: 3,
 		Nondefinita: 1
+	},
+
+	/// Values for field Origine
+	res_origineValues: {
+		Dynamics: 100000000,
+		ERP: 100000001
 	},
 
 	/// Values for field Opzione di arrotondamento

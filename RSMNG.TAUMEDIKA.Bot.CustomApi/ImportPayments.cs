@@ -110,7 +110,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             field.position = rows[configuration.header_line].IndexOf(field.name);
                             if (field.name == "Saldato")
                             {
-                                fieldFilterPosition= field.position;
+                                fieldFilterPosition = field.position;
                             }
                         }
 
@@ -284,13 +284,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             Entity ePaymentTerm = null;
                             if (!string.IsNullOrEmpty(sPaymentTerm))
                             {
-                                ePaymentTerm = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_paymentterm.res_name) == sPaymentTerm);
+                                ePaymentTerm = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_paymentterm.res_name).ToLower() == sPaymentTerm.ToLower());
                                 if (ePaymentTerm == null)
                                 {
                                     ePaymentTerm = new Entity(res_paymentterm.logicalName);
                                     ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
                                     Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
                                     ePaymentTerm.Id = ePaymentTermId;
+                                    lPaymentTerm.Add(ePaymentTerm);
                                 }
                             }
 
@@ -307,6 +308,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     eBankDetails.Attributes.Add(res_bankdetails.res_name, sBankDetails);
                                     Guid eBankDetailsId = crmServiceProvider.Service.Create(eBankDetails);
                                     eBankDetails.Id = eBankDetailsId;
+                                    lBankDetails.Add(eBankDetails);
                                 }
                             }
 
@@ -323,6 +325,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     ePaymentMethods.Attributes.Add(res_paymentmethod.res_nome, sPaymentMethods);
                                     Guid ePaymentMethodsId = crmServiceProvider.Service.Create(ePaymentMethods);
                                     ePaymentMethods.Id = ePaymentMethodsId;
+                                    lPaymentMethods.Add(ePaymentMethods);
                                 }
                             }
 
@@ -358,6 +361,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             {
                                 CodCliente = sCodCliente,
                                 Cliente = eCliente != null ? new Shared.PaymentMethod.LookUp() { Entity = eCliente.LogicalName, Id = eCliente.Id, Text = eCliente.GetAttributeValue<string>(account.name) } : null,
+                                Soggetto = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Soggetto)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Soggetto)).position] : null,
                                 Data = date != null ? date?.ToString("yyyy-MM-dd") : null,
                                 DataScadenza = expirationDate != null ? expirationDate?.ToString("yyyy-MM-dd") : null,
                                 NProtDoc = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.NProtDoc)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.NProtDoc)).position] : null,
@@ -370,7 +374,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 Agente = eAgente != null ? new Shared.PaymentMethod.LookUp() { Entity = eAgente.LogicalName, Id = eAgente.Id, Text = eAgente.GetAttributeValue<string>(systemuser.fullname) } : null,
                                 Commento = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Commento)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Commento)).position] : null,
                                 Importo = amount,
-                                Saldato=false,
+                                Saldato = false,
                                 ModPagamento = ePaymentMethods != null ? new Shared.PaymentMethod.LookUp() { Entity = ePaymentMethods.LogicalName, Id = ePaymentMethods.Id, Text = ePaymentMethods.GetAttributeValue<string>(res_paymentmethod.res_nome) } : null,
                                 Risorsa = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)).position] : null,
                                 RifPagamento = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.RifPagamento)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.RifPagamento)).position] : null,

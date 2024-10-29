@@ -68,21 +68,16 @@ if (typeof (RSMNG.TAUMEDIKA.SYSTEMUSER) == "undefined") {
 
         const isAgente = campoAgente.getAttribute().getValue() == 1;
 
-        if (isAgente) {
-            campoCodiceAgente.setVisible(true);
-            campoCodiceAgente.setDisabled(false);
-            campoCodiceAgente.getAttribute().setRequiredLevel("required");
+        campoCodiceAgente.setVisible(isAgente);
+        campoCodiceAgente.setDisabled(!isAgente);
+        campoCodiceAgente.getAttribute().setRequiredLevel(isAgente ? "required" : "none");
 
-            campoPercentualeCommissione.setVisible(true);
-            campoPercentualeCommissione.setDisabled(false);
-            campoPercentualeCommissione.getAttribute().setRequiredLevel("required");
-        } else {
-            campoCodiceAgente.setDisabled(true);
-            campoCodiceAgente.getAttribute().setRequiredLevel("none");
+        campoPercentualeCommissione.setVisible(isAgente);
+        campoPercentualeCommissione.setDisabled(!isAgente);
+        campoPercentualeCommissione.getAttribute().setRequiredLevel(isAgente ? "required" : "none");
+
+        if (!isAgente) {
             campoCodiceAgente.getAttribute().setValue(null);
-
-            campoPercentualeCommissione.setDisabled(true);
-            campoPercentualeCommissione.getAttribute().setRequiredLevel("none");
             campoPercentualeCommissione.getAttribute().setValue(null);
         }
     }

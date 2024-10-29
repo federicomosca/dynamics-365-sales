@@ -256,25 +256,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     #region Creo/Aggiorno la vece di listino corrispondente al prodotto
                                     if (enProductUpt != null)
                                     {
-                                        KeyAttributeCollection idxProductPriceLevel = new KeyAttributeCollection
-                                        {
-                                            { productpricelevel.pricelevelid, erPriceLevelERP },
-                                            { productpricelevel.productid, enProductUpt.ToEntityReference() }
-                                        };
-                                        Entity enProductPriceLevel = new Entity(productpricelevel.logicalName, idxProductPriceLevel);
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.pricelevelid, erPriceLevelERP);
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.productid, enProductUpt.ToEntityReference());
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.uomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.quantitysellingcode, new OptionSetValue((int)productpricelevel.quantitysellingcodeValues.Intera));
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.pricingmethodcode, new OptionSetValue((int)productpricelevel.pricingmethodcodeValues.Importoforfettario));
-                                        enProductPriceLevel.Attributes.Add(productpricelevel.amount, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : new Money(0));
+                                        Entity enProductPriceLevel = Shared.ProductPriceLevel.Utility.GetProductPriceLevel(crmServiceProvider.Service, enProductUpt.Id, erPriceLevelERP.Id, (int)productpricelevel.res_origineValues.ERP);
+
+                                        Entity enProductPriceLevelUpt = new Entity(productpricelevel.logicalName);
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.pricelevelid, erPriceLevelERP);
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.productid, enProductUpt.ToEntityReference());
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.uomid, new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id));
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.quantitysellingcode, new OptionSetValue((int)productpricelevel.quantitysellingcodeValues.Intera));
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.pricingmethodcode, new OptionSetValue((int)productpricelevel.pricingmethodcodeValues.Importoforfettario));
+                                        enProductPriceLevelUpt.Attributes.Add(productpricelevel.amount, importProductDanea.PrezzoDiListino != null ? new Money((decimal)importProductDanea.PrezzoDiListino) : new Money(0));
                                         
-                                        //Effettuo l'upsert della voce di listino
-                                        UpsertRequest requestProductPriceLevel = new UpsertRequest()
+                                        if (enProductPriceLevel == null)
                                         {
-                                            Target = enProductPriceLevel
-                                        };
-                                        UpsertResponse responseProductPriceLevel = (UpsertResponse)crmServiceProvider.Service.Execute(requestProductPriceLevel);
+                                            Guid enProductPriceLevelId = crmServiceProvider.Service.Create(enProductPriceLevel);
+                                            enProductPriceLevelUpt.Id = enProductPriceLevelId;
+                                        } else
+                                        {
+                                            enProductPriceLevelUpt.Id = enProductPriceLevel.Id;
+                                            crmServiceProvider.Service.Update(enProductPriceLevelUpt);
+                                        }
                                     }
                                     #endregion
                                     integrationsNumber++;
@@ -493,7 +493,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
 
                                     PluginRegion = "Creo il pagamento";
                                     Entity ePaymentScheduleUpt = new Entity(res_paymentschedule.logicalName);
-                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_subject, importPaymentDanea.Cliente != null ? importPaymentDanea.Cliente.Text : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_subject, importPaymentDanea.Soggetto);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_clientid, importPaymentDanea.Cliente != null ? new EntityReference(importPaymentDanea.Cliente.Entity, importPaymentDanea.Cliente.Id) : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_customernumber, importPaymentDanea.CodCliente);
 

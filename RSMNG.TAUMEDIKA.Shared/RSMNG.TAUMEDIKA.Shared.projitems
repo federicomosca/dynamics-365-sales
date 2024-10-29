@@ -55,6 +55,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PaymentSchedule\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaymentTerm\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PriceLevel\Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProductPriceLevel\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Product\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)QuoteDetail\Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Quote\Utility.cs" />

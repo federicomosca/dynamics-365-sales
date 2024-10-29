@@ -123,18 +123,18 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
         }
         public static Entity GetProduct(IOrganizationService service, string productNumber)
         {
-            Entity product = null;
+            Entity enProduct = null;
             var fetchData = new
             {
                 productnumber = productNumber
             };
             var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
             <fetch>
-              <entity name=""product"">
-                <attribute name=""productid"" />
-                <attribute name=""name"" />
+              <entity name=""{product.logicalName}"">
+                <attribute name=""{product.productid}"" />
+                <attribute name=""{product.name}"" />
                 <filter>
-                  <condition attribute=""productnumber"" operator=""eq"" value=""{fetchData.productnumber/*aaa*/}"" />
+                  <condition attribute=""{product.productnumber}"" operator=""eq"" value=""{fetchData.productnumber}"" />
                 </filter>
               </entity>
             </fetch>";
@@ -142,9 +142,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Product
             EntityCollection result = service.RetrieveMultiple(new FetchExpression(fetchXml));
             if (result?.Entities?.Count > 0)
             {
-                product = result.Entities[0];
+                enProduct = result.Entities[0];
             }
-            return product;
+            return enProduct;
         }
     }
 
