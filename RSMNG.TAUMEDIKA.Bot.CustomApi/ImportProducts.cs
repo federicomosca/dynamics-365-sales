@@ -171,6 +171,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             ePriceLevel.Attributes.Add(pricelevel.name, "Listino Danea");
                             ePriceLevel.Attributes.Add(pricelevel.res_iserpimport, true);
                             ePriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, RSMNG.Plugins.TransactionCurrency.GetDefaultCurrency(crmServiceProvider.Service));
+                            ePriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, new OptionSetValueCollection() { new OptionSetValue((int)pricelevel.res_scopetypecodesValues.Agenti) });
                             crmServiceProvider.Service.Create(ePriceLevel);
                             lPriceLevel.Add(ePriceLevel);
                         }

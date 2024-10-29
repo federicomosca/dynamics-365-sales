@@ -823,22 +823,22 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleWillCallRelatedFields(executionContext);
     };
     //---------------------------------------------------
-    _self.getQuoteDetailsCount = formContext => {
+    _self.getQuoteDetailsCount = gridContext => {
+        //const subgrid = formContext.getControl("quotedetailsGrid");
         return new Promise((resolve, reject) => {
-            const subgrid = formContext.getControl("quotedetailsGrid");
 
-            if (!subgrid) {
+            if (!gridContext) {
                 reject("Subgrid not found");
                 return;
             }
 
-            subgrid.addOnLoad(() => {
-                const grid = subgrid.getGrid();
-                if (grid) {
-                    const count = grid.getTotalRecordCount();
+            gridContext.addOnLoad(() => {
+                const subgrid = gridContext.getGrid();
+                if (subgrid) {
+                    const count = subgrid.getTotalRecordCount();
                     resolve(count);  // Restituisce il conteggio dei record quando disponibile
                 } else {
-                    reject("Grid not loaded.");
+                    reject("subgrid not loaded.");
                 }
             });
         });
@@ -908,8 +908,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
 
         //------< subgrid >------//
-        const subgrid = formContext.getControl('quotedetailsGrid').getGrid() ?? null;
-        const quoteDetailsCount = subgrid ? await _self.getQuoteDetailsCount(subgrid) : null;
+        const gridContext = formContext.getControl('quotedetailsGrid') ?? null;
+        const quoteDetailsCount = gridContext ? await _self.getQuoteDetailsCount(gridContext) : null;
         if (quoteDetailsCount === 0) {
 
             const notification = {
