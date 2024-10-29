@@ -56,7 +56,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
             EntityReference erCliente;
             string codiceCliente;
             string nomeCliente = string.Empty;
-            string data;
+            DateTime data;
             decimal totaleDocumento;
 
             string nome;
@@ -85,7 +85,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
 
             //--------------------< data >----------------------//
             data = target.Contains(res_document.res_date) ?
-                target.GetAttributeValue<string>(res_document.res_date) : preImage.GetAttributeValue<string>(res_document.res_date);
+                target.GetAttributeValue<DateTime>(res_document.res_date) : preImage.GetAttributeValue<DateTime>(res_document.res_date);
 
             //--------------------< totale documento >----------------------//
             totaleDocumento = target.Contains(res_document.res_documenttotal) ?
