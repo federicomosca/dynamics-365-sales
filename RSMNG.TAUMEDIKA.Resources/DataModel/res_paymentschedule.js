@@ -12,8 +12,8 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_amount: "res_amount",
 	///Importo (base)
 	res_amount_base: "res_amount_base",
-	///Coordinata Bancaria
-	res_bankdetailsid: "res_bankdetailsid",
+	///Coordinata bancaria
+	res_bankdetails: "res_bankdetails",
 	///Cliente
 	res_clientid: "res_clientid",
 	///Codice cliente
@@ -36,9 +36,9 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	res_expirationdate: "res_expirationdate",
 	///Nome
 	res_nome: "res_nome",
-	///Modalità pagamento
+	///Modalità pagamento (testo)
 	res_paymentmethod: "res_paymentmethod",
-	///Modalità pagamento documento
+	///Modalità pagamento
 	res_paymentmethodid: "res_paymentmethodid",
 	///Rif. Pagamento
 	res_paymentreference: "res_paymentreference",
@@ -51,7 +51,7 @@ RSMNG.TAUMEDIKA.DataModel.res_paymentschedule = {
 	///Descrizione sollecito
 	res_reminderdescription: "res_reminderdescription",
 	///Risorsa
-	res_resource: "res_resource",
+	res_resourceid: "res_resourceid",
 	///Soggetto
 	res_subject: "res_subject",
 	///Valuta

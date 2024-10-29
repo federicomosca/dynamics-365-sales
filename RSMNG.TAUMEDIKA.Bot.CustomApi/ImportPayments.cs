@@ -143,6 +143,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                           <entity name=""{account.logicalName}"">
                             <attribute name=""{account.name}"" />
                             <attribute name=""{account.accountid}"" />
+                            <attribute name=""{account.accountnumber}"" />
                             <filter>
                               <condition attribute=""{account.statecode}"" operator=""eq"" value=""{fetchDataA.statecode}"" />
                             </filter>
@@ -297,7 +298,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                             //Definisco le coordinate bancarie
                             PluginRegion = "Definisco le coordinate bancarie";
-                            string sBankDetails = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.CoordBancarie)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.CoordBancarie)).position] : null;
+                            string sBankDetails = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)).position] : null;
                             Entity eBankDetails = null;
                             if (!string.IsNullOrEmpty(sBankDetails))
                             {
@@ -369,14 +370,14 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 DataDocumento = documentDate != null ? documentDate?.ToString("yyyy-MM-dd") : null,
                                 ImportoDoc = documentAmount,
                                 Pagamento = ePaymentTerm != null ? new Shared.PaymentMethod.LookUp() { Entity = ePaymentTerm.LogicalName, Id = ePaymentTerm.Id, Text = ePaymentTerm.GetAttributeValue<string>(res_paymentterm.res_name) } : null,
-                                CoordBancarie = eBankDetails != null ? new Shared.PaymentMethod.LookUp() { Entity = eBankDetails.LogicalName, Id = eBankDetails.Id, Text = eBankDetails.GetAttributeValue<string>(res_bankdetails.res_name) } : null,
+                                Risorsa = eBankDetails != null ? new Shared.PaymentMethod.LookUp() { Entity = eBankDetails.LogicalName, Id = eBankDetails.Id, Text = eBankDetails.GetAttributeValue<string>(res_bankdetails.res_name) } : null,
                                 CodAgente = sCodAgente,
                                 Agente = eAgente != null ? new Shared.PaymentMethod.LookUp() { Entity = eAgente.LogicalName, Id = eAgente.Id, Text = eAgente.GetAttributeValue<string>(systemuser.fullname) } : null,
                                 Commento = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Commento)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Commento)).position] : null,
                                 Importo = amount,
                                 Saldato = false,
                                 ModPagamento = ePaymentMethods != null ? new Shared.PaymentMethod.LookUp() { Entity = ePaymentMethods.LogicalName, Id = ePaymentMethods.Id, Text = ePaymentMethods.GetAttributeValue<string>(res_paymentmethod.res_nome) } : null,
-                                Risorsa = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.Risorsa)).position] : null,
+                                CoordBancarie = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.CoordBancarie)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.CoordBancarie)).position] : null,
                                 RifPagamento = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.RifPagamento)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.RifPagamento)).position] : null,
                                 DataSollecito = reminderDate != null ? reminderDate?.ToString("yyyy-MM-dd") : null,
                                 DescrSollecito = configuration.fields.FirstOrDefault(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DescrSollecito)) != null ? row[configuration.fields.First(f => f.name_payment == nameof(Shared.PaymentMethod.ImportPaymentDanea.DescrSollecito)).position] : null

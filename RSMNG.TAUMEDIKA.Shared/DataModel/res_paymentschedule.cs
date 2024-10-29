@@ -45,12 +45,11 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_amount_base => "res_amount_base";
 
 		/// <summary>
-		/// Display Name: Coordinata Bancaria,
-		/// Type: Lookup,
-		/// Related entities: res_bankdetails,
+		/// Display Name: Coordinata bancaria,
+		/// Type: String,
 		/// Description: 
 		/// </summary>
-		public static string res_bankdetailsid => "res_bankdetailsid";
+		public static string res_bankdetails => "res_bankdetails";
 
 		/// <summary>
 		/// Display Name: Cliente,
@@ -131,14 +130,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_nome => "res_nome";
 
 		/// <summary>
-		/// Display Name: Modalità pagamento,
+		/// Display Name: Modalità pagamento (testo),
 		/// Type: String,
 		/// Description: 
 		/// </summary>
 		public static string res_paymentmethod => "res_paymentmethod";
 
 		/// <summary>
-		/// Display Name: Modalità pagamento documento,
+		/// Display Name: Modalità pagamento,
 		/// Type: Lookup,
 		/// Related entities: res_paymentmethod,
 		/// Description: 
@@ -183,10 +182,11 @@ namespace RSMNG.TAUMEDIKA.DataModel
 
 		/// <summary>
 		/// Display Name: Risorsa,
-		/// Type: String,
+		/// Type: Lookup,
+		/// Related entities: res_bankdetails,
 		/// Description: 
 		/// </summary>
-		public static string res_resource => "res_resource";
+		public static string res_resourceid => "res_resourceid";
 
 		/// <summary>
 		/// Display Name: Soggetto,

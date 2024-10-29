@@ -522,7 +522,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.ownerid, new EntityReference(importPaymentDanea.Agente.Entity, importPaymentDanea.Agente.Id));
                                     }
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_amount, importPaymentDanea.Importo != null ? new Money((decimal)importPaymentDanea.Importo) : null);
-                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_resource, importPaymentDanea.Risorsa);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_resourceid, importPaymentDanea.Risorsa != null ? new EntityReference(importPaymentDanea.Risorsa.Entity, importPaymentDanea.Risorsa.Id) : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentmethod, importPaymentDanea.ModPagamento != null ? importPaymentDanea.ModPagamento.Text : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentreference, importPaymentDanea.RifPagamento);
                                     if (importPaymentDanea.DataSollecito != null)
@@ -547,7 +547,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentcomment, importPaymentDanea.Commento);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_documentamount, importPaymentDanea.ImportoDoc != null ? new Money((decimal)importPaymentDanea.ImportoDoc) : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymentmethodid, importPaymentDanea.ModPagamento != null ? new EntityReference(importPaymentDanea.ModPagamento.Entity, importPaymentDanea.ModPagamento.Id) : null);
-                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_bankdetailsid, importPaymentDanea.CoordBancarie != null ? new EntityReference(importPaymentDanea.CoordBancarie.Entity, importPaymentDanea.CoordBancarie.Id) : null);
+                                    ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_bankdetails, importPaymentDanea.CoordBancarie);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_paymenttermid, importPaymentDanea.Pagamento != null ? new EntityReference(importPaymentDanea.Pagamento.Entity, importPaymentDanea.Pagamento.Id) : null);
                                     ePaymentScheduleUpt.Attributes.Add(res_paymentschedule.res_nome, $"{importPaymentDanea.CodCliente}{(importPaymentDanea.Cliente != null ? $" - {importPaymentDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importPaymentDanea.Importo).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
 

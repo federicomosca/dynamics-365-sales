@@ -22,14 +22,14 @@ namespace RSMNG.TAUMEDIKA.Shared.PaymentMethod
         [DataMember] public string DataDocumento { get; set; }
         [DataMember] public decimal? ImportoDoc { get; set; }
         [DataMember] public LookUp Pagamento { get; set; }
-        [DataMember] public LookUp CoordBancarie { get; set; }
+        [DataMember] public string CoordBancarie { get; set; }
         [DataMember] public string CodAgente { get; set; }
         [DataMember] public LookUp Agente { get; set; }
         [DataMember] public string Commento { get; set; }
         [DataMember] public decimal? Importo { get; set; }
         [DataMember] public bool Saldato { get; set; }
         [DataMember] public LookUp ModPagamento { get; set; }
-        [DataMember] public string Risorsa { get; set; }
+        [DataMember] public LookUp Risorsa { get; set; }
         [DataMember] public string RifPagamento { get; set; }
         [DataMember] public string DataSollecito { get; set; }
         [DataMember] public string DescrSollecito { get; set; }
