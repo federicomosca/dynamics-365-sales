@@ -50,6 +50,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
             #region Valorizzo il campo Nome
             PluginRegion = "Valorizzo il campo Nome";
 
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PluginRegion: {PluginRegion}"); }
+
             //campi per valorizzazione del nome
             EntityReference erCliente;
             string codiceCliente;
@@ -91,6 +93,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
 
             //--------------------< valorizzo il campo nome >----------------------//
             nome = $"{codiceCliente} - {nomeCliente} - {data} - {totaleDocumento}";
+
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
+
             target[res_document.res_nome] = nome;
             #endregion
 
