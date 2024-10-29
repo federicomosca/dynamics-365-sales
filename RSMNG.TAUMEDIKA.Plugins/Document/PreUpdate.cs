@@ -51,7 +51,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
             PluginRegion = "Valorizzo il campo Nome";
 
             //campi per valorizzazione del nome
-            EntityReference erCliente = null;
+            EntityReference erCliente;
             string codiceCliente;
             string nomeCliente = string.Empty;
             string data;
