@@ -48,7 +48,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.PaymentSchedule
                     cliente = enClient.GetAttributeValue<string>(erClient.LogicalName == contact.logicalName ? contact.fullname : account.name);
                 }
 
-                string data = postImage.ContainsAttributeNotNull(res_paymentschedule.res_date) ? postImage.GetAttributeValue<DateTime>(res_paymentschedule.res_date).ToString("gg/MM/yyyy") : null;
+                string data = postImage.ContainsAttributeNotNull(res_paymentschedule.res_date) ? postImage.GetAttributeValue<DateTime>(res_paymentschedule.res_date).ToString("dd/MM/yyyy") : null;
                 string codiceCliente = postImage.GetAttributeValue<string>(res_paymentschedule.res_customernumber);
                 string importo = postImage.ContainsAttributeNotNull(res_paymentschedule.res_amount) ? (postImage.GetAttributeValue<Money>(res_paymentschedule.res_amount).Value).ToString("F2") : "0";
 
