@@ -259,8 +259,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         KeyAttributeCollection idxProductPriceLevel = new KeyAttributeCollection
                                         {
                                             { productpricelevel.pricelevelid, erPriceLevelERP },
-                                            { productpricelevel.productid, enProductUpt.ToEntityReference() },
-                                            { productpricelevel.uomid,new EntityReference(importProductDanea.UnitaPredefinita.Entity, importProductDanea.UnitaPredefinita.Id)}
+                                            { productpricelevel.productid, enProductUpt.ToEntityReference() }
                                         };
                                         Entity enProductPriceLevel = new Entity(productpricelevel.logicalName, idxProductPriceLevel);
                                         enProductPriceLevel.Attributes.Add(productpricelevel.pricelevelid, erPriceLevelERP);
