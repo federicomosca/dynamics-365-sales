@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,53 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
                     target.AddWithRemove(res_document.res_calculatedcommission, new Money(calculatedCommission));
                 }
             }
+            #endregion
+
+            #region Valorizzo il campo Nome
+            PluginRegion = "Valorizzo il campo Nome";
+
+            //campi per valorizzazione del nome
+            EntityReference erCliente = null;
+            string codiceCliente;
+            string nomeCliente = string.Empty;
+            string data;
+            decimal totaleDocumento;
+
+            string nome;
+
+            //--------------------< codice cliente >----------------------//
+            codiceCliente = target.Contains(res_document.res_customernumber) ?
+                target.GetAttributeValue<string>(res_document.res_customernumber) : preImage.GetAttributeValue<string>(res_document.res_customernumber);
+
+            //--------------------< nome cliente >----------------------//
+            erCliente = target.Contains(res_document.res_customerid) ?
+                target.GetAttributeValue<EntityReference>(res_document.res_customerid) : preImage.GetAttributeValue<EntityReference>(res_document.res_customerid);
+
+            if (erCliente != null)
+            {
+                if (erCliente.LogicalName == contact.logicalName)
+                {
+                    Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.contact.fullname));
+                    nomeCliente = cliente.GetAttributeValue<string>(contact.fullname) ?? string.Empty;
+                }
+                if (erCliente.LogicalName == DataModel.account.logicalName)
+                {
+                    Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.account.name));
+                    nomeCliente = cliente.GetAttributeValue<string>(account.name) ?? string.Empty;
+                }
+            }
+
+            //--------------------< data >----------------------//
+            data = target.Contains(res_document.res_date) ?
+                target.GetAttributeValue<string>(res_document.res_date) : preImage.GetAttributeValue<string>(res_document.res_date);
+
+            //--------------------< totale documento >----------------------//
+            totaleDocumento = target.Contains(res_document.res_documenttotal) ?
+                target.GetAttributeValue<Money>(res_document.res_documenttotal).Value : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value;
+
+            //--------------------< valorizzo il campo nome >----------------------//
+            nome = $"{codiceCliente} - {nomeCliente} - {data} - {totaleDocumento}";
+            target[res_document.res_nome] = nome;
             #endregion
 
         }
