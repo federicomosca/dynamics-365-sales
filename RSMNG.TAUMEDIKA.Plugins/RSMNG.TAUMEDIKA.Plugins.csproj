@@ -126,9 +126,9 @@
     <Compile Include="Contact\PreCreate.cs" />
     <Compile Include="Contact\PreUpdate.cs" />
     <Compile Include="DataIntegration\MultipleDistribution.cs" />
-    <Compile Include="DataIntegration\PreUpdate.cs" />
     <Compile Include="Document\PostUpdate.cs" />
     <Compile Include="Document\PreUpdate.cs" />
+    <Compile Include="PaymentSchedule\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreUpdate.cs" />
     <Compile Include="PriceLevel\PreCreate.cs" />
     <Compile Include="Product\PreCreate.cs" />
@@ -158,9 +158,7 @@
     <None Include="packages.config" />
     <None Include="RSMNG.TAUMEDIKA.Plugins.snk" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PaymentSchedule\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\RSMNG\RSMNG.CORE\RSMNG.Plugins\RSMNG.Plugins.projitems" Label="Shared" />
   <Import Project="..\RSMNG.TAUMEDIKA.Shared\RSMNG.TAUMEDIKA.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
