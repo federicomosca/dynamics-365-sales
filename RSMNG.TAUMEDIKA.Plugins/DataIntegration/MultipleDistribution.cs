@@ -268,7 +268,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                         enProductPriceLevelUpt.Attributes.Add(productpricelevel.res_origine, new OptionSetValue((int)productpricelevel.res_origineValues.ERP));
                                         if (enProductPriceLevel == null)
                                         {
-                                            Guid enProductPriceLevelId = crmServiceProvider.Service.Create(enProductPriceLevel);
+                                            Guid enProductPriceLevelId = crmServiceProvider.Service.Create(enProductPriceLevelUpt);
                                             enProductPriceLevelUpt.Id = enProductPriceLevelId;
                                         } else
                                         {
