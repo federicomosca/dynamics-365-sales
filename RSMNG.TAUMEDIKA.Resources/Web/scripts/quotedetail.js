@@ -762,6 +762,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
 
         var formContext = executionContext.getFormContext();
 
+        //campo unità
+        formContext.getControl(_self.formModel.fields.uomid).setDisabled(false);
 
         let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercent1).getValue() ?? 0;
         let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercent2).getValue() ?? 0;
