@@ -103,8 +103,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
 
                 nome = !string.IsNullOrEmpty(codiceCliente) ? codiceCliente + " - " : null;
                 nome += !string.IsNullOrEmpty(nomeCliente) ? nomeCliente : null;
-                nome += !string.IsNullOrEmpty(data.ToString("dd/MM/yyyy")) ? " - " + data : null;
-                nome += !string.IsNullOrEmpty(totaleDocumento.ToString("F2")) ? " - " + totaleDocumento : null;
+                nome += data != null ? " - " + data.ToString("dd/MM/yyyy") : null;
+                nome += totaleDocumento != 0 ? " - " + totaleDocumento.ToString("F2") : null;
 
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
 
