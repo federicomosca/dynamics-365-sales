@@ -61,42 +61,49 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
 
             string nome;
 
-            //--------------------< codice cliente >----------------------//
-            codiceCliente = target.Contains(res_document.res_customernumber) ?
+            if (target.Contains(res_document.res_customerid) ||
+                target.Contains(res_document.res_customernumber) ||
+                target.Contains(res_document.res_date) ||
+                target.Contains(res_document.res_documenttotal))
+            {
+
+                //--------------------< codice cliente >----------------------//
+                codiceCliente = target.Contains(res_document.res_customernumber) ?
                 target.GetAttributeValue<string>(res_document.res_customernumber) : preImage.GetAttributeValue<string>(res_document.res_customernumber);
 
-            //--------------------< nome cliente >----------------------//
-            erCliente = target.Contains(res_document.res_customerid) ?
-                target.GetAttributeValue<EntityReference>(res_document.res_customerid) : preImage.GetAttributeValue<EntityReference>(res_document.res_customerid);
+                //--------------------< nome cliente >----------------------//
+                erCliente = target.Contains(res_document.res_customerid) ?
+                    target.GetAttributeValue<EntityReference>(res_document.res_customerid) : preImage.GetAttributeValue<EntityReference>(res_document.res_customerid);
 
-            if (erCliente != null)
-            {
-                if (erCliente.LogicalName == contact.logicalName)
+                if (erCliente != null)
                 {
-                    Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.contact.fullname));
-                    nomeCliente = cliente.GetAttributeValue<string>(contact.fullname) ?? string.Empty;
+                    if (erCliente.LogicalName == contact.logicalName)
+                    {
+                        Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.contact.fullname));
+                        nomeCliente = cliente.GetAttributeValue<string>(contact.fullname) ?? string.Empty;
+                    }
+                    if (erCliente.LogicalName == DataModel.account.logicalName)
+                    {
+                        Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.account.name));
+                        nomeCliente = cliente.GetAttributeValue<string>(account.name) ?? string.Empty;
+                    }
                 }
-                if (erCliente.LogicalName == DataModel.account.logicalName)
-                {
-                    Entity cliente = crmServiceProvider.Service.Retrieve(erCliente.LogicalName, erCliente.Id, new ColumnSet(DataModel.account.name));
-                    nomeCliente = cliente.GetAttributeValue<string>(account.name) ?? string.Empty;
-                }
+
+                //--------------------< data >----------------------//
+                data = target.Contains(res_document.res_date) ?
+                    target.GetAttributeValue<DateTime>(res_document.res_date) : preImage.GetAttributeValue<DateTime>(res_document.res_date);
+
+                //--------------------< totale documento >----------------------//
+                totaleDocumento = target.Contains(res_document.res_documenttotal) ?
+                    target.GetAttributeValue<Money>(res_document.res_documenttotal).Value : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value;
+
+                //--------------------< valorizzo il campo nome >----------------------//
+                nome = $"{codiceCliente} - {nomeCliente} - {data.ToString("dd/MM/yyyy")} - {totaleDocumento}";
+
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
+
+                target[res_document.res_nome] = nome;
             }
-
-            //--------------------< data >----------------------//
-            data = target.Contains(res_document.res_date) ?
-                target.GetAttributeValue<DateTime>(res_document.res_date) : preImage.GetAttributeValue<DateTime>(res_document.res_date);
-
-            //--------------------< totale documento >----------------------//
-            totaleDocumento = target.Contains(res_document.res_documenttotal) ?
-                target.GetAttributeValue<Money>(res_document.res_documenttotal).Value : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value;
-
-            //--------------------< valorizzo il campo nome >----------------------//
-            nome = $"{codiceCliente} - {nomeCliente} - {data} - {totaleDocumento}";
-
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
-
-            target[res_document.res_nome] = nome;
             #endregion
 
         }
