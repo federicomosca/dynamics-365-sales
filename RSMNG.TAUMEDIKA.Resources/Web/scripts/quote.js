@@ -863,8 +863,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             entityId: formContext.data.entity.getId()
         };
 
-        if (false) //disattivo il refresh perché viene effettuato in loop
-            Xrm.Navigation.openForm(entityOptions);
+        Xrm.Navigation.openForm(entityOptions);
     };
     //---------------------------------------------------
     /*
