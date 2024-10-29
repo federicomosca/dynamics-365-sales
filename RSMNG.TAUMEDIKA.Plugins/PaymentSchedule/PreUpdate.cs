@@ -52,8 +52,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.PaymentSchedule
                 string codiceCliente = postImage.GetAttributeValue<string>(res_paymentschedule.res_customernumber);
                 string importo = postImage.ContainsAttributeNotNull(res_paymentschedule.res_amount) ? (postImage.GetAttributeValue<Money>(res_paymentschedule.res_amount).Value).ToString("F2") : "0";
 
-                nome = codiceCliente;
-                nome += !string.IsNullOrEmpty(cliente) ? " - " + cliente : null;
+                nome = !string.IsNullOrEmpty(codiceCliente) ? codiceCliente + " - " : null;
+                nome += !string.IsNullOrEmpty(cliente) ? cliente : null;
                 nome += !string.IsNullOrEmpty(data) ? " - " + data : null;
                 nome += !string.IsNullOrEmpty(importo) ? " - " + importo : null;
 

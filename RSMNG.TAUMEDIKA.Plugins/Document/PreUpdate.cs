@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using RSMNG.Plugins.HTTP;
 using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
@@ -98,7 +99,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.Document
                     target.GetAttributeValue<Money>(res_document.res_documenttotal).Value : preImage.GetAttributeValue<Money>(res_document.res_documenttotal).Value;
 
                 //--------------------< valorizzo il campo nome >----------------------//
-                nome = $"{codiceCliente} - {nomeCliente} - {data.ToString("dd/MM/yyyy")} - {totaleDocumento}";
+                //nome = $"{codiceCliente} - {nomeCliente} - {data.ToString("dd/MM/yyyy")} - {totaleDocumento.ToString("F2")}";
+
+                nome = !string.IsNullOrEmpty(codiceCliente) ? codiceCliente + " - " : null;
+                nome += !string.IsNullOrEmpty(nomeCliente) ? nomeCliente : null;
+                nome += !string.IsNullOrEmpty(data.ToString("dd/MM/yyyy")) ? " - " + data : null;
+                nome += !string.IsNullOrEmpty(totaleDocumento.ToString("F2")) ? " - " + totaleDocumento : null;
 
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {nome}"); }
 
