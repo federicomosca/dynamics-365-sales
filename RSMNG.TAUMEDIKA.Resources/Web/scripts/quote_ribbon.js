@@ -57,7 +57,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     };
     //--------------------------------------------------
     _self.isInvoiceRequested = formContext => {
-        return formContext.getAttribute("res_isinvoicerequested") ? true : false;
+        return formContext.getAttribute("res_isinvoicerequested") == 1 ? true : false;
     }
     //--------------------------------------------------
     _self.hasQuoteDetails = formContext => {
