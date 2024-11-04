@@ -47,32 +47,31 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal importoTotale = 0;
 
 
-            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || 
-                target.Contains(quotedetail.quantity) || 
+            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ||
+                target.Contains(quotedetail.quantity) ||
                 target.Contains(quotedetail.manualdiscountamount) ||
                 target.Contains(quotedetail.priceperunit)
                 )
             {
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
 
-                codiceIva = postImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
+                codiceIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
 
-                Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+                Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
 
-                aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
+                aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
                 scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                
                 totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                 totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                 importoTotale = totaleImponibile + totaleIva;
 
-              
+
             }
             else
             {
-                if(PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA non è stato selezionato dall'utente"); }
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA non è stato selezionato dall'utente"); }
                 //se il codice iva non è stato selezionato dall'utente, lo recupero dal prodotto correlato
                 postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
 
@@ -115,10 +114,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
-                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;                        
+                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
 
-                       
+
                     }
                 }
             }
