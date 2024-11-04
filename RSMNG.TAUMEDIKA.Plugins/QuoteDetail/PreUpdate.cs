@@ -26,17 +26,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            //traccio quali attributi vengono modificati alla "creazione" della riga
-            foreach (var attribute in target.Attributes)
-            {
-                string column = attribute.Key;
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(column.ToString());
-            }
-
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"I campi obbligatori sono stati verificati"); }
             #endregion
 
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
@@ -59,6 +53,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target.Contains(quotedetail.priceperunit)
                 )
             {
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
+
                 codiceIva = postImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
 
                 Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
@@ -76,6 +72,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             }
             else
             {
+                if(PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA non è stato selezionato dall'utente"); }
                 //se il codice iva non è stato selezionato dall'utente, lo recupero dal prodotto correlato
                 postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
 
