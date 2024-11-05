@@ -880,6 +880,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.onLoadCreateForm = async function (executionContext) {
 
         _self.onChangeSpesaAccessoria(executionContext, false);
+        _self.setPriceLevelLookup(executionContext);
 
         _self.handleWillCallRelatedFields(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
@@ -974,7 +975,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         //Init function
         _self.setDate(executionContext);
-        _self.setPriceLevelLookup(executionContext);
 
         _self.setBankVisibility(executionContext);
         _self.checkPotentialCustomerData(executionContext);
