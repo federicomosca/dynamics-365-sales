@@ -26,6 +26,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+            if (PluginActiveTrace)
+            {
+                var parentContext = crmServiceProvider.PluginContext.ParentContext ?? null;
+                if (parentContext != null) crmServiceProvider.TracingService.Trace($"{parentContext.MessageName}");
+
+                var parentContext2 = parentContext.ParentContext ?? null;
+                if (parentContext2 != null) crmServiceProvider.TracingService.Trace($"{parentContext2.MessageName}");
+            }
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
@@ -129,20 +138,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #endregion
 
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
-            PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
+            //PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
-            bool isFromCanvas = postImage.ContainsAttributeNotNull("isfromcanvas") && postImage.GetAttributeValue<bool>("isfromcanvas");
+            //bool isFromCanvas = postImage.ContainsAttributeNotNull("isfromcanvas") && postImage.GetAttributeValue<bool>("isfromcanvas");
 
-            if (isFromCanvas)
-            {
-                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
-                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+            //if (isFromCanvas)
+            //{
+            //    decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
+            //    decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
+            //    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
 
-                target[quotedetail.priceperunit] = preImagePriceperunit;
-                target[quotedetail.baseamount] = preImageBaseamount;
-            }
+            //    target[quotedetail.priceperunit] = preImagePriceperunit;
+            //    target[quotedetail.baseamount] = preImageBaseamount;
+            //}
             #endregion
         }
     }
