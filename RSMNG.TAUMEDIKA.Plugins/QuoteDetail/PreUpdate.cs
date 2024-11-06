@@ -26,6 +26,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {quotedetail.quotedetailname}"); }
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {quotedetail.priceperunit}"); }
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {quotedetail.baseamount}"); }
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 

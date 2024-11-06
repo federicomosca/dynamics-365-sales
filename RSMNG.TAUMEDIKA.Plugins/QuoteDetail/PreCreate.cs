@@ -22,6 +22,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            if(PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {quotedetail.quotedetailname}"); }
+            if(PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {quotedetail.priceperunit}"); }
+            if(PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {quotedetail.baseamount}"); }
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
