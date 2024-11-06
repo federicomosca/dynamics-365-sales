@@ -27,12 +27,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity postImage = target.GetPostImage(preImage);
 
             string name = target.ContainsAttributeNotNull(quotedetail.quotedetailname) ? target.GetAttributeValue<string>(quotedetail.quotedetailname) : string.Empty;
-            string priceperunit = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.quotedetailname).Value.ToString() : string.Empty;
-            string baseamount = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value.ToString() : string.Empty;
+            decimal priceperunit = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.priceperunit).Value: 0;
+            decimal baseamount = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value: 0;
+
+            decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value: 0;
+            decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value: 0;
 
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {name}"); }
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {priceperunit}"); }
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {baseamount}"); }
+
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}"); }
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Importo: {preImageBaseamount}"); }
 
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
