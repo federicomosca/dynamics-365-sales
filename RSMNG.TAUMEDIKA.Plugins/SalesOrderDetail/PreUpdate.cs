@@ -28,14 +28,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            if (PluginActiveTrace)
-            {
-                foreach (var attribute in target.Attributes)
-                {
-                    crmServiceProvider.TracingService.Trace($"Key: {attribute.Key}, Value: {attribute.Value}");
-                }
-            }
-
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
 
@@ -58,9 +50,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             {
                 codiceIva = postImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid);
 
-                Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+                Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
 
-                aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
+                aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
                 scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 

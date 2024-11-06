@@ -287,7 +287,28 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         }
     };
     //-----------------------------------------------------------
+    _self.MOBILEAPP = {
+        canExecute() { return true; },
+        execute() {
+            var recordId = Xrm.Page.data.entity.getId(); // This retrieves the ID of the current record
+            const source = Xrm.Page.data.entity.getEntityName()
+            recordId = recordId.replace('{', '').replace('}', ''); // Clean up the ID format
 
+            function isMobileDevice() {
+                return /Mobi|Android|iPhone/i.test(navigator.userAgent);
+            }
+
+            const appUrlNoParams = `https://apps.powerapps.com/play/e/8aa0b540-0ece-e249-8605-db86ab3e9348/a/e10b918a-2048-4e8b-8791-6b39a2b9b6ab?tenantId=6bdd137e-ff0c-4ec1-974c-8c621c7d56fa&sourcetime=1730813170370`;
+
+            const device = isMobileDevice() == false ? 'Desktop' : 'Mobile';
+
+            // Construct the Canvas app URL with the record ID as a query parameter
+            var appUrl = appUrlNoParams + `&recordId=` + recordId + `&source=` + source + `&device=` + device;
+
+            // Open the Canvas app
+            Xrm.Navigation.openUrl(appUrl, { height: 600, width: 800 });
+        }
+    };
     //-----------------------------------------------------------
 }).call(RSMNG.TAUMEDIKA.SALESORDER.RIBBON.FORM);
 

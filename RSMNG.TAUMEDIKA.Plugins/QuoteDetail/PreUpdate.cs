@@ -26,17 +26,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            //traccio quali attributi vengono modificati alla "creazione" della riga
-            foreach (var attribute in target.Attributes)
-            {
-                string column = attribute.Key;
-                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(column.ToString());
-            }
-
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"I campi obbligatori sono stati verificati"); }
             #endregion
 
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
@@ -53,29 +47,31 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal importoTotale = 0;
 
 
-            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) || 
-                target.Contains(quotedetail.quantity) || 
+            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ||
+                target.Contains(quotedetail.quantity) ||
                 target.Contains(quotedetail.manualdiscountamount) ||
                 target.Contains(quotedetail.priceperunit)
                 )
             {
-                codiceIva = postImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
 
-                Entity enCodiceIva = crmServiceProvider.Service.Retrieve("res_vatnumber", codiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+                codiceIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
 
-                aliquota = enCodiceIva.GetAttributeValue<decimal>(res_vatnumber.res_rate);
+                Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
+
+                aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
                 scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                
                 totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                 totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                 importoTotale = totaleImponibile + totaleIva;
 
-              
+
             }
             else
             {
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA non è stato selezionato dall'utente"); }
                 //se il codice iva non è stato selezionato dall'utente, lo recupero dal prodotto correlato
                 postImage.TryGetAttributeValue<EntityReference>(quotedetail.productid, out EntityReference erProduct);
 
@@ -118,10 +114,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
-                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;                        
+                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
 
-                       
+
                     }
                 }
             }
