@@ -263,6 +263,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.formModel.fields.statuscodeValues.Aggiornata_StateChiusa
     ];
 
+    _self.previousRecordCount = -1;
+
     //---------------------------------------------------
     _self.setDate = executionContext => {
         const formContext = executionContext.getFormContext();
@@ -849,7 +851,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const gridContext = formContext.getControl("quotedetailsGrid");
 
         if (!gridContext) {
-            setTimeout(() => { this.onLoadUpdateForm(executionContext); }, 500);
+            setTimeout(() => { _self.subgridEventListener(executionContext); }, 500);
             return;
         }
         gridContext.addOnLoad(_self.subgridEventListener);
@@ -857,13 +859,21 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //---------------------------------------------------
     _self.subgridEventListener = executionContext => {
         const formContext = executionContext.getFormContext();
+        var interval = setInterval(function () {
+            var subgridControl = formContext.getControl("quotedetailsGrid");
 
-        const entityOptions = {
-            entityName: formContext.data.entity.getEntityName(),
-            entityId: formContext.data.entity.getId()
-        };
+            if (subgridControl && subgridControl.getGrid().getTotalRecordCount() !== _self.previousRecordCount) {
+                _self.previousRecordCount = subgridControl.getGrid().getTotalRecordCount();
 
-        Xrm.Navigation.openForm(entityOptions);
+                // Qui esegui il refresh del modulo
+                formContext.data.refresh(false).then(function () {
+                    formContext.ui.refreshRibbon(true);
+                });
+
+                // Ferma il monitoraggio
+                clearInterval(interval);
+            }
+        }, 1000); // Esegui il controllo ogni secondo
     };
     //---------------------------------------------------
     /*
