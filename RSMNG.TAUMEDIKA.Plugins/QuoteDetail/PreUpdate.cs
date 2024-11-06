@@ -26,20 +26,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            string name = target.ContainsAttributeNotNull(quotedetail.quotedetailname) ? target.GetAttributeValue<string>(quotedetail.quotedetailname) : string.Empty;
-            decimal priceperunit = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.priceperunit).Value: 0;
-            decimal baseamount = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value: 0;
-
-            decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value: 0;
-            decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value: 0;
-
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {name}"); }
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {priceperunit}"); }
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {baseamount}"); }
-
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}"); }
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Importo: {preImageBaseamount}"); }
-
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
@@ -140,6 +126,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
             target[quotedetail.tax] = new Money(totaleIva);
             target[quotedetail.extendedamount] = new Money(importoTotale);
+            #endregion
+
+            #region Gestisco il campo Prezzo unitario modificato da Canvas App
+            PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
+
+            bool isFromCanvas = postImage.ContainsAttributeNotNull("isfromcanvas") && postImage.GetAttributeValue<bool>("isfromcanvas");
+
+            if (isFromCanvas)
+            {
+                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
+                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
+
+                target[quotedetail.priceperunit] = preImagePriceperunit;
+                target[quotedetail.baseamount] = preImageBaseamount;
+            }
             #endregion
         }
     }
