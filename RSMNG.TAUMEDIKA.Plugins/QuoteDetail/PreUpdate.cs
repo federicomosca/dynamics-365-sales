@@ -145,6 +145,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.priceperunit] = preImagePriceperunit;
                 target[quotedetail.baseamount] = preImageBaseamount;
             }
+            else { if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Riga aggiornata dalla model-driven"); }
             #endregion
         }
     }
