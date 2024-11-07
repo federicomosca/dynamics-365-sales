@@ -116,6 +116,25 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             target[salesorderdetail.extendedamount] = new Money(importoTotale);
             #endregion
 
+            #region Gestisco il campo Prezzo unitario modificato da Canvas App
+            PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
+
+            bool isFromCanvas = target.ContainsAttributeNotNull("res_isfromcanvas") && target.GetAttributeValue<bool>("res_isfromcanvas");
+
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
+
+            if (isFromCanvas)
+            {
+                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
+                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
+
+                target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
+                target[quotedetail.baseamount] = new Money(preImageBaseamount);
+            }
+            #endregion
+
             #region Recupera dati product [DISABLED]
             //PluginRegion = "Recupera dati product";
             ////if (target.Contains(salesorderdetail.productid)) qui non entra anche se modifico il prodotto dal modulo della riga ordine
