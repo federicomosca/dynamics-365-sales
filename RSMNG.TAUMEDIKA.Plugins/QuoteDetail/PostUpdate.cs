@@ -31,15 +31,32 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             EntityReference erQuote = postImage.GetAttributeValue<EntityReference>(quotedetail.quoteid);
 
+            if (erQuote == null)
+            {
+                crmServiceProvider.TracingService.Trace("Quote non trovata, interrompendo il plugin.");
+                return;
+            }
+
+            // Verifica se i valori devono essere effettivamente aggiornati confrontandoli con quelli precedenti
+            decimal scontoTotalePre = preImage.Contains(quotedetail.manualdiscountamount) ? preImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+            decimal totaleImponibilePre = preImage.Contains(quotedetail.res_taxableamount) ? preImage.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
+            decimal totaleIvaPre = preImage.Contains(quotedetail.tax) ? preImage.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
+
+            decimal scontoTotale = target.Contains(quotedetail.manualdiscountamount) ? target.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+            decimal totaleImponibile = target.Contains(quotedetail.res_taxableamount) ? target.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
+            decimal totaleIva = target.Contains(quotedetail.tax) ? target.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
+
+            if (scontoTotale == scontoTotalePre && totaleImponibile == totaleImponibilePre && totaleIva == totaleIvaPre)
+            {
+                crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
+                return; // Interrompe l'aggiornamento se i valori non sono cambiati
+            }
+
             if (target.Contains(quotedetail.tax) || target.Contains(quotedetail.manualdiscountamount) || target.Contains(quotedetail.res_taxableamount))
             {
 
                 decimal aliquota = 0;
                 decimal importoSpesaAccessoria = 0;
-
-                decimal scontoTotale;
-                decimal totaleImponibile;
-                decimal totaleIva;
 
                 var fetchData = new
                 {
