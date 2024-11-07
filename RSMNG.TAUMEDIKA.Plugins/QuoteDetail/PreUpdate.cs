@@ -142,8 +142,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
 
-                target[quotedetail.priceperunit] = preImagePriceperunit;
-                target[quotedetail.baseamount] = preImageBaseamount;
+                target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
+                target[quotedetail.baseamount] = new Money(preImageBaseamount);
             }
             else { if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Riga aggiornata dalla model-driven"); }
             #endregion
