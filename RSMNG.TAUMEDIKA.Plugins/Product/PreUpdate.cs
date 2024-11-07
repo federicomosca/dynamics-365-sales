@@ -18,11 +18,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginMessage = "Update";
             PluginPrimaryEntityName = product.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            crmServiceProvider.TracingService.Trace("Trace attivo.");
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Trace attivo.");
 
             Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
@@ -32,24 +32,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
             PluginRegion = "Valorizzo il campo Categoria principale";
 
             postImage.TryGetAttributeValue<OptionSetValue>(product.res_origincode, out OptionSetValue originCode);
-            crmServiceProvider.TracingService.Trace("originCode", originCode);
-
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"origin code: {originCode?.Value ?? 0}");
 
             int dynamics = (int)product.res_origincodeValues.Dynamics;
-            int origine = originCode!=null? (int)originCode.Value : (int)product.res_origincodeValues.Dynamics;
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("dynamics:", dynamics);
 
-            crmServiceProvider.TracingService.Trace("dynamics", dynamics);
-            crmServiceProvider.TracingService.Trace("origine ", origine);
+            if (originCode == null)
+            {
+                originCode = new OptionSetValue(dynamics);
+                target[product.res_origincode] = originCode;
+            }
+
+            int origine = (int)originCode.Value;
+
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("origine:", origine);
 
             if (origine == dynamics)
             {
-                crmServiceProvider.TracingService.Trace("origine == dynamics", origine == dynamics);
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("origine == dynamics", origine == dynamics);
                 postImage.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociata);
 
                 //in creazione, se entità principale non è null, vuol dire che il prodotto è una sottocategoria
                 if (erFamigliaAssociata != null)
                 {
-                    crmServiceProvider.TracingService.Trace("erParentProduct", erFamigliaAssociata);
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("erParentProduct", erFamigliaAssociata);
 
                     Entity categoriaPrincipale = crmServiceProvider.Service.Retrieve($"{product.logicalName}", erFamigliaAssociata.Id, new ColumnSet(product.parentproductid));
                     categoriaPrincipale.TryGetAttributeValue<EntityReference>(product.parentproductid, out EntityReference erFamigliaAssociataPadre);
@@ -58,7 +64,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
                 }
                 else
                 {
-                    target[product.res_parentcategoryid] = null;
+                    //target[product.res_parentcategoryid] = null;
                 }
             }
             #endregion
