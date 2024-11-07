@@ -29,31 +29,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent
             PluginRegion = "Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent";
 
-            EntityReference erQuote = postImage.GetAttributeValue<EntityReference>(quotedetail.quoteid);
-
-            if (erQuote == null)
-            {
-                crmServiceProvider.TracingService.Trace("Quote non trovata, interrompendo il plugin.");
-                return;
-            }
-
-            // Verifica se i valori devono essere effettivamente aggiornati confrontandoli con quelli precedenti
-            decimal scontoTotalePre = preImage.Contains(quotedetail.manualdiscountamount) ? preImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
-            decimal totaleImponibilePre = preImage.Contains(quotedetail.res_taxableamount) ? preImage.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
-            decimal totaleIvaPre = preImage.Contains(quotedetail.tax) ? preImage.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
-
-            decimal scontoTotale = target.Contains(quotedetail.manualdiscountamount) ? target.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
-            decimal totaleImponibile = target.Contains(quotedetail.res_taxableamount) ? target.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
-            decimal totaleIva = target.Contains(quotedetail.tax) ? target.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
-
-            if (scontoTotale == scontoTotalePre && totaleImponibile == totaleImponibilePre && totaleIva == totaleIvaPre)
-            {
-                crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
-                return; // Interrompe l'aggiornamento se i valori non sono cambiati
-            }
-
             if (target.Contains(quotedetail.tax) || target.Contains(quotedetail.manualdiscountamount) || target.Contains(quotedetail.res_taxableamount))
             {
+                EntityReference erQuote = postImage.GetAttributeValue<EntityReference>(quotedetail.quoteid);
+
+                if (erQuote == null)
+                {
+                    crmServiceProvider.TracingService.Trace("Quote non trovata, interrompendo il plugin.");
+                    return;
+                }
+
+                // Verifica se i valori devono essere effettivamente aggiornati confrontandoli con quelli precedenti
+                decimal scontoTotalePre = preImage.Contains(quotedetail.manualdiscountamount) ? preImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+                decimal totaleImponibilePre = preImage.Contains(quotedetail.res_taxableamount) ? preImage.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
+                decimal totaleIvaPre = preImage.Contains(quotedetail.tax) ? preImage.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
+
+                decimal scontoTotale = target.Contains(quotedetail.manualdiscountamount) ? target.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
+                decimal totaleImponibile = target.Contains(quotedetail.res_taxableamount) ? target.GetAttributeValue<Money>(quotedetail.res_taxableamount).Value : 0;
+                decimal totaleIva = target.Contains(quotedetail.tax) ? target.GetAttributeValue<Money>(quotedetail.tax).Value : 0;
+
+                if (scontoTotale == scontoTotalePre && totaleImponibile == totaleImponibilePre && totaleIva == totaleIvaPre)
+                {
+                    crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
+                    return; // Interrompe l'aggiornamento se i valori non sono cambiati
+                }
 
                 decimal aliquota = 0;
                 decimal importoSpesaAccessoria = 0;
@@ -78,7 +77,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (aggregatiRigheOfferta.Entities.Count > 0)
                 {
-
                     scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
                     totaleImponibile = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
                     totaleIva = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;

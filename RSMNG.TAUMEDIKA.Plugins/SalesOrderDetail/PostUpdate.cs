@@ -29,10 +29,30 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             #region Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent
             PluginRegion = "Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent";
 
-            EntityReference erSalesOrder = postImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
-
             if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
             {
+                EntityReference erSalesOrder = postImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
+
+                if (erSalesOrder == null)
+                {
+                    crmServiceProvider.TracingService.Trace("Quote non trovata, interrompendo il plugin.");
+                    return;
+                }
+
+                // Verifica se i valori devono essere effettivamente aggiornati confrontandoli con quelli precedenti
+                decimal scontoTotalePre = preImage.Contains(salesorderdetail.manualdiscountamount) ? preImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
+                decimal totaleImponibilePre = preImage.Contains(salesorderdetail.res_taxableamount) ? preImage.GetAttributeValue<Money>(salesorderdetail.res_taxableamount).Value : 0;
+                decimal totaleIvaPre = preImage.Contains(salesorderdetail.tax) ? preImage.GetAttributeValue<Money>(salesorderdetail.tax).Value : 0;
+
+                decimal scontoTotale = target.Contains(salesorderdetail.manualdiscountamount) ? target.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
+                decimal totaleImponibile = target.Contains(salesorderdetail.res_taxableamount) ? target.GetAttributeValue<Money>(salesorderdetail.res_taxableamount).Value : 0;
+                decimal totaleIva = target.Contains(salesorderdetail.tax) ? target.GetAttributeValue<Money>(salesorderdetail.tax).Value : 0;
+
+                if (scontoTotale == scontoTotalePre && totaleImponibile == totaleImponibilePre && totaleIva == totaleIvaPre)
+                {
+                    crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
+                    return; // Interrompe l'aggiornamento se i valori non sono cambiati
+                }
 
                 decimal aliquotaOrdine = 0;
                 decimal importoSpesaAccessoriaOrdine = 0;
@@ -124,53 +144,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 }
             }
             #endregion
-
-            //if (target.Contains(salesorderdetail.res_taxableamount))
-            //{
-
-            //    EntityReference erSalesOrder = target.Contains(salesorderdetail.salesorderid) ? target.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid) : preImage.GetAttributeValue<EntityReference>(salesorderdetail.salesorderid);
-
-            //    if (target.Contains(salesorderdetail.tax) || target.Contains(salesorderdetail.manualdiscountamount) || target.Contains(salesorderdetail.res_taxableamount))
-            //    {
-            //        var fetchData = new
-            //        {
-            //            id = erSalesOrder.Id
-            //        };
-            //        var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-            //                        <fetch aggregate=""true"">
-            //                          <entity name=""{salesorderdetail.logicalName}"">
-            //                            <attribute name=""{salesorderdetail.manualdiscountamount}"" alias=""ScontoTotale"" aggregate=""sum"" />
-            //                            <attribute name=""{salesorderdetail.res_taxableamount}"" alias=""TotaleImponibile"" aggregate=""sum"" />
-            //                            <attribute name=""{salesorderdetail.tax}"" alias=""TotaleIva"" aggregate=""sum"" />
-            //                            <filter>
-            //                              <condition attribute=""{salesorderdetail.salesorderid}"" operator=""eq"" value=""{fetchData.id}"" />
-            //                            </filter>
-            //                          </entity>
-            //                        </fetch>";
-
-            //        EntityCollection results = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
-
-            //        if (results.Entities.Count > 0)
-            //        {
-
-            //            decimal scontoTotale = results.Entities[0].ContainsAliasNotNull("ScontoTotale") ? results.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
-            //            decimal totaleImponibile = results.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? results.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
-            //            decimal totaleIva = results.Entities[0].ContainsAliasNotNull("TotaleIva") ? results.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
-
-            //            Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
-
-            //            enSalesOrder[salesorder.totallineitemamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            //            enSalesOrder[salesorder.totaldiscountamount] = scontoTotale != 0 ? new Money(scontoTotale) : null;
-            //            enSalesOrder[salesorder.totaltax] = totaleIva != 0 ? new Money(totaleIva) : null;
-
-            //            crmServiceProvider.Service.Update(enSalesOrder);
-
-
-            //        }
-
-            //    }
-
-            //}
         }
     }
 }
