@@ -22,11 +22,22 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
+            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+
+            string name = target.ContainsAttributeNotNull(quotedetail.quotedetailname) ? target.GetAttributeValue<string>(quotedetail.quotedetailname) : string.Empty;
+            decimal priceperunit = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
+            decimal baseamount = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {name}"); }
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {priceperunit}"); }
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {baseamount}"); }
+
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
             #endregion
+
         }
     }
 }
