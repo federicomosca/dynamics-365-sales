@@ -131,7 +131,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
             PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
-            bool isFromCanvas = postImage.ContainsAttributeNotNull("isfromcanvas") && postImage.GetAttributeValue<bool>("isfromcanvas");
+            bool isFromCanvas = postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas");
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
+
 
             if (isFromCanvas)
             {
