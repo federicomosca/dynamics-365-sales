@@ -851,7 +851,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         const gridContext = formContext.getControl("quotedetailsGrid");
 
         if (!gridContext) {
-            setTimeout(() => { _self.subgridEventListener(executionContext); }, 500);
+            setTimeout(() => { _self.addSubgridEventListener(executionContext); }, 500);
             return;
         }
         gridContext.addOnLoad(_self.subgridEventListener);
@@ -859,21 +859,40 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //---------------------------------------------------
     _self.subgridEventListener = executionContext => {
         const formContext = executionContext.getFormContext();
-        var interval = setInterval(function () {
-            var subgridControl = formContext.getControl("quotedetailsGrid");
+        formContext.ui.clearFormNotification("HAS_QUOTE_DETAILS");
+        var subgridControl = formContext.getControl("quotedetailsGrid");
 
-            if (subgridControl && subgridControl.getGrid().getTotalRecordCount() !== _self.previousRecordCount) {
-                _self.previousRecordCount = subgridControl.getGrid().getTotalRecordCount();
+        setTimeout(() => {
+            if (subgridControl.getGrid().getTotalRecordCount() == 0) {
+                const notification = {
+                    message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
+                    level: "INFO",
+                    uniqueId: "HAS_QUOTE_DETAILS"
+                };
 
-                // Qui esegui il refresh del modulo
-                formContext.data.refresh(false).then(function () {
-                    formContext.ui.refreshRibbon(true);
-                });
-
-                // Ferma il monitoraggio
-                clearInterval(interval);
+                formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
             }
-        }, 1000); // Esegui il controllo ogni secondo
+        }, 500);
+
+        //    if (subgridControl && subgridControl.getGrid().getTotalRecordCount() !== _self.previousRecordCount) {
+        //        _self.previousRecordCount = subgridControl.getGrid().getTotalRecordCount();
+
+        //        // Qui esegui il refresh del modulo
+        //        formContext.data.refresh(false).then(function () {
+        //            formContext.ui.refreshRibbon(true);
+        //        });
+        //    }
+
+        //    if (_self.previousRecordCount == 0) {
+
+        //        const notification = {
+        //            message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
+        //            level: "INFO",
+        //            uniqueId: "HAS_QUOTE_DETAILS"
+        //        };
+
+        //        formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
+        //    }
     };
     //---------------------------------------------------
     /*
@@ -918,18 +937,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
 
         //------< subgrid >------//
-        const gridContext = formContext.getControl('quotedetailsGrid') ?? null;
-        const quoteDetailsCount = gridContext ? await _self.getQuoteDetailsCount(gridContext) : null;
-        if (quoteDetailsCount === 0) {
+        //const gridContext = formContext.getControl('quotedetailsGrid') ?? null;
+        //const quoteDetailsCount = gridContext ? await _self.getQuoteDetailsCount(gridContext) : null;
+        //if (quoteDetailsCount === 0) {
 
-            const notification = {
-                message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
-                level: "INFO",
-                uniqueId: "HAS_QUOTE_DETAILS"
-            };
+        //    const notification = {
+        //        message: "Per mandare in approvazione, approvare o acquisire l'offerta è necessario aggiungere almeno un prodotto.",
+        //        level: "INFO",
+        //        uniqueId: "HAS_QUOTE_DETAILS"
+        //    };
 
-            formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
-        }
+        //    formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
+        //}
 
         _self.addSubgridEventListener(executionContext);
     };
