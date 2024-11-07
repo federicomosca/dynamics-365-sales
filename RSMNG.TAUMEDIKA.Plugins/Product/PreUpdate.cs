@@ -36,7 +36,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Product
 
 
             int dynamics = (int)product.res_origincodeValues.Dynamics;
-            int origine = (int)originCode.Value;
+            int origine = (int)originCode?.Value;
 
             crmServiceProvider.TracingService.Trace("dynamics", dynamics);
             crmServiceProvider.TracingService.Trace("origine ", origine);

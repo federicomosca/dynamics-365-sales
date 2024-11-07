@@ -66,8 +66,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                 totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                 importoTotale = totaleImponibile + totaleIva;
-
-
             }
             else
             {
@@ -98,7 +96,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     {
                         Entity prodotto = collection.Entities[0];
 
-
                         #region Valorizzo Codice articolo
                         PluginRegion = "Valorizzo Codice articolo";
                         string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
@@ -116,8 +113,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                         totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
-
-
                     }
                 }
             }
