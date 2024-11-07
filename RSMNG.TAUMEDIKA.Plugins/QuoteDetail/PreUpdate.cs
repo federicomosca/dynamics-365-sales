@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -132,8 +132,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
             bool isFromCanvas = target.ContainsAttributeNotNull("res_isfromcanvas") && target.GetAttributeValue<bool>("res_isfromcanvas");
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
 
+            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
 
             if (isFromCanvas)
             {
@@ -145,7 +145,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
                 target[quotedetail.baseamount] = new Money(preImageBaseamount);
             }
-            else { if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Riga aggiornata dalla model-driven"); }
             #endregion
         }
     }
