@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -75,6 +75,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (erProduct != null)
                 {
+                    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Il prodotto è stato selezionato"); }
+
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
@@ -90,10 +92,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                       </entity>
                                     </fetch>";
 
+                    if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace(fetchProdotto); }
+
                     EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
 
                     if (collection.Entities.Count > 0)
                     {
+                        if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"La fetch ha prodotto risultati"); }
                         Entity prodotto = collection.Entities[0];
 
                         #region Valorizzo Codice articolo
@@ -113,6 +118,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                         totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
+
+                        if (PluginActiveTrace)
+                        {
+                            crmServiceProvider.TracingService.Trace($"aliquota: {aliquota}");
+                            crmServiceProvider.TracingService.Trace($"scontoTotale: {scontoTotale}");
+                            crmServiceProvider.TracingService.Trace($"importo: {importo}");
+                            crmServiceProvider.TracingService.Trace($"totaleImponibile: {totaleImponibile}");
+                            crmServiceProvider.TracingService.Trace($"totaleIva: {totaleIva}");
+                            crmServiceProvider.TracingService.Trace($"importoTotale: {importoTotale}");
+                        }
                     }
                 }
             }
