@@ -28,8 +28,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
-            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
-            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
+            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo
+            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
 
             bool omaggio = target.ContainsAttributeNotNull(salesorderdetail.res_ishomage) ? target.GetAttributeValue<bool>(salesorderdetail.res_ishomage) : false;
 

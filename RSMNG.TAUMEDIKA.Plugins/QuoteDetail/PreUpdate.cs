@@ -33,8 +33,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"I campi obbligatori sono stati verificati"); }
             #endregion
 
-            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA
-            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA";
+            #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo
+            PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
 
             bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
 
@@ -78,28 +78,24 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Il prodotto è stato selezionato"); }
 
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                    <fetch>
-                                      <entity name=""{product.logicalName}"">
-                                        <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
-                                        <filter>
-                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
-                                          <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                        </filter>
-                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
-                                          <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""CodiceIVAGuid"" />
-                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
-                                        </link-entity>
-                                      </entity>
-                                    </fetch>";
-
+                                            <fetch>
+                                                <entity name=""{product.logicalName}"">
+                                                <attribute name=""{product.productnumber}"" />
+                                                <attribute name=""{product.res_vatnumberid}"" alias=""CodiceIva"" />
+                                                <filter>
+                                                    <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
+                                                    <condition attribute=""{product.statecode}"" operator=""eq"" value=""{product.statecodeValues.Attivo}"" />
+                                                </filter>
+                                                </entity>
+                                            </fetch>";
                     if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace(fetchProdotto); }
 
-                    EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
+                    EntityCollection collectionProdotti = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
 
-                    if (collection.Entities.Count > 0)
+                    if (collectionProdotti.Entities.Count > 0)
                     {
                         if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"La fetch ha prodotto risultati"); }
-                        Entity prodotto = collection.Entities[0];
+                        Entity prodotto = collectionProdotti.Entities[0];
 
                         #region Valorizzo Codice articolo
                         PluginRegion = "Valorizzo Codice articolo";
@@ -107,11 +103,35 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         target[quotedetail.res_itemcode] = codiceArticolo;
                         #endregion
 
-                        //dalla fetch
-                        Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                        Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIva")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
+                        /**
+                         * eseguo una seconda chiamata al server per recuperare il codice iva correlato al prodotto
+                         * ho tentato di fare una sola chiamata con link-entity ma riuscivo ad avere come risultati
+                         * soltanto prodotti con codice iva o, alternativamente, soltanto prodotti senza codice iva,
+                         * mai entrambi i casi (ho tentato link-type=outer ma non restituiva il risultato sperato)
+                         */
+
+                        var fetchCodiceIva = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                                                <fetch>
+                                                  <entity name=""{res_vatnumber.logicalName}"">
+                                                    <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
+                                                    <filter>
+                                                      <condition attribute=""{res_vatnumber.res_vatnumberid}"" operator=""eq"" value=""{codiceIvaGuid}"" />
+                                                    </filter>
+                                                  </entity>
+                                                </fetch>";
+
+                        EntityCollection collectionCodiceIva = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIva));
+
+                        if (collectionCodiceIva.Entities.Count > 0)
+                        {
+                            Entity enCodiceIva = collectionCodiceIva.Entities[0]; 
+
+                            aliquota = enCodiceIva.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0;
+                        } 
+
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
@@ -130,12 +150,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         }
                     }
                 }
+                target[quotedetail.res_vatnumberid] = codiceIva;
+                target[quotedetail.res_vatrate] = aliquota;
+                target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
+                target[quotedetail.tax] = new Money(totaleIva);
+                target[quotedetail.extendedamount] = new Money(importoTotale);
             }
-            target[quotedetail.res_vatnumberid] = codiceIva;
-            target[quotedetail.res_vatrate] = aliquota;
-            target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-            target[quotedetail.tax] = new Money(totaleIva);
-            target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
 
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
