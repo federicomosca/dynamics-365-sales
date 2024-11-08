@@ -20,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             PluginMessage = "Update";
             PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -81,13 +81,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                                         </link-entity>
                                       </entity>
                                     </fetch>";
-
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchProdotto);
                     EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
 
                     if (collection.Entities.Count > 0)
                     {
+                        if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"La fetch ha prodotto risultati"); }
                         Entity prodotto = collection.Entities[0];
-
 
                         #region Valorizzo Codice articolo
                         PluginRegion = "Valorizzo Codice articolo";
@@ -106,6 +106,16 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                         totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
                         importoTotale = totaleImponibile + totaleIva;
+
+                        if (PluginActiveTrace)
+                        {
+                            crmServiceProvider.TracingService.Trace($"aliquota: {aliquota}");
+                            crmServiceProvider.TracingService.Trace($"scontoTotale: {scontoTotale}");
+                            crmServiceProvider.TracingService.Trace($"importo: {importo}");
+                            crmServiceProvider.TracingService.Trace($"totaleImponibile: {totaleImponibile}");
+                            crmServiceProvider.TracingService.Trace($"totaleIva: {totaleIva}");
+                            crmServiceProvider.TracingService.Trace($"importoTotale: {importoTotale}");
+                        }
                     }
                 }
             }
@@ -134,60 +144,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 target[quotedetail.baseamount] = new Money(preImageBaseamount);
             }
             #endregion
-
-            #region Recupera dati product [DISABLED]
-            //PluginRegion = "Recupera dati product";
-            ////if (target.Contains(salesorderdetail.productid)) qui non entra anche se modifico il prodotto dal modulo della riga ordine
-            ////{
-
-            //if (erProduct != null)
-            //{
-            //    // preso solo i valori che non sono presi nativamente.
-            //    // Al cambio del prodotto altri valori sono presi nativamente dal sistema e sono presenti nel target
-            //    var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-            //                        <fetch>
-            //                          <entity name=""{product.logicalName}"">
-            //                            <attribute name=""{product.productnumber}"" />
-            //                            <filter>
-            //                              <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
-            //                              <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-            //                            </filter>
-            //                            <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
-            //                              <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""CodiceIVAGuid"" />
-            //                              <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
-            //                            </link-entity>
-            //                          </entity>
-            //                        </fetch>";
-
-            //    EntityCollection results = service.RetrieveMultiple(new FetchExpression(fetchProdotto));
-
-            //    if (results.Entities.Count > 0)
-            //    {
-            //        Entity prodotto = results.Entities[0];
-            //        crmServiceProvider.TracingService.Trace("041", 041);
-            //        codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-            //        crmServiceProvider.TracingService.Trace("04", 04);
-            //        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m; crmServiceProvider.TracingService.Trace("aliquota", aliquota);
-            //        crmServiceProvider.TracingService.Trace("05", 05);
-            //        productNumber = prodotto.GetAttributeValue<string>(product.productnumber);
-
-            //        //creo qui entityreference di codice iva prima di passarla al target
-            //    }
-            //}
-
-            ////}
-            #endregion
-
-            //totaleImponibile = importo - scontoTotale; crmServiceProvider.TracingService.Trace("totale_imponibile", totaleImponibile);
-            //totaleIva = totaleImponibile * (aliquota / 100); crmServiceProvider.TracingService.Trace("totale_iva", totaleIva);
-
-            //EntityReference erCodiceIVA = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
-            //crmServiceProvider.TracingService.Trace("06", 06);
-            //target[salesorderdetail.res_vatnumberid] = erCodiceIVA;
-            //target[salesorderdetail.res_taxableamount] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            //target[salesorderdetail.tax] = totaleIva != 0 ? new Money((decimal)totaleIva) : null;
-            //target[salesorderdetail.res_itemcode] = productNumber;
-            //target[salesorderdetail.res_vatrate] = aliquota != 0 ? aliquota : null;
         }
     }
 }
