@@ -80,7 +80,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                             <fetch>
                                                 <entity name=""{product.logicalName}"">
-                                                <attribute name=""{product.productnumber}"" />
+                                                <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
                                                 <attribute name=""{product.res_vatnumberid}"" alias=""CodiceIva"" />
                                                 <filter>
                                                     <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
