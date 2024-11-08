@@ -151,12 +151,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         }
                     }
                 }
-                target[quotedetail.res_vatnumberid] = codiceIva;
-                target[quotedetail.res_vatrate] = aliquota;
-                target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-                target[quotedetail.tax] = new Money(totaleIva);
-                target[quotedetail.extendedamount] = new Money(importoTotale);
             }
+            target[quotedetail.res_vatnumberid] = codiceIva;
+            target[quotedetail.res_vatrate] = aliquota;
+            target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
+            target[quotedetail.tax] = new Money(totaleIva);
+            target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
 
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
