@@ -84,7 +84,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                                 <attribute name=""{product.res_vatnumberid}"" alias=""CodiceIva"" />
                                                 <filter>
                                                     <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                                    <condition attribute=""{product.statecode}"" operator=""eq"" value=""{product.statecodeValues.Attivo}"" />
+                                                    <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
                                                 </filter>
                                                 </entity>
                                             </fetch>";
@@ -112,8 +112,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                          * soltanto prodotti con codice iva o, alternativamente, soltanto prodotti senza codice iva,
                          * mai entrambi i casi (ho tentato link-type=outer ma non restituiva il risultato sperato)
                          */
-
-                        var fetchCodiceIva = $@"<?xml version=""1.0"" encoding=""utf-16""?>
+                        if (codiceIvaGuid != Guid.Empty)
+                        {
+                            var fetchCodiceIva = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                                 <fetch>
                                                   <entity name=""{res_vatnumber.logicalName}"">
                                                     <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
@@ -123,14 +124,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                                   </entity>
                                                 </fetch>";
 
-                        EntityCollection collectionCodiceIva = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIva));
+                            EntityCollection collectionCodiceIva = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIva));
 
-                        if (collectionCodiceIva.Entities.Count > 0)
-                        {
-                            Entity enCodiceIva = collectionCodiceIva.Entities[0]; 
+                            if (collectionCodiceIva.Entities.Count > 0)
+                            {
+                                Entity enCodiceIva = collectionCodiceIva.Entities[0];
 
-                            aliquota = enCodiceIva.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0;
-                        } 
+                                aliquota = enCodiceIva.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0;
+                            }
+                        }
 
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
