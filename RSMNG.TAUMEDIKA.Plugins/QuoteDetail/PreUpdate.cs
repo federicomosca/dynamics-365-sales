@@ -84,7 +84,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                                 <attribute name=""{product.res_vatnumberid}"" alias=""CodiceIva"" />
                                                 <filter>
                                                     <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                                    <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
                                                 </filter>
                                                 </entity>
                                             </fetch>";
