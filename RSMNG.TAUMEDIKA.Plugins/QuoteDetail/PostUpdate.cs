@@ -135,7 +135,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     enQuote[quote.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
 
                     crmServiceProvider.Service.Update(enQuote);
-
                 }
             }
             #endregion

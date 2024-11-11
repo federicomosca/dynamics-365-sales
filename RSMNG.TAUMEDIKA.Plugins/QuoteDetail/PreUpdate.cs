@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -47,7 +47,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal importoTotale = 0;
 
 
-            if (target.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ||
+            if (target.Contains(quotedetail.res_vatnumberid) ||
                 target.Contains(quotedetail.quantity) ||
                 target.Contains(quotedetail.manualdiscountamount) ||
                 target.Contains(quotedetail.priceperunit)
@@ -55,8 +55,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             {
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
 
-                codiceIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
-
+                if (target.Contains(quotedetail.res_vatnumberid))
+                {
+                    codiceIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
+                } else
+                {
+                    codiceIva = preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
+                }
                 Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
 
                 aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
