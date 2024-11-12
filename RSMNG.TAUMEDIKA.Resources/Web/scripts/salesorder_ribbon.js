@@ -298,15 +298,40 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                 return /Mobi|Android|iPhone/i.test(navigator.userAgent);
             }
 
-            const appUrlNoParams = `https://apps.powerapps.com/play/e/8aa0b540-0ece-e249-8605-db86ab3e9348/a/e10b918a-2048-4e8b-8791-6b39a2b9b6ab?tenantId=6bdd137e-ff0c-4ec1-974c-8c621c7d56fa&sourcetime=1730813170370`;
+            //const appUrlNoParams = `https://apps.powerapps.com/play/e/8aa0b540-0ece-e249-8605-db86ab3e9348/a/e10b918a-2048-4e8b-8791-6b39a2b9b6ab?tenantId=6bdd137e-ff0c-4ec1-974c-8c621c7d56fa&sourcetime=1730813170370`;
 
-            const device = isMobileDevice() == false ? 'Desktop' : 'Mobile';
+            //const device = isMobileDevice() == false ? 'Desktop' : 'Mobile';
 
-            // Construct the Canvas app URL with the record ID as a query parameter
-            var appUrl = appUrlNoParams + `&recordId=` + recordId + `&source=` + source + `&device=` + device;
+            //// Construct the Canvas app URL with the record ID as a query parameter
+            //var appUrl = appUrlNoParams + `&recordId=` + recordId + `&source=` + source + `&device=` + device;
 
-            // Open the Canvas app
-            Xrm.Navigation.openUrl(appUrl, { height: 600, width: 800 });
+            //// Open the Canvas app
+            //Xrm.Navigation.openUrl(appUrl, { height: 600, width: 800 });
+
+            var pageInput = {
+                pageType: "custom",
+                name: "res_app_a0afc",  // Use the unique name of your custom page
+                entityName: "salesorder",
+                recordId: recordId,
+                parameters: {
+                    id: recordId
+                }
+            };
+            var navigationOptions = {
+                target: 1, // Opens as a dialog
+                //position: 1,  // usato solo con target 1
+                height: { value: 100, unit: "%" },
+                width: { value: 100, unit: "%" },
+                title: "Prodotti"
+            };
+            Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
+                function () {
+
+                },
+                function (error) {
+                    console.error("Error opening custom page:", error.message);
+                }
+            );
         }
     };
     //-----------------------------------------------------------
