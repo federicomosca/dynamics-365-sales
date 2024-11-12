@@ -154,10 +154,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
                 decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
+                if (PluginActiveTrace) {
+                    crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}");
+                    crmServiceProvider.TracingService.Trace($"target Prezzo Unitario: {target.GetAttributeValue<Money>(quotedetail.priceperunit).Value}, target Importo: {target.GetAttributeValue<Money>(quotedetail.baseamount).Value}");
+                }
 
                 target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
                 target[quotedetail.baseamount] = new Money(preImageBaseamount);
+                target["res_isfromcanvas"] = false;
             }
             #endregion
         }
