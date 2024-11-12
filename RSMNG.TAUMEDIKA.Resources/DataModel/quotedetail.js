@@ -70,6 +70,8 @@ RSMNG.TAUMEDIKA.DataModel.quotedetail = {
 	res_discountpercent2: "res_discountpercent2",
 	///Sconto % 3
 	res_discountpercent3: "res_discountpercent3",
+	///Origine Canvas App
+	res_isfromcanvas: "res_isfromcanvas",
 	///Omaggio
 	res_ishomage: "res_ishomage",
 	///Codice Articolo
@@ -204,6 +206,12 @@ RSMNG.TAUMEDIKA.DataModel.quotedetail = {
 	quotecreationmethodValues: {
 		Revisione: 776160001,
 		Sconosciuto: 776160000
+	},
+
+	/// Values for field Origine Canvas App
+	res_isfromcanvasValues: {
+		No: 0,
+		Si: 1
 	},
 
 	/// Values for field Omaggio

@@ -72,6 +72,8 @@ RSMNG.TAUMEDIKA.DataModel.salesorderdetail = {
 	res_discountpercentage2: "res_discountpercentage2",
 	///Sconto % 3
 	res_discountpercentage3: "res_discountpercentage3",
+	///Origine Canvas App
+	res_isfromcanvas: "res_isfromcanvas",
 	///Omaggio
 	res_ishomage: "res_ishomage",
 	///Codice Articolo
@@ -222,6 +224,12 @@ RSMNG.TAUMEDIKA.DataModel.salesorderdetail = {
 		Modifica: 0,
 		Nonconfigurato: 2,
 		Rettifica: 1
+	},
+
+	/// Values for field Origine Canvas App
+	res_isfromcanvasValues: {
+		No: 0,
+		Si: 1
 	},
 
 	/// Values for field Omaggio
