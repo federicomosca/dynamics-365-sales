@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -58,7 +58,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 if (target.Contains(quotedetail.res_vatnumberid))
                 {
                     codiceIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
-                } else
+                }
+                else
                 {
                     codiceIva = preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) ?? null;
                 }
@@ -83,15 +84,19 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Il prodotto è stato selezionato"); }
 
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                            <fetch>
-                                                <entity name=""{product.logicalName}"">
-                                                <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
-                                                <attribute name=""{product.res_vatnumberid}"" alias=""CodiceIva"" />
-                                                <filter>
-                                                    <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
-                                                </filter>
-                                                </entity>
-                                            </fetch>";
+                                    <fetch>
+                                      <entity name=""{product.logicalName}"">
+                                        <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
+                                        <filter>
+                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
+                                          <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
+                                        </filter>
+                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
+                                          <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""CodiceIVAGuid"" />
+                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
+                                        </link-entity>
+                                      </entity>
+                                    </fetch>";
                     if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace(fetchProdotto); }
 
                     EntityCollection collectionProdotti = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
@@ -110,34 +115,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIva")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        /**
-                         * eseguo una seconda chiamata al server per recuperare il codice iva correlato al prodotto
-                         * ho tentato di fare una sola chiamata con link-entity ma riuscivo ad avere come risultati
-                         * soltanto prodotti con codice iva o, alternativamente, soltanto prodotti senza codice iva,
-                         * mai entrambi i casi (ho tentato link-type=outer ma non restituiva il risultato sperato)
-                         */
-                        if (codiceIvaGuid != Guid.Empty)
-                        {
-                            var fetchCodiceIva = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-                                                <fetch>
-                                                  <entity name=""{res_vatnumber.logicalName}"">
-                                                    <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
-                                                    <filter>
-                                                      <condition attribute=""{res_vatnumber.res_vatnumberid}"" operator=""eq"" value=""{codiceIvaGuid}"" />
-                                                    </filter>
-                                                  </entity>
-                                                </fetch>";
-
-                            EntityCollection collectionCodiceIva = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchCodiceIva));
-
-                            if (collectionCodiceIva.Entities.Count > 0)
-                            {
-                                Entity enCodiceIva = collectionCodiceIva.Entities[0];
-
-                                aliquota = enCodiceIva.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0;
-                            }
-                        }
-
+                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 

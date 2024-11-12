@@ -20,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             PluginMessage = "Update";
             PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -42,14 +42,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
-            if (target.ContainsAttributeNotNull(salesorderdetail.res_vatnumberid) ||
+
+            if (target.Contains(salesorderdetail.res_vatnumberid) ||
                 target.Contains(salesorderdetail.quantity) ||
                 target.Contains(salesorderdetail.manualdiscountamount) ||
                 target.Contains(salesorderdetail.priceperunit)
                 )
             {
-                codiceIva = postImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid);
+                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
 
+                if (target.Contains(salesorderdetail.res_vatnumberid))
+                {
+                    codiceIva = target.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid) ?? null;
+                }
+                else
+                {
+                    codiceIva = preImage.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid) ?? null;
+                }
                 Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
 
                 aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
@@ -135,13 +144,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             if (isFromCanvas)
             {
-                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
-                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(salesorderdetail.priceperunit) ? preImage.GetAttributeValue<Money>(salesorderdetail.priceperunit).Value : 0;
+                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? preImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}"); }
 
-                target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
-                target[quotedetail.baseamount] = new Money(preImageBaseamount);
+                target[salesorderdetail.priceperunit] = new Money(preImagePriceperunit);
+                target[salesorderdetail.baseamount] = new Money(preImageBaseamount);
             }
             #endregion
         }
