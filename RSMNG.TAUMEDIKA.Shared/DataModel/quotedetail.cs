@@ -311,6 +311,16 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_discountpercent3 => "res_discountpercent3";
 
 		/// <summary>
+		/// Display Name: Origine Canvas App,
+		/// Type: Boolean,
+		/// Values:
+		/// Sì: 1,
+		/// No: 0,
+		/// Description: 
+		/// </summary>
+		public static string res_isfromcanvas => "res_isfromcanvas";
+
+		/// <summary>
 		/// Display Name: Omaggio,
 		/// Type: Boolean,
 		/// Values:
@@ -637,6 +647,15 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			Revisione = 776160001,
 			Sconosciuto = 776160000
+		}
+
+		/// <summary>
+		/// Values for field Origine Canvas App
+		/// <summary>
+		public enum res_isfromcanvasValues
+		{
+			No = 0,
+			Si = 1
 		}
 
 		/// <summary>
