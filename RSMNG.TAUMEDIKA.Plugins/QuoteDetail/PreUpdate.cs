@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -29,10 +29,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
+            crmServiceProvider.TracingService.Trace("quotedetail pre update");
+
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"I campi obbligatori sono stati verificati"); }
             #endregion
-
+            crmServiceProvider.TracingService.Trace("01");
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
 
@@ -141,7 +143,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.tax] = new Money(totaleIva);
             target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
-
+            crmServiceProvider.TracingService.Trace("02");
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
             PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
@@ -156,12 +158,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (PluginActiveTrace) {
                     crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}");
-                    crmServiceProvider.TracingService.Trace($"target Prezzo Unitario: {target.GetAttributeValue<Money>(quotedetail.priceperunit).Value}, target Importo: {target.GetAttributeValue<Money>(quotedetail.baseamount).Value}");
+                   
                 }
 
                 target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
                 target[quotedetail.baseamount] = new Money(preImageBaseamount);
-                target["res_isfromcanvas"] = false;
+                target[quotedetail.res_isfromcanvas] = false;
             }
             #endregion
         }

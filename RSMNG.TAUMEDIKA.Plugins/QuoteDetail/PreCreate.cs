@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Create";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -28,9 +28,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal priceperunit = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
             decimal baseamount = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Nome: {name}"); }
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Prezzo Unitario: {priceperunit}"); }
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Importo: {baseamount}"); }
+            if (PluginActiveTrace) { 
+                crmServiceProvider.TracingService.Trace(
+                    $"Nome: {name}\n" +
+                    $"Prezzo Unitario: {priceperunit}\n" +
+                    $"Importo: {baseamount}"); 
+            }
+           
 
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";

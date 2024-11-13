@@ -140,21 +140,21 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
             bool isFromCanvas = target.ContainsAttributeNotNull("res_isfromcanvas") && target.GetAttributeValue<bool>("res_isfromcanvas");
 
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
+            crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}");
 
             if (isFromCanvas)
             {
                 decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(salesorderdetail.priceperunit) ? preImage.GetAttributeValue<Money>(salesorderdetail.priceperunit).Value : 0;
                 decimal preImageBaseamount = preImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? preImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                if (PluginActiveTrace) {
+                
                     crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}");
-                    crmServiceProvider.TracingService.Trace($"target Prezzo Unitario: {target.GetAttributeValue<Money>(salesorderdetail.priceperunit).Value}, target Importo: {target.GetAttributeValue<Money>(salesorderdetail.baseamount).Value}");
-                }
+                   
+                
 
                 target[salesorderdetail.priceperunit] = new Money(preImagePriceperunit);
                 target[salesorderdetail.baseamount] = new Money(preImageBaseamount);
-                target["res_isfromcanvas"] = false;
+                target[salesorderdetail.res_isfromcanvas] = false;
             }
             #endregion
         }
