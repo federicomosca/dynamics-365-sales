@@ -759,11 +759,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
     };
     //---------------------------------------------------
     _self.onLoadUpdateForm = async function (executionContext) {
-
+        debugger;
         var formContext = executionContext.getFormContext();
-
-        //campo unità
-        formContext.getControl(_self.formModel.fields.uomid).setDisabled(false);
 
         let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercent1).getValue() ?? 0;
         let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercent2).getValue() ?? 0;
@@ -795,7 +792,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
     };
 
     _self.onLoadForm = async function (executionContext) {
-
         //init lib
         await import('../res_scripts/res_global.js');
 
