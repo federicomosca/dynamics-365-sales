@@ -481,14 +481,12 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //se è stato selezionato il codice iva spesa accessoria
         if (vatNumberId) {
             let vatNumber = await Xrm.WebApi.retrieveRecord("res_vatnumber", vatNumberId, "?$select=res_rate")
-            const aliquotaCodiceIVA = vatNumber ? vatNumber.res_rate : 0;
-
-            //recupero l'importo della spesa accessoria
-            //let additionalExpense = await Xrm.WebApi.retrieveRecord("res_additionalexpense", additionalExpenseId, "?$select=res_amount");
-            //importoSpesaAccessoria = additionalExpense ? additionalExpense.res_amount : 0;
+            let aliquotaCodiceIVA = vatNumber ? vatNumber.res_rate : 0;
 
             //calcolo l'iva sulla spesa accessoria
             if (importoSpesaAccessoria && aliquotaCodiceIVA) {
+                importoSpesaAccessoria = importoSpesaAccessoria === 0 ? 1 : importoSpesaAccessoria;
+                aliquotaCodiceIVA = aliquotaCodiceIVA === 0 ? 1 : aliquotaCodiceIVA;
                 const ivaSpesaAccessoria = importoSpesaAccessoria * (aliquotaCodiceIVA / 100);
 
                 //totale iva offerta (iva della spesa accessoria + totale righe offerta)
