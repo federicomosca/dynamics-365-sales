@@ -4,7 +4,9 @@ using RSMNG.TAUMEDIKA.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IdentityModel.Metadata;
 using System.Linq;
+using System.Runtime.Remoting.Services;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,6 +39,39 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             crmServiceProvider.TracingService.Trace("01");
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
+
+
+            ///TEST
+            StringBuilder traceMessage = new StringBuilder();
+            traceMessage.AppendLine("Attributes received in Target:");
+
+            // Loop through each attribute in the entity
+            foreach (var attribute in target.Attributes)
+            {
+                string attributeName = attribute.Key;
+                object attributeValue = attribute.Value;
+
+                // Append each attribute's name and value to the trace message
+                traceMessage.AppendLine($"{attributeName}: {attributeValue}");
+            }
+
+            // Trace the final message
+            crmServiceProvider.TracingService.Trace(traceMessage.ToString());
+
+
+            //////////
+
+
+
+
+
+
+
+
+
+
+
+
 
             bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
 
@@ -114,8 +149,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                         target[quotedetail.res_itemcode] = codiceArticolo;
                         #endregion
 
-                        Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIva")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
+                        Guid codiceIvaGuid = prodotto.ContainsAliasNotNull("CodiceIVAGuid") ? prodotto.GetAliasedValue<Guid>("CodiceIVAGuid") : Guid.Empty;
                         codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
+                        
+                        crmServiceProvider.TracingService.Trace("codice iva guid: " + codiceIvaGuid.ToString());
+                        string test = codiceIva != null ? "true" : "null";
+                        crmServiceProvider.TracingService.Trace($"EntityReference: " + test);
 
                         aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
@@ -143,7 +182,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.tax] = new Money(totaleIva);
             target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
-            crmServiceProvider.TracingService.Trace("02");
+            
+            /*
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
             PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
@@ -166,6 +206,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                 target[quotedetail.res_isfromcanvas] = false;
             }
             #endregion
+            */
         }
     }
 }

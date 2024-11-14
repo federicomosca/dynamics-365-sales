@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -26,11 +26,41 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             Entity preImage = crmServiceProvider.PluginContext.PreEntityImages["PreImage"];
             Entity postImage = target.GetPostImage(preImage);
 
+
+
+            ///TEST
+            StringBuilder traceMessage = new StringBuilder();
+            traceMessage.AppendLine("Attributes received in Target:");
+
+            // Loop through each attribute in the entity
+            foreach (var attribute in target.Attributes)
+            {
+                string attributeName = attribute.Key;
+                object attributeValue = attribute.Value;
+
+                // Append each attribute's name and value to the trace message
+                traceMessage.AppendLine($"{attributeName}: {attributeValue}");
+            }
+
+            // Trace the final message
+            crmServiceProvider.TracingService.Trace(traceMessage.ToString());
+
+
+            //////////
+
+
+
+
+
+
+
+
             #region Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent
             PluginRegion = "Aggiorno i campi Totale Imponibile, Sconto Totale e Totale Iva nell'entità parent";
 
             if (target.Contains(quotedetail.tax) || target.Contains(quotedetail.manualdiscountamount) || target.Contains(quotedetail.res_taxableamount))
             {
+                
                 EntityReference erQuote = postImage.GetAttributeValue<EntityReference>(quotedetail.quoteid);
 
                 if (erQuote == null)
@@ -50,10 +80,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                 if (scontoTotale == scontoTotalePre && totaleImponibile == totaleImponibilePre && totaleIva == totaleIvaPre)
                 {
-                    crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
+                    //crmServiceProvider.TracingService.Trace("I valori non sono cambiati, evitato aggiornamento.");
                     return; // Interrompe l'aggiornamento se i valori non sono cambiati
                 }
-
+                
                 decimal aliquota = 0;
                 decimal importoSpesaAccessoria = 0;
 
@@ -73,10 +103,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                       </entity>
                                     </fetch>";
 
+                crmServiceProvider.TracingService.Trace(fetchXml);
+
                 EntityCollection aggregatiRigheOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
 
                 if (aggregatiRigheOfferta.Entities.Count > 0)
                 {
+                    
                     scontoTotale = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("ScontoTotale") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("ScontoTotale").Value : 0;
                     totaleImponibile = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleImponibile") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleImponibile").Value : 0;
                     totaleIva = aggregatiRigheOfferta.Entities[0].ContainsAliasNotNull("TotaleIva") ? aggregatiRigheOfferta.Entities[0].GetAliasedValue<Money>("TotaleIva").Value : 0;
@@ -99,10 +132,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                                   </entity>
                                 </fetch>";
 
+                    crmServiceProvider.TracingService.Trace(fetchXml2);
                     EntityCollection ecOfferta = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml2));
 
                     if (ecOfferta.Entities.Count > 0)
                     {
+                        
                         importoSpesaAccessoria = ecOfferta.Entities[0].ContainsAttributeNotNull(quote.freightamount) ? ecOfferta.Entities[0].GetAttributeValue<Money>(quote.freightamount).Value : 0;
                         aliquota = ecOfferta.Entities[0].ContainsAliasNotNull("Aliquota") ? ecOfferta.Entities[0].GetAliasedValue<decimal>("Aliquota") : 0;
                     }
@@ -129,12 +164,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"offerta_Totale_Iva {offertaTotaleIva}");
 
                     Entity enQuote = new Entity(quote.logicalName, erQuote.Id);
-
+                    
                     enQuote[quote.totallineitemamount] = offertaTotaleProdotti != 0 ? new Money(offertaTotaleProdotti) : null;
                     enQuote[quote.totaldiscountamount] = offertaScontoTotale != 0 ? new Money(offertaScontoTotale) : null;
                     enQuote[quote.totaltax] = offertaTotaleIva != 0 ? new Money(offertaTotaleIva) : null;
 
                     crmServiceProvider.Service.Update(enQuote);
+                    
                 }
             }
             #endregion
