@@ -35,7 +35,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
 
             EntityReference codiceIva = null;
-            decimal aliquota = 0;
+            decimal? aliquota = null;
             decimal scontoTotale;
             decimal importo;
             decimal totaleImponibile = 0;
@@ -53,7 +53,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
 
                 if (target.Contains(salesorderdetail.res_vatnumberid))
                 {
-                    codiceIva = target.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid) ?? null;
+                    codiceIva = target.ContainsAttributeNotNull(salesorderdetail.res_vatnumberid) ? target.GetAttributeValue<EntityReference>(salesorderdetail.res_vatnumberid) : null;
                 }
                 else
                 {
@@ -61,12 +61,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 }
                 Entity enCodiceIva = codiceIva != null ? crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, codiceIva.Id, new ColumnSet(res_vatnumber.res_rate)) : null;
 
-                aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
+                aliquota = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? null;
                 scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
                 totaleImponibile = omaggio ? 0 : importo - scontoTotale;
-                totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
+                totaleIva = omaggio ? 0 : (totaleImponibile * (aliquota == null ? 1 : aliquota.Value)) / 100;
                 importoTotale = totaleImponibile + totaleIva;
             }
             else
@@ -79,41 +79,41 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     var fetchProdotto = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                     <fetch>
                                       <entity name=""{product.logicalName}"">
-                                        <attribute name=""{product.productnumber}"" alias=""CodiceArticolo"" />
+                                        <attribute name=""{product.productnumber}"" />
+                                        <attribute name=""{product.res_vatnumberid}"" />
                                         <filter>
-                                          <condition attribute=""{product.statecode}"" operator=""eq"" value=""{(int)product.statecodeValues.Attivo}"" />
+                                          <condition attribute=""{product.statecode}"" operator=""in""><value>{(int)product.statecodeValues.Attivo}</value><value>{(int)product.statecodeValues.Inaggiornamento}</value></condition>"" />
                                           <condition attribute=""{product.productid}"" operator=""eq"" value=""{erProduct.Id}"" />
                                         </filter>
-                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIVA"">
-                                          <attribute name=""{res_vatnumber.res_vatnumberid}"" alias=""CodiceIVAGuid"" />
-                                          <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
+                                        <link-entity name=""{res_vatnumber.logicalName}"" from=""{res_vatnumber.res_vatnumberid}"" to=""{res_vatnumber.res_vatnumberid}"" alias=""{res_vatnumber.logicalName}"" link-type=""outer"">
+                                          <attribute name=""{res_vatnumber.res_rate}"" />
                                         </link-entity>
                                       </entity>
                                     </fetch>";
                     if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(fetchProdotto);
                     EntityCollection collection = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchProdotto));
 
-                    if (collection.Entities.Count > 0)
+                    if (collection?.Entities?.Count > 0)
                     {
                         if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"La fetch ha prodotto risultati"); }
                         Entity prodotto = collection.Entities[0];
 
                         #region Valorizzo Codice articolo
                         PluginRegion = "Valorizzo Codice articolo";
-                        string codiceArticolo = prodotto.GetAttributeValue<AliasedValue>("CodiceArticolo")?.Value is string productNumber ? productNumber : null;
+                        string codiceArticolo = prodotto.ContainsAttributeNotNull(product.productnumber) ? prodotto.GetAttributeValue<string>(product.productnumber) : null;
                         target[salesorderdetail.res_itemcode] = codiceArticolo;
                         #endregion
 
-                        //dalla fetch
-                        Guid codiceIvaGuid = prodotto.GetAttributeValue<AliasedValue>("CodiceIVAGuid")?.Value is Guid vatnumberid ? vatnumberid : Guid.Empty;
-                        codiceIva = codiceIvaGuid != Guid.Empty ? new EntityReference(res_vatnumber.logicalName, codiceIvaGuid) : null;
 
-                        aliquota = prodotto.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal rate ? rate : 0m;
+                        codiceIva = prodotto.ContainsAttributeNotNull(product.res_vatnumberid) ? prodotto.GetAttributeValue<EntityReference>(product.res_vatnumberid) : null;
+
+                        aliquota = prodotto.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? prodotto.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 0m;
+
                         scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
-                        totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
+                        totaleIva = omaggio ? 0 : (totaleImponibile * (aliquota == null ? 1 : aliquota.Value)) / 100;
                         importoTotale = totaleImponibile + totaleIva;
 
                         if (PluginActiveTrace)
@@ -135,28 +135,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             target[salesorderdetail.extendedamount] = new Money(importoTotale);
             #endregion
 
-            #region Gestisco il campo Prezzo unitario modificato da Canvas App
-            PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
-
-            bool isFromCanvas = target.ContainsAttributeNotNull("res_isfromcanvas") && target.GetAttributeValue<bool>("res_isfromcanvas");
-
-            crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}");
-
-            if (isFromCanvas)
-            {
-                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(salesorderdetail.priceperunit) ? preImage.GetAttributeValue<Money>(salesorderdetail.priceperunit).Value : 0;
-                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? preImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
-
-                
-                    crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}");
-                   
-                
-
-                target[salesorderdetail.priceperunit] = new Money(preImagePriceperunit);
-                target[salesorderdetail.baseamount] = new Money(preImageBaseamount);
-                target[salesorderdetail.res_isfromcanvas] = false;
-            }
-            #endregion
         }
     }
 }

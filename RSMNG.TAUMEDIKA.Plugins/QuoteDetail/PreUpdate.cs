@@ -41,23 +41,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
 
 
-            ///TEST
-            StringBuilder traceMessage = new StringBuilder();
-            traceMessage.AppendLine("Attributes received in Target:");
-
-            // Loop through each attribute in the entity
-            foreach (var attribute in target.Attributes)
-            {
-                string attributeName = attribute.Key;
-                object attributeValue = attribute.Value;
-
-                // Append each attribute's name and value to the trace message
-                traceMessage.AppendLine($"{attributeName}: {attributeValue}");
-            }
-
-            // Trace the final message
-            crmServiceProvider.TracingService.Trace(traceMessage.ToString());
-
             bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
 
             EntityReference codiceIva = null;

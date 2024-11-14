@@ -35,31 +35,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             EntityReference enIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
             string vatnumberId = enIva != null ? enIva.Id.ToString() : "null";
             crmServiceProvider.TracingService.Trace("vatnubmer id: " + vatnumberId);
-            /*
-            if(target.Contains(quotedetail.res_isfromcanvas) && target.GetAttributeValue<bool>(quotedetail.res_isfromcanvas) == true)
-            {
-                if(target.ContainsAttributeNotNull(quotedetail.ispriceoverridden) && target.GetAttributeValue<bool>(quotedetail.ispriceoverridden) == true)
-                {
-                    string name = target.ContainsAttributeNotNull(quotedetail.quotedetailname) ? target.GetAttributeValue<string>(quotedetail.quotedetailname) : string.Empty;
-                    decimal prezzoUnitario = target.ContainsAttributeNotNull(quotedetail.priceperunit) ? target.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
-                    decimal quantita = target.ContainsAttributeNotNull(quotedetail.quantity) ? target.GetAttributeValue<decimal>(quotedetail.quantity) : 0;
-                    decimal Importo = target.ContainsAttributeNotNull(quotedetail.baseamount) ? target.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
-
-
-
-                    totaleImponibile = omaggio ? 0 : importo - scontoTotale;
-                    totaleIva = omaggio ? 0 : (totaleImponibile * aliquota) / 100;
-                    importoTotale = totaleImponibile + totaleIva;
-
-                    target[quotedetail.res_vatnumberid] = codiceIva;
-                    target[quotedetail.res_vatrate] = aliquota;
-                    target[quotedetail.res_taxableamount] = new Money(totaleImponibile);
-                    target[quotedetail.tax] = new Money(totaleIva);
-                    target[quotedetail.extendedamount] = new Money(importoTotale);
-                }
-                
-            }
-            */
+            
             
         }
     }

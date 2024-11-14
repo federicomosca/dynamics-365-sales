@@ -167,12 +167,12 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 var fetchSalesOrder = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                                 <fetch>
                                   <entity name=""{salesorder.logicalName}"">
-                                    <attribute name=""{salesorder.freightamount}"" alias=""ImportoSpesaAccessoria"" />
+                                    <attribute name=""{salesorder.freightamount}"" />
                                     <filter>
                                       <condition attribute=""{salesorder.salesorderid}"" operator=""eq"" value=""{salesorderId}"" />
                                     </filter>
-                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""CodiceIva"">
-                                      <attribute name=""{res_vatnumber.res_rate}"" alias=""Aliquota"" />
+                                    <link-entity name=""{res_vatnumber.logicalName}"" from=""res_vatnumberid"" to=""res_vatnumberid"" alias=""{res_vatnumber.logicalName}"">
+                                      <attribute name=""{res_vatnumber.res_rate}"" />
                                     </link-entity>
                                   </entity>
                                 </fetch>";
@@ -184,10 +184,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 {
                     Entity enSalesOrder = orderCollection.Entities[0];
 
-                    decimal importoSpesaAccessoria = enSalesOrder.GetAttributeValue<AliasedValue>("ImportoSpesaAccessoria")?.Value is Money freightamount ? freightamount.Value : 0;
-                    decimal aliquota = enSalesOrder.GetAttributeValue<AliasedValue>("Aliquota")?.Value is decimal res_rate ? res_rate : 0;
-
-                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria != 0 && aliquota != 0 ? importoSpesaAccessoria * (aliquota / 100) : 0;
+                    decimal importoSpesaAccessoria = enSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ?  enSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
+                   
+                    decimal aliquota = enSalesOrder.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? enSalesOrder.GetAliasedValue<Money>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}").Value : 1;
+                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * ((aliquota == 0 ? 1: aliquota) / 100);
 
                     totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
@@ -240,7 +240,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                                     </fetch>";
 
                 EntityCollection ecQuoteClose = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
-
+                
                 if (ecQuoteClose.Entities.Count > 0 && ecQuoteClose.Entities[0].ContainsAttributeNotNull("actualend"))
                 {                    
                     target[salesorder.res_date] = ecQuoteClose.Entities[0].GetAttributeValue<DateTime>("actualend");
