@@ -357,15 +357,17 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         //se è stato selezionato il codice iva spesa accessoria
         if (codiceIvaId) {
             const codiceIvaSpesaAccessoria = await Xrm.WebApi.retrieveRecord("res_vatnumber", codiceIvaId, "?$select=res_rate");
-            const aliquotaCodiceIVA = codiceIvaSpesaAccessoria ? codiceIvaSpesaAccessoria.res_rate : 0;
+            let aliquotaCodiceIVA = codiceIvaSpesaAccessoria ? codiceIvaSpesaAccessoria.res_rate : 0;
 
             if (!importoSpesaAccessoria) {
                 const spesaAccessoria = await Xrm.WebApi.retrieveRecord("res_additionalexpense", spesaAccessoriaId, "?$select=res_amount")
                 importoSpesaAccessoria = spesaAccessoria ? spesaAccessoria.res_amount : 0;
             }
 
-            //calcolo l'iva sulla spesa accessoria
-            const ivaSpesaAccessoria = importoSpesaAccessoria ? importoSpesaAccessoria * (aliquotaCodiceIVA ? aliquotaCodiceIVA / 100 : 0) : 0;
+            //calcolo l'iva sulla spesa 
+            importoSpesaAccessoria = !importoSpesaAccessoria || importoSpesaAccessoria === 0 ? 1 : importoSpesaAccessoria;
+            aliquotaCodiceIVA = !aliquotaCodiceIVA || aliquotaCodiceIVA === 0 ? 1 : aliquotaCodiceIVA;
+            const ivaSpesaAccessoria = importoSpesaAccessoria * (aliquotaCodiceIVA / 100);
 
             const totaleIVA = righeTotaleIva + ivaSpesaAccessoria;
             const totaleImponibile = righeTotaleImponibile + importoSpesaAccessoria;

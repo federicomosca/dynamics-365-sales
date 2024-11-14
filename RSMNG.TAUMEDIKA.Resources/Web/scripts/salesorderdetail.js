@@ -187,11 +187,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let a = aliquota;
         let tax = null;
 
-        if (i != null && a != null && i >= 0) {
-
+        if (i != null && i >= 0) {
+            a = a === 0 || a == null ? a = 1 : a;
             tax = (i * a) / 100;
         }
-
         return tax;
     };
     //---------------------------------------------------
@@ -363,7 +362,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_taxableamount).setValue(imponibile);
         formContext.getAttribute(_self.formModel.fields.tax).setValue(totIva);
         formContext.getAttribute(_self.formModel.fields.extendedamount).setValue(importoTot);
-
     };
     //---------------------------------------------------
     _self.getProductDetails = function (productId) {
@@ -403,60 +401,14 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         });
     };
     //---------------------------------------------------
-    //_self.getProductPriceLevelAmount = function (productId) {
-    //    return new Promise(function (resolve, reject) {
-
-    //        // Recupero importo presente su Voce Listino
-    //        var fetchData = {
-    //            "productid": productId
-    //        };
-    //        var fetchXml = [
-    //            "?fetchXml=<fetch>",
-    //            "  <entity name='product'>",
-    //            "    <filter>",
-    //            "      <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-    //            "    </filter>",
-    //            "    <link-entity name='pricelevel' from='pricelevelid' to='pricelevelid' link-type='inner' alias='Listino'>",
-    //            "      <link-entity name='productpricelevel' from='pricelevelid' to='pricelevelid' alias='VoceListino'>",
-    //            "        <attribute name='amount'/>",
-    //            "        <filter>",
-    //            "          <condition attribute='productid' operator='eq' value='", fetchData.productid, "' />",
-    //            "        </filter>",
-    //            "      </link-entity>",
-    //            "    </link-entity>",
-    //            "  </entity>",
-    //            "</fetch>"
-    //        ].join("");
-    //        console.log(fetchXml);
-    //        Xrm.WebApi.retrieveMultipleRecords("product", fetchXml).then(
-    //            results => {
-
-    //                let amount = results.entities.length > 0 && results.entities[0]["VoceListino.amount"] != undefined ? results.entities[0]["VoceListino.amount"] : null;
-    //                resolve(amount);
-
-    //            },
-    //            error => {
-    //                reject(error);
-    //            }
-    //        );
-    //    });
-    //};
-
-    //---------------------------------------------------
     _self.onChangeDiscountPercent1 = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
 
     };
     _self.onChangeDiscountPercent2 = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
     _self.onChangeDiscountPercent3 = function (executionContext) {
-        const formContext = executionContext.getFormContext();
-
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
     };
     //---------------------------------------------------
@@ -468,7 +420,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         let disc1 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage1).getValue() ?? 0;
         let disc2 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage2).getValue() ?? 0;
         let disc3 = formContext.getAttribute(_self.formModel.fields.res_discountpercentage3).getValue() ?? 0;
-
 
         //-----------------------
         if (disc1 == 0 || disc1 == 100) {
