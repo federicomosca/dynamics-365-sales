@@ -186,7 +186,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
                     decimal importoSpesaAccessoria = enSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ?  enSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
                    
-                    decimal aliquota = enSalesOrder.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? enSalesOrder.GetAliasedValue<Money>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}").Value : 1;
+                    decimal aliquota = enSalesOrder.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? (decimal)enSalesOrder.GetAliasedValue<Money>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}").Value : 1;
                     decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * ((aliquota == 0 ? 1: aliquota) / 100);
 
                     totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
