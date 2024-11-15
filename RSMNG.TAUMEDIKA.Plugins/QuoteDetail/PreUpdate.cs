@@ -119,7 +119,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
                         codiceIva = prodotto.ContainsAttributeNotNull(product.res_vatnumberid) ? prodotto.GetAttributeValue<EntityReference>(product.res_vatnumberid) : null;
 
-                        aliquota = prodotto.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? prodotto.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 0m;
+                        aliquota = prodotto.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? (decimal)prodotto.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 0m;
                         scontoTotale = postImage.ContainsAttributeNotNull(quotedetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(quotedetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(quotedetail.baseamount) ? postImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
