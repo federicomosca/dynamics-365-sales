@@ -58,9 +58,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             #region Imposto il motivo stato su Approvato
             PluginRegion = "Imposto il motivo stato su Approvato";
 
-            if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Parent Context: {crmServiceProvider.PluginContext.ParentContext.MessageName}");
-
-
+            if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Parent Context: {crmServiceProvider.PluginContext.ParentContext.PrimaryEntityName}");
             #endregion
         }
     }

@@ -17,7 +17,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Contact
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.contact.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
