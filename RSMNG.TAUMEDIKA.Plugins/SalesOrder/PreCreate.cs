@@ -19,7 +19,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.salesorder.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -55,6 +55,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             }
             #endregion
 
+            #region Imposto il motivo stato su Approvato
+            PluginRegion = "Imposto il motivo stato su Approvato";
+
+            if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Parent Context: {crmServiceProvider.PluginContext.ParentContext.MessageName}");
+
+
+            #endregion
         }
     }
 }
