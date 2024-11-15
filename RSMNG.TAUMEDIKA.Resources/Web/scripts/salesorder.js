@@ -813,7 +813,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 }
             );
         }
-
     };
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = function (executionContext) {
