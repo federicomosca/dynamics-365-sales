@@ -57,7 +57,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     };
     //--------------------------------------------------
     _self.isInvoiceRequested = formContext => {
-        return formContext.getAttribute("res_isinvoicerequested") == 1 ? true : false;
+        return formContext.getAttribute("res_isinvoicerequested").getValue();
     }
     //--------------------------------------------------
     _self.hasQuoteDetails = formContext => {
@@ -94,7 +94,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                 case "CREATE_ORDER": //crea ordine
                     if (currentStatus === _self.STATUS.APPROVATA && hasQuoteDetails) {
                         visible = true;
-                        if (_self.isInvoiceRequested(formContext)) {
+                        if (_self.isInvoiceRequested(formContext) == 1) {
                             try {
                                 //controllo se mancano dati nell'anagrafica del potenziale cliente
                                 let missingData = null;
@@ -105,7 +105,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
                                     if (missingData.length > 0) {
                                         visible = false;    //se mancano dati nascondo il button
-                                        console.log("Missing customer data:", missingData);
                                     }
                                 }
                             } catch (error) {
@@ -189,9 +188,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
                     function (result) {
 
                         if (result.returnValue != null) {
-
-                            console.log("navigate ok");
-
                         }
                     },
 
