@@ -20,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {

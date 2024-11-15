@@ -32,9 +32,9 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             EntityReference enIva = target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid);
             string vatnumberId = enIva != null ? enIva.Id.ToString() : "null";
-            crmServiceProvider.TracingService.Trace("vatnubmer id: " + vatnumberId);
-            
-            
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("vatnubmer id: " + vatnumberId);
+
+
         }
     }
 }
