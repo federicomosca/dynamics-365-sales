@@ -16,7 +16,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
         {
             PluginStage = Stage.PRE;
             PluginMessage = "Update";
-            PluginPrimaryEntityName = DataModel.salesorder.logicalName;
+            PluginPrimaryEntityName = salesorder.logicalName;
             PluginRegion = "";
             PluginActiveTrace = false;
         }

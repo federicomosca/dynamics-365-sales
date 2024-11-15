@@ -46,19 +46,32 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
 
             #region Valorizzo il campo Nazione (testo)
             PluginRegion = "Valorizzo il campo Nazione (testo)";
-            if (target.Contains(DataModel.salesorder.res_countryid))
+            if (target.Contains(salesorder.res_countryid))
             {
                 target.TryGetAttributeValue<EntityReference>(DataModel.salesorder.res_countryid, out EntityReference erCountry);
                 string countryName = erCountry != null ? RSMNG.TAUMEDIKA.Shared.Country.Utility.GetName(crmServiceProvider.Service, erCountry.Id) : string.Empty;
 
-                target[DataModel.contact.address1_country] = countryName;
+                target[contact.address1_country] = countryName;
             }
             #endregion
 
             #region Imposto il motivo stato su Approvato
             PluginRegion = "Imposto il motivo stato su Approvato";
 
-            if(PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Parent Context: {crmServiceProvider.PluginContext.ParentContext.PrimaryEntityName}");
+            bool isFromQuote = false;
+
+            IPluginExecutionContext context = crmServiceProvider.PluginContext.ParentContext;
+            IPluginExecutionContext parentContext = context?.ParentContext;
+            if (parentContext != null)
+            {
+                isFromQuote = parentContext.MessageName == "ConvertQuoteToSalesOrder";
+                if (isFromQuote)
+                {
+                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Ordine generato dall'offerta? {isFromQuote}");
+                    target[salesorder.statuscode] = new OptionSetValue((int)salesorder.statuscodeValues.Approvato_StateAttivo);
+                }
+            }
+            else { if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Ordine generato dall'offerta? {isFromQuote}"); }
             #endregion
         }
     }
