@@ -31,17 +31,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
-            crmServiceProvider.TracingService.Trace("quotedetail pre update");
-
             VerifyMandatoryField(crmServiceProvider, TAUMEDIKA.Shared.QuoteDetail.Utility.mandatoryFields);
             if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"I campi obbligatori sono stati verificati"); }
             #endregion
-            crmServiceProvider.TracingService.Trace("01");
+
             #region Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo
             PluginRegion = "Valorizzo i campi Codice IVA, Aliquota IVA, Totale IVA e Codice Articolo";
 
-
-            bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) ? target.GetAttributeValue<bool>(quotedetail.res_ishomage) : false;
+            bool omaggio = target.ContainsAttributeNotNull(quotedetail.res_ishomage) && target.GetAttributeValue<bool>(quotedetail.res_ishomage);
 
             EntityReference codiceIva = null;
             decimal? aliquota = null;
@@ -146,7 +143,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
 
-            /*
+
             #region Gestisco il campo Prezzo unitario modificato da Canvas App
             PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
@@ -156,20 +153,23 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             if (isFromCanvas)
             {
-                decimal preImagePriceperunit = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
-                decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+                EntityReference preImageCodiceIva = preImage.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ? preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) : null;
+                //decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                if (PluginActiveTrace) {
-                    crmServiceProvider.TracingService.Trace($"PreImage Prezzo Unitario: {preImagePriceperunit}, PreImage Importo: {preImageBaseamount}");
-                   
+                if (PluginActiveTrace)
+                {
+                    if (preImageCodiceIva != null)
+                    {
+                        Entity enCodiceIva = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, preImageCodiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+                        crmServiceProvider.TracingService.Trace($"PreImage Codice IVA: {enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate)}");
+                    }
                 }
-
-                target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
-                target[quotedetail.baseamount] = new Money(preImageBaseamount);
+                target[quotedetail.res_vatnumberid] = preImageCodiceIva;
+                //target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
+                //target[quotedetail.baseamount] = new Money(preImageBaseamount);
                 target[quotedetail.res_isfromcanvas] = false;
             }
             #endregion
-            */
         }
     }
 }
