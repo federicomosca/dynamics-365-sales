@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             PluginMessage = "Update";
             PluginPrimaryEntityName = DataModel.salesorder.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {

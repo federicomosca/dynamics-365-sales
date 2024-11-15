@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             PluginMessage = "Create";
             PluginPrimaryEntityName = DataModel.salesorderdetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -33,8 +34,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             mandatoryFieldName.Add(salesorderdetail.productid);
             VerifyMandatoryField(crmServiceProvider, mandatoryFieldName);
             #endregion
-
-
         }
     }
 }
