@@ -116,7 +116,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
                     Entity enQuote = quoteCollection.Entities[0];
 
                     decimal importoSpesaAccessoria = enQuote.ContainsAttributeNotNull(quote.freightamount) ? enQuote.GetAttributeValue<Money>(quote.freightamount).Value : 0;
-                    decimal aliquota = enQuote.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? (decimal)enQuote.GetAliasedValue<Money>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}").Value : 1;
+                    decimal aliquota = enQuote.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? enQuote.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 1;
                     decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * ((aliquota == 0 ? 1 : aliquota) / 100);
 
                     totaleIva += aliquotaImportoSpesaAccessoria;
