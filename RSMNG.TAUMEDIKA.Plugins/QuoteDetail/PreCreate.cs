@@ -18,12 +18,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Create";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            if(PluginActiveTrace) crmServiceProvider.TracingService.Trace(PluginMessage);
 
+            Entity target = (Entity)crmServiceProvider.PluginContext.InputParameters["Target"];
+            
             #region Controllo campi obbligatori
             PluginRegion = "Controllo campi obbligatori";
 
