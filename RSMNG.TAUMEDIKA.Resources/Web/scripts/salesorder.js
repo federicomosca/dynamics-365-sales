@@ -737,6 +737,53 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }
     };
     //---------------------------------------------------
+    _self.getQuoteDetailsCount = gridContext => {
+        return new Promise((resolve, reject) => {
+            if (!gridContext) {
+                reject("Subgrid not found");
+                return;
+            }
+            gridContext.addOnLoad(() => {
+                const subgrid = gridContext.getGrid();
+                if (subgrid) {
+                    const count = subgrid.getTotalRecordCount();
+                    resolve(count);  // Restituisce il conteggio dei record quando disponibile
+                } else {
+                    reject("subgrid not loaded.");
+                }
+            });
+        });
+    };
+    //---------------------------------------------------
+    _self.addSubgridEventListener = executionContext => {
+        const formContext = executionContext.getFormContext();
+        const gridContext = formContext.getControl("salesorderdetailsGrid");
+
+        if (!gridContext) {
+            setTimeout(() => { _self.addSubgridEventListener(executionContext); }, 500);
+            return;
+        }
+        gridContext.addOnLoad(_self.subgridEventListener);
+    };
+    //---------------------------------------------------
+    _self.subgridEventListener = executionContext => {
+        const formContext = executionContext.getFormContext();
+        formContext.ui.clearFormNotification("HAS_SALESORDER_DETAILS");
+        var subgridControl = formContext.getControl("salesorderdetailsGrid");
+
+        setTimeout(() => {
+            if (subgridControl.getGrid().getTotalRecordCount() == 0) {
+                const notification = {
+                    message: "Per mandare in approvazione, approvare o acquisire l'ordine è necessario aggiungere almeno un prodotto.",
+                    level: "INFO",
+                    uniqueId: "HAS_SALESORDER_DETAILS"
+                };
+                formContext.ui.setFormNotification(notification.message, notification.level, notification.uniqueId);
+                formContext.ui.refreshRibbon();
+            } else { formContext.ui.refreshRibbon(); }
+        }, 500);
+    };
+    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -807,6 +854,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
         }
+
+        _self.addSubgridEventListener(executionContext);
+
 
         //----------------------------------------------
         _self.onChangeWillCall(executionContext, false);

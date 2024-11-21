@@ -80,6 +80,15 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         return formContext.getAttribute("res_isinvoicerequested").getValue();
     }
     //--------------------------------------------------
+    _self.getPotentialCustomerId = formContext => {
+        let potentialCustomerId = null;
+        const potentialCustomerControl = formContext.getControl("customerid");
+        if (potentialCustomerControl) {
+            potentialCustomerId = potentialCustomerControl.getAttribute().getValue() ? potentialCustomerControl.getAttribute().getValue()[0].id : null;
+        }
+        return potentialCustomerId ?? null;
+    };
+    //--------------------------------------------------
 
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
@@ -97,8 +106,30 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     if (formContext.ui.getFormType() != 1) {
                         if (currentStatus === _self.STATUS.Bozza &&
                             _self.Agent === true &&
-                            (_self.isInvoiceRequested(formContext) == 0 || _self.isInvoiceRequested(formContext) == 1 && hasSalesOrderDetails)) {
-                            isVisible = true;
+                            hasSalesOrderDetails) {
+                            try {
+                                if (_self.isInvoiceRequested(formContext) == 1) {
+
+                                    //controllo se mancano dati nell'anagrafica del potenziale cliente
+                                    let missingData = null;
+                                    const potentialCustomerId = _self.getPotentialCustomerId(formContext);
+
+                                    if (potentialCustomerId) {
+                                        missingData = await RSMNG.TAUMEDIKA.GLOBAL.retrievePotentialCustomerMissingData(formContext, potentialCustomerId);
+
+                                        if (missingData.length > 0) {
+                                            isVisible = false;    //se mancano dati nascondo il button
+                                        } else {
+                                            isVisible = true;
+                                        }
+                                    }
+                                } else {
+                                    isVisible = true;
+                                }
+                            } catch (error) {
+                                console.error("Error checking customer data:", error);
+                                visible = false;
+                            }
                         }
                     }
                     break;
