@@ -111,11 +111,20 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
 
                 case "IN_LAVORAZIONE":
-                    if (currentStatus === _self.STATUS.Approvato) { isVisible = true; }
+                    if (currentStatus === _self.STATUS.Approvato && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
                     break;
                 case "SPEDITO":
-                    if (currentStatus === _self.STATUS.Approvato || currentStatus === _self.STATUS.Inlavorazione) { isVisible = true; }
+                    if (currentStatus === _self.STATUS.Approvato || currentStatus === _self.STATUS.Inlavorazione)
+                    {
+                        if (_self.Agent === false || _self.Agent === null) { isVisible = true; }
+                        
+                    }
 
+
+                    break;
+
+                case "ANNULLA_ORDINE":
+                    if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) { isVisible = true; }
                     break;
             }
             return isVisible;
