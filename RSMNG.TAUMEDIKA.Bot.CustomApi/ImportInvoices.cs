@@ -257,6 +257,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
                                     Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
                                     ePaymentTerm.Id = ePaymentTermId;
+                                    lPaymentTerm.Add(ePaymentTerm);
                                 }
                             }
 
@@ -273,6 +274,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     eBankDetails.Attributes.Add(res_bankdetails.res_name, sBankDetails);
                                     Guid eBankDetailsId = crmServiceProvider.Service.Create(eBankDetails);
                                     eBankDetails.Id = eBankDetailsId;
+                                    lBankDetails.Add(eBankDetails);
                                 }
                             }
 
