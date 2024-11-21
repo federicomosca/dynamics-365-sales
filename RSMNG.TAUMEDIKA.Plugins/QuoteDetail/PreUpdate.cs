@@ -153,18 +153,18 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
 
             if (isFromCanvas)
             {
-                EntityReference preImageCodiceIva = preImage.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ? preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) : null;
+                //EntityReference preImageCodiceIva = preImage.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ? preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) : null;
                 //decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
 
-                if (PluginActiveTrace)
-                {
-                    if (preImageCodiceIva != null)
-                    {
-                        Entity enCodiceIva = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, preImageCodiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
-                        crmServiceProvider.TracingService.Trace($"PreImage Codice IVA: {enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate)}");
-                    }
-                }
-                target[quotedetail.res_vatnumberid] = preImageCodiceIva;
+                //if (PluginActiveTrace)
+                //{
+                //    if (preImageCodiceIva != null)
+                //    {
+                //        Entity enCodiceIva = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, preImageCodiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+                //        crmServiceProvider.TracingService.Trace($"PreImage Codice IVA: {enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate)}");
+                //    }
+                //}
+                //target[quotedetail.res_vatnumberid] = preImageCodiceIva;
                 //target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
                 //target[quotedetail.baseamount] = new Money(preImageBaseamount);
                 target[quotedetail.res_isfromcanvas] = false;

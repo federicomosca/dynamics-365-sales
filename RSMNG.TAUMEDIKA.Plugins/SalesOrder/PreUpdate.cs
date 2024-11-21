@@ -41,105 +41,15 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             target.AddWithRemove(salesorder.res_recipient, destination);
             #endregion
 
-            #region Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale [DISABLED]
-            //PluginRegion = "Calcolo automatizzato Totale righe, Sconto totale, Totale imponibile, Totale IVA, Importo totale";
+            #region Valorizzazione automatica del campo Motivo Stato Precedente
+            PluginRegion = "Valorizzazione automatica del campo Motivo Stato Precedente";
 
-            //if (target.Contains(salesorder.totallineitemamount) ||
-            //    target.Contains(salesorder.totaldiscountamount) ||
-            //    target.Contains(salesorder.totaltax) ||
-            //    target.Contains(salesorder.freightamount) ||
-            //    target.Contains(salesorder.res_vatnumberid) ||
-            //    target.Contains(salesorder.freightamount)
-            //    )
-            //{
-            //    decimal totImponibileRighe = 0;
-            //    decimal totIvaRighe = 0;
-            //    decimal importoSpesaAccessoria = 0;
-            //    decimal totScontoRighe = 0;
-            //    decimal aliquotaSpesaAccessoria = 0;
-            //    decimal freightAmountRate = 0;
-            //    decimal totaleImponibile = 0;
-            //    decimal totaleIva = 0;
-            //    decimal importoTotale = 0;
-            //    decimal scontoTotaleApplicato = 0;
-
-            //    bool isTrace = false;
-
-
-            //    //----Importo Spesa Accessoria
-            //    Money freightamount = target.Contains(salesorder.freightamount) ? target.GetAttributeValue<Money>(salesorder.freightamount) : preImage.GetAttributeValue<Money>(salesorder.freightamount);
-            //    importoSpesaAccessoria = freightamount != null ? freightamount.Value : 0;
-
-            //    //----Recupera Aliquota Codice IVA Spesa Accessoria
-            //    EntityReference erIvaSpesaAccessoria = target.Contains(salesorder.res_vatnumberid) ? target.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid) : preImage.GetAttributeValue<EntityReference>(salesorder.res_vatnumberid);
-
-            //    if (importoSpesaAccessoria != 0 && erIvaSpesaAccessoria != null)
-            //    {
-            //        Entity enVatNumber = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, erIvaSpesaAccessoria.Id, new Microsoft.Xrm.Sdk.Query.ColumnSet(new string[] { res_vatnumber.res_rate }));
-
-            //        aliquotaSpesaAccessoria = enVatNumber.ContainsAttributeNotNull(res_vatnumber.res_rate) ? enVatNumber.GetAttributeValue<decimal>(res_vatnumber.res_rate) : 0;
-            //        freightAmountRate = importoSpesaAccessoria * (aliquotaSpesaAccessoria / 100);
-            //    }
-
-
-            //        var fetchData = new
-            //        {
-            //            salesorderid = target.Id,
-            //        };
-            //        var fetchXml = $@"<?xml version=""1.0"" encoding=""utf-16""?>
-            //                <fetch aggregate=""true"">
-            //                  <entity name=""salesorderdetail"">
-            //                    <attribute name=""res_taxableamount"" alias=""taxableAmount"" aggregate=""sum"" />
-            //                    <attribute name=""manualdiscountamount"" alias=""ManualDiscountAmount"" aggregate=""sum"" />
-            //                    <attribute name=""tax"" alias=""Tax"" aggregate=""sum"" />
-            //                    <filter>
-            //                      <condition attribute=""salesorderid"" operator=""eq"" value=""{fetchData.salesorderid}"" />
-            //                    </filter>
-            //                  </entity>
-            //                </fetch>";
-            //        if (isTrace) { crmServiceProvider.TracingService.Trace(fetchXml); }
-
-            //        EntityCollection ecSum = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
-
-            //        if (ecSum != null)
-            //        {
-            //            crmServiceProvider.TracingService.Trace("00");
-            //            totImponibileRighe = ecSum[0].ContainsAliasNotNull("taxableAmount") ? ecSum[0].GetAliasedValue<Money>("taxableAmount").Value : 0;
-            //            totIvaRighe = ecSum[0].ContainsAliasNotNull("Tax") ? ecSum[0].GetAliasedValue<Money>("Tax").Value : 0;
-            //            totScontoRighe = ecSum[0].ContainsAliasNotNull("ManualDiscountAmount") ? ecSum[0].GetAliasedValue<Money>("ManualDiscountAmount").Value : 0;
-            //            crmServiceProvider.TracingService.Trace("01");
-            //            if (isTrace)
-            //            {
-            //                crmServiceProvider.TracingService.Trace("totalDiscountAmount: " + totImponibileRighe.ToString() + "\n" + "taxRowsSum: " + totIvaRighe);
-            //            }
-            //        }
-
-            //        scontoTotaleApplicato = totScontoRighe;
-            //        totaleIva = totIvaRighe + freightAmountRate;
-
-
-
-            //    totaleImponibile = totImponibileRighe - scontoTotaleApplicato + importoSpesaAccessoria;
-            //    importoTotale = totaleImponibile + totaleIva;
-
-            //    target[salesorder.totallineitemamount] = totImponibileRighe != 0 ? new Money(totImponibileRighe) : null; // Totale Righe = Somma totale imponibile righe
-            //    target[salesorder.totalamountlessfreight] = totaleImponibile != 0 ? new Money(totaleImponibile) : null;
-            //    target[salesorder.totaldiscountamount] = totScontoRighe != 0 ? new Money(totScontoRighe) : null;
-            //    target[salesorder.totaltax] = (totaleIva) != 0 ? new Money(totaleIva) : null;
-
-            //    target[salesorder.totalamount] = (importoTotale) != 0 ? new Money(importoTotale) : null;
-
-            //    if (isTrace)
-            //    {
-            //        crmServiceProvider.TracingService.Trace(
-            //            "totallineitemamount: " + totImponibileRighe.ToString() + "\n" +
-            //            "totalamountlessfreight: " + totaleImponibile.ToString() + "\n" +
-            //            "totaltax: " + totaleIva.ToString() + "\n" +
-            //            "totalamount: " + importoTotale.ToString()
-
-            //            );
-            //    }
-            //}
+            //recupero il motivo stato dalla preimage e lo salvo nel campo motivo stato precedente
+            preImage.TryGetAttributeValue<OptionSetValue>(quote.statuscode, out var previousStatusCode);
+            if (previousStatusCode != null)
+            {
+                target["res_oldstatuscode"] = previousStatusCode;
+            }
             #endregion
 
             #region Ricalcolo di Totale imponibile, Importo totale, Totale IVA
