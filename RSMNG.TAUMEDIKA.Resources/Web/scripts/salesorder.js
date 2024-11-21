@@ -219,7 +219,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     };
 
     _self.readOnlyFields = [
-        _self.formModel.fields.ordernumber,
+        //_self.formModel.fields.ordernumber,
         _self.formModel.fields.res_origincode,
         _self.formModel.fields.datefulfilled,
         _self.formModel.fields.totallineitemamount,
@@ -227,7 +227,12 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         _self.formModel.fields.totalamountlessfreight,
         _self.formModel.fields.totaltax,
         _self.formModel.fields.totalamount,
-        _self.formModel.fields.quoteid
+        _self.formModel.fields.quoteid,
+        _self.formModel.fields.shipto_city,
+        _self.formModel.fields.res_location,
+        _self.formModel.fields.shipto_stateorprovince,
+        _self.formModel.fields.res_countryid
+
     ];
 
     //---------------------< CAMPI SPESA ACCESSORIA >---------------------
@@ -853,6 +858,10 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
+
+            if (isAgent) {
+                formContext.getControl("WebResource_postalcode").setVisible(false);
+            }
         }
 
         _self.addSubgridEventListener(executionContext);
