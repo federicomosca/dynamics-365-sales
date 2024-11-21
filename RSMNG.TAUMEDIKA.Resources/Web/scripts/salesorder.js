@@ -706,6 +706,37 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(isDisable);
     };
     //---------------------------------------------------
+    _self.checkPotentialCustomerData = async executionContext => {
+        const formContext = executionContext.getFormContext();
+
+        const isInvoiceRequestedControl = formContext.getControl(_self.formModel.fields.res_isinvoicerequested);
+        const isInvoiceRequested = isInvoiceRequestedControl ? isInvoiceRequestedControl.getAttribute().getValue() ?? null : null;
+
+        if (isInvoiceRequested) {
+            const potentialCustomerControl = formContext.getControl(_self.formModel.fields.customerid);
+            const potentialCustomerId = potentialCustomerControl ? potentialCustomerControl.getAttribute().getValue() ? potentialCustomerControl.getAttribute().getValue()[0].id : null : null;
+
+            if (potentialCustomerId) {
+                try {
+                    const missingData = await RSMNG.TAUMEDIKA.GLOBAL.retrievePotentialCustomerMissingData(formContext, potentialCustomerId);
+                    //se mancano dei dati
+                    if (missingData.length > 0) {
+                        const missingDataString = missingData.join(", ");
+                        const notification = "Per acquisire l'ordine è necessario compilare i seguenti campi del potenziale cliente: " + missingDataString;
+                        formContext.ui.setFormNotification(notification, "WARNING", "missingDataNotification");
+                    } else {
+                        formContext.ui.clearFormNotification("missingDataNotification");
+                    }
+                } catch (error) {
+                    console.error("Error checking potential customer data:", error);
+                    formContext.ui.setFormNotification("Si è verificato un errore durante il controllo dei dati del cliente.", "ERROR", "errorNotification");
+                }
+            }
+        } else {
+            formContext.ui.clearFormNotification("missingDataNotification");
+        }
+    };
+    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -818,6 +849,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+        _self.checkPotentialCustomerData(executionContext);
+
     };
     //---------------------------------------------------
     _self.onSaveForm = function (executionContext) {
@@ -853,6 +886,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(() => { _self.onChangeWillCall(executionContext, true); });
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
 
+        formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
 
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
         //Init function

@@ -67,28 +67,19 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
  
     _self.Agent = undefined;
 
-    //_self.getAgent = function () {
-    //    return new Promise(function (resolve, reject) {
-    //        Xrm.WebApi.retrieveRecord("systemuser", Xrm.Utility.getGlobalContext().userSettings.userId, "?$select=res_isagente").then(
-    //            function success(result) {
-
-    //                resolve(result["res_isagente"]); // Boolean
-    //            },
-    //            function (error) {
-    //                reject(null);
-    //                console.log(error.message);
-    //            }
-    //        );
-    //    });
-    //};
-    
     //--------------------------------------------------
-
+    _self.hasQuoteDetails = formContext => {
+        const subgrid = formContext.getControl("quotedetailsGrid");
+        if (subgrid && subgrid.getGrid()) {
+            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
+        }
+    }
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
             let currentStatus = formContext.getAttribute("statuscode").getValue();           
             let isVisible = false;
+            const hasQuoteDetails = _self.hasQuoteDetails(formContext);
 
             if (_self.Agent === undefined) {
                 _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
@@ -97,7 +88,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 
                 case "APPROVAL": //in approvazione 
                     if (formContext.ui.getFormType() != 1) {
-                        if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) {
+                        if (currentStatus === _self.STATUS.Bozza && _self.Agent === true && hasQuoteDetails) {
                             isVisible = true;
                         }
                     }                    
