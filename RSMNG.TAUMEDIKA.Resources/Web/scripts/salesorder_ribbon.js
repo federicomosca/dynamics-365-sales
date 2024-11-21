@@ -30,7 +30,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 (function () {
 
     var _self = this;
-    
+
     _self.STATUS = {
         Annullato: 4,
         Approvato: 100005,
@@ -64,34 +64,43 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         "totalamount",
         "quoteid"
     ];
- 
+
     _self.Agent = undefined;
 
     //--------------------------------------------------
-    _self.hasQuoteDetails = formContext => {
-        const subgrid = formContext.getControl("quotedetailsGrid");
+    _self.hasSalesOrderDetails = formContext => {
+        const subgrid = formContext.getControl("salesorderdetailsGrid");
         if (subgrid && subgrid.getGrid()) {
+            console.log(subgrid.getGrid().getTotalRecordCount());
             return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
         }
     }
     //--------------------------------------------------
+    _self.isInvoiceRequested = formContext => {
+        return formContext.getAttribute("res_isinvoicerequested").getValue();
+    }
+    //--------------------------------------------------
+
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
-            let currentStatus = formContext.getAttribute("statuscode").getValue();           
+            let currentStatus = formContext.getAttribute("statuscode").getValue();
             let isVisible = false;
-            const hasQuoteDetails = _self.hasQuoteDetails(formContext);
+            const hasSalesOrderDetails = _self.hasSalesOrderDetails(formContext);
 
             if (_self.Agent === undefined) {
                 _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             }
+
             switch (status) {
 
                 case "APPROVAL": //in approvazione 
                     if (formContext.ui.getFormType() != 1) {
-                        if (currentStatus === _self.STATUS.Bozza && _self.Agent === true && hasQuoteDetails) {
+                        if (currentStatus === _self.STATUS.Bozza &&
+                            _self.Agent === true &&
+                            (_self.isInvoiceRequested(formContext) == 0 || _self.isInvoiceRequested(formContext) == 1 && hasSalesOrderDetails)) {
                             isVisible = true;
                         }
-                    }                    
+                    }
                     break;
 
                 case "APPROVED": //approvata
@@ -115,7 +124,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 
             await import('../res_scripts/res_global.js');
 
-
             const salesOrderId = formContext.data.entity.getId().replace(/[{}]/g, "");
 
             let statuscode = null;
@@ -138,7 +146,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     break;
                 case "NOT_APPROVED":
                     statuscode = _self.STATUS.Nonapprovato;
-                    statecode = _self.STATECODE.Annullato; 
+                    statecode = _self.STATECODE.Annullato;
                     break;
                 case "IN_LAVORAZIONE":
                     statuscode = _self.STATUS.Inlavorazione;
@@ -187,7 +195,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     // imposto read only tutti i campi
                     if (setAllReadOnly === true) {
 
-                    RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, true);
+                        RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, true);
                     }
 
                     if (result == 0) {
@@ -218,9 +226,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             else {
                 console.log("Errore: Bottone non riconosciuto o configurato male");
             }
-            
 
-            
+
+
         }
     };
     //-----------------------------------------------------------

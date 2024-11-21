@@ -893,6 +893,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         //Init function
         _self.addPriceLevelCustomView(executionContext);
         _self.setContextCapIframe(executionContext);
+        _self.checkPotentialCustomerData(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
