@@ -135,9 +135,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     break;
 
                 case "APPROVED": //approvata
-                    if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
-                    if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
-
+                    if (formContext.ui.getFormType() != 1) {
+                        if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
+                        if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
+                    }
+                    break;
                 case "NOT_APPROVED": //non approvata
                     if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
 
@@ -145,10 +147,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     if (currentStatus === _self.STATUS.Approvato && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
                     break;
                 case "SPEDITO":
-                    if (currentStatus === _self.STATUS.Approvato || currentStatus === _self.STATUS.Inlavorazione)
-                    {
+                    if (currentStatus === _self.STATUS.Approvato || currentStatus === _self.STATUS.Inlavorazione) {
                         if (_self.Agent === false || _self.Agent === null) { isVisible = true; }
-                        
+
                     }
 
 
