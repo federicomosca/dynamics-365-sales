@@ -851,19 +851,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         var formContext = executionContext.getFormContext();
 
-        //--- Blocca/Sblocca i campi in base a Utente-Agente e Motivo Stato---
-        let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
-
-        if (currStatus == _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttivo || currStatus == _self.formModel.fields.statuscodeValues.Approvato_StateAttivo) {
-
-            let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-            RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
-
-            if (isAgent) {
-                formContext.getControl("WebResource_postalcode").setVisible(false);
-            }
-        }
-
         _self.addSubgridEventListener(executionContext);
 
 
@@ -880,6 +867,27 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         const spesaAccessoria = formContext.getAttribute(_self.formModel.fields.res_additionalexpenseid).getValue();
         formContext.getControl(_self.formModel.fields.freightamount).setDisabled(spesaAccessoria ? false : true);
         formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(spesaAccessoria ? false : true);
+
+        //--- Blocca/Sblocca i campi in base a Utente-Agente e Motivo Stato---
+
+        let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+
+        if (currStatus == _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttivo ||
+            currStatus == _self.formModel.fields.statuscodeValues.Approvato_StateAttivo ||
+            currStatus == _self.formModel.fields.statuscodeValues.Annullato_StateAnnullato ||
+            currStatus == _self.formModel.fields.statecodeValues.Spedito_StateAttivo ||
+            currStatus == _self.formModel.fields.statecodeValues.Inlavorazione_StateAttivo
+
+        ) {
+
+            let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
+
+            if (isAgent) {
+                // nascono l'iframe che può modificare i valori di certi campi
+                formContext.getControl("WebResource_postalcode").setVisible(false);
+            }
+        }
         //-----
 
         let bankdetailsid = formContext.getAttribute(_self.formModel.fields.res_bankdetailsid).getValue();
