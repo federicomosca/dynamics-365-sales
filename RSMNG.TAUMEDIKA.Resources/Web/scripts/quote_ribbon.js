@@ -153,6 +153,18 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let isVisible = true;
 
+            let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+            let customerLookup = formContext.getAttribute("customerid").getValue();
+            
+            if (currStatus == _self.STATUS.APPROVATA ||
+                currStatus == _self.STATUS.AGGIORNATA ||
+                currStatus == _self.STATUS.PERSA ||
+                currStatus == _self.STATUS.ACQUISITA ||
+                customerLookup == null
+            ) {
+                isVisible = false;
+            }
+
 
             return isVisible;
         },
@@ -162,7 +174,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let customerLookup = formContext.getAttribute("customerid").getValue();
 
-            // gestire visibilita bottone se manca customer
+        
 
             if (customerLookup != null) {
 
@@ -200,15 +212,35 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
     };
     //--------------------------------------------------
     _self.MOBILEAPP = {
-        canExecute() { return true; },
-        execute() {
+        canExecute: async function (formContext) {
+            
+
+            let currentStatus = formContext.getAttribute("statuscode").getValue();
+            let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+            let agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+
+            let isVisible = isMobile;
+
+
+            if (agent === true) {
+                if (currentStatus == _self.STATUS.APPROVATA ||
+                    currentStatus == _self.STATUS.AGGIORNATA ||
+                    currentStatus == _self.STATUS.PERSA ||
+                    currentStatus == _self.STATUS.ACQUISITA
+                ) {
+                    isVisible = false;
+                }
+            }
+
+            return isVisible;
+        },
+        execute: async function (formContext) {
+
             var recordId = Xrm.Page.data.entity.getId(); // This retrieves the ID of the current record
             const source = Xrm.Page.data.entity.getEntityName()
             recordId = recordId.replace('{', '').replace('}', ''); // Clean up the ID format
 
-            function isMobileDevice() {
-                return /Mobi|Android|iPhone/i.test(navigator.userAgent);
-            }
+            
           
             var pageInput = {
                 pageType: "custom",

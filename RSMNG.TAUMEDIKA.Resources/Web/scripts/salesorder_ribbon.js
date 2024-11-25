@@ -71,7 +71,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     _self.hasSalesOrderDetails = formContext => {
         const subgrid = formContext.getControl("salesorderdetailsGrid");
         if (subgrid && subgrid.getGrid()) {
-            console.log(subgrid.getGrid().getTotalRecordCount());
+
             return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
         }
     }
@@ -135,9 +135,15 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     break;
 
                 case "APPROVED": //approvata
-                    if (formContext.ui.getFormType() != 1) {
-                        if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) { isVisible = true; }
-                        if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) { isVisible = true; } break;
+                    if (formContext.ui.getFormType() != 1 && hasSalesOrderDetails) {
+
+                        if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) {
+                            isVisible = true;
+                        }
+                        if (currentStatus === _self.STATUS.Inapprovazione && (_self.Agent === false || _self.Agent === null)) {
+                            isVisible = true;
+                        }
+                        break;
                     }
                     break;
                 case "NOT_APPROVED": //non approvata
@@ -156,7 +162,12 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     break;
 
                 case "ANNULLA_ORDINE":
-                    if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) { isVisible = true; }
+                    if (_self.Agent === false) {
+                        isVisible = true;
+                    }
+                    else if (currentStatus === _self.STATUS.Bozza && _self.Agent === true) {
+                        isVisible = true;
+                    }
                     break;
             }
             return isVisible;
@@ -279,12 +290,14 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             let isVisible = true;
 
             let currStatus = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+            let customerLookup = formContext.getAttribute("customerid").getValue();
 
             if (currStatus == _self.STATUS.Approvato ||
-                _self.STATUS.Inapprovazione ||
-                _self.STATUS.Annullato ||
-                _self.STATUS.Inlavorazione ||
-                _self.STATUS.Spedito_StateAttivo
+                currStatus == _self.STATUS.Inapprovazione ||
+                currStatus == _self.STATUS.Annullato ||
+                currStatus == _self.STATUS.Inlavorazione ||
+                currStatus == _self.STATUS.Spedito_StateAttivo ||
+                customerLookup == null
             ) {
                 isVisible = false;
             }
@@ -298,7 +311,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
 
             let customerLookup = formContext.getAttribute("customerid").getValue();
 
-            // gestire visibilita bottone se manca customer
+            
 
             if (customerLookup != null) {
 
@@ -339,12 +352,35 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     };
     //-----------------------------------------------------------
     _self.MOBILEAPP = {
-        canExecute() {
+        canExecute: async function (formContext) {
+        
+            
+            let currentStatus = formContext.getAttribute("statuscode").getValue();
             let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-            return isMobile;
+            let isVisible = isMobile;            
+
+            if (_self.Agent === undefined) {
+                _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            }
+            console.log("agent: " + _self.Agent);
+            if (_self.Agent === true) {
+                if (currentStatus == _self.STATUS.Approvato ||
+                    currentStatus == _self.STATUS.Inapprovazione ||
+                    currentStatus == _self.STATUS.Annullato ||
+                    currentStatus == _self.STATUS.Inlavorazione ||
+                    currentStatus == _self.STATUS.Spedito_StateAttivo
+                ) {
+                    isVisible = false;
+                }
+            }
+            
+            return isVisible;
         },
-        execute() {
+        execute: async function (formContext) {
+
+            
+
             var recordId = Xrm.Page.data.entity.getId(); // This retrieves the ID of the current record
             const source = Xrm.Page.data.entity.getEntityName()
             recordId = recordId.replace('{', '').replace('}', ''); // Clean up the ID format
@@ -367,7 +403,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             };
             Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
                 function () {
-
+                    
                 },
                 function (error) {
                     console.error("Error opening custom page:", error.message);

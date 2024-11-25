@@ -241,6 +241,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+        formContext.getControl("WebResource_postalcode").setVisible(false);
     };
     //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {

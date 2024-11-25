@@ -875,8 +875,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         if (currStatus == _self.formModel.fields.statuscodeValues.Inapprovazione_StateAttivo ||
             currStatus == _self.formModel.fields.statuscodeValues.Approvato_StateAttivo ||
             currStatus == _self.formModel.fields.statuscodeValues.Annullato_StateAnnullato ||
-            currStatus == _self.formModel.fields.statecodeValues.Spedito_StateAttivo ||
-            currStatus == _self.formModel.fields.statecodeValues.Inlavorazione_StateAttivo
+            currStatus == _self.formModel.fields.statuscodeValues.Spedito_StateAttivo ||
+            currStatus == _self.formModel.fields.statuscodeValues.Inlavorazione_StateAttivo
 
         ) {
 
@@ -917,6 +917,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         var formContext = executionContext.getFormContext();
         _self.checkPotentialCustomerData(executionContext);
+
+        formContext.getControl("WebResource_postalcode").setVisible(false);
 
     };
     //---------------------------------------------------

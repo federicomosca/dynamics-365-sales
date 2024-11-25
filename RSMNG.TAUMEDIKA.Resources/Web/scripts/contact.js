@@ -1032,6 +1032,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
     _self.onLoadReadyOnlyForm = function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+        formContext.getControl("WebResource_postalcode").setVisible(false);
     };
     //---------------------------------------------------
     /* 

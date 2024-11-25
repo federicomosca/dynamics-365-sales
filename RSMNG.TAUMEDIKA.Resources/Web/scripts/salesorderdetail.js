@@ -401,6 +401,40 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         });
     };
     //---------------------------------------------------
+    _self.getSalesOrderDetails = function (salesorderId) {
+        return new Promise(function (resolve, reject) {
+
+            var fetchData = {
+                "salesorderid": salesorderId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='salesorder'>",
+                "    <attribute name='statuscode'/>",
+                "    <filter>",
+                "      <condition attribute='salesorderid' operator='eq' value='", fetchData.salesorderid, "' />",
+                "    </filter>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+            Xrm.WebApi.retrieveMultipleRecords("salesorder", fetchXml).then(
+                results => {
+                    if (results.entities.length > 0) {
+                        resolve(results.entities[0]);
+                    } else {
+                        reject(new Error("No product found"));
+                    }
+                },
+                error => {
+                    reject(error);
+                }
+            );
+        });
+    };
+    //-----------------------------------------
+    //getAgent
+    //---------------------------------------------------
     _self.onChangeDiscountPercent1 = function (executionContext) {
         _self.setManualDiscountAmount(executionContext, { importo: undefined, aliquota: undefined });
 
@@ -561,10 +595,25 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
         }
     };
+
+
+    
+    let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+    let salesOrder = formContext.getAttribute();
+
+    if (isAgent) {
+
+        let salesorder = await _self.getSalesOrderDetails(productId);
+    }
+
+    
+    RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
     //---------------------------------------------------
-    _self.onLoadReadyOnlyForm = function (executionContext) {
+    _self.onLoadReadyOnlyForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
+
+        
     };
     //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {

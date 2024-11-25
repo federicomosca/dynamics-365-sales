@@ -907,6 +907,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         if (_self.lockFieldStatus.includes(statuscodeValue)) {
 
             formContext.getControl(_self.formModel.fields.res_countryid).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_location).setDisabled(true);
+            formContext.getControl(_self.formModel.fields.res_province).setDisabled(true);
             formContext.getControl(_self.formModel.fields.res_vatnumberid).setDisabled(true);
             formContext.getControl("WebResource_postalcode").setVisible(false);
         }
