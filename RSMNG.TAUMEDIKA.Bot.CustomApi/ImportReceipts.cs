@@ -236,7 +236,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             string sCodCliente = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.CodCliente)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.CodCliente)).position] : null;
                             Entity eCliente = lAccount.FirstOrDefault(u => u.GetAttributeValue<string>(account.accountnumber) == sCodCliente);
 
-                            string sNomeCliente = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)).position] : null;
+                            string sNomeCliente = configuration.fields.FirstOrDefault(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.Cliente)) != null ? row[configuration.fields.First(f => f.name_receipt == nameof(Shared.Document.ImportReceiptDanea.Cliente)).position] : null;
 
                             //Definisco l'Agente
                             PluginRegion = "Definisco l'agente";

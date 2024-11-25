@@ -228,13 +228,26 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 
                         foreach (List<string> row in rows)
                         {
-
+                            string tipoDoc = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.TipoDoc)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.TipoDoc)).position] : "";
+                            Shared.Document.Option optTipoDoc = new Shared.Document.Option() { Text = tipoDoc, ExternalValue = null };
+                            switch (tipoDoc)
+                            {
+                                case "Nota di credito":
+                                    optTipoDoc.Value = 100000002;
+                                    break;
+                                case "Fattura d'acconto":
+                                    optTipoDoc.Value = 100000003;
+                                    break;
+                                case "Fattura":
+                                    optTipoDoc.Value = 100000000;
+                                    break;
+                            }
                             //Definisco il Cliente
                             PluginRegion = "Definisco il cliente";
                             string sCodCliente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.CodCliente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.CodCliente)).position] : null;
                             Entity eCliente = lAccount.FirstOrDefault(u => u.GetAttributeValue<string>(account.accountnumber) == sCodCliente);
 
-                            string sNomeCliente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)).position] : null;
+                            string sNomeCliente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.Cliente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.Cliente)).position] : null;
 
                             //Definisco l'Agente
                             PluginRegion = "Definisco l'agente";
@@ -267,7 +280,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                     };
                                     UpsertResponse rspPaymentTerm = (UpsertResponse)crmServiceProvider.Service.Execute(rqtPaymentTerm);
                                     Guid ePaymentTermId = rspPaymentTerm.Target.Id;
-                                    
+
                                     //ePaymentTerm = new Entity(res_paymentterm.logicalName);
                                     //ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
                                     //Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
@@ -334,6 +347,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             PluginRegion = "Imposto i dati di default e i dati che fanno match";
                             Shared.Document.ImportInvoiceDanea invoiceDanea = new Shared.Document.ImportInvoiceDanea()
                             {
+                                TipoDoc = optTipoDoc,
                                 CodCliente = sCodCliente,
                                 Cliente = eCliente != null ? new Shared.Document.LookUp() { Entity = eCliente.LogicalName, Id = eCliente.Id, Text = eCliente.GetAttributeValue<string>(account.name) } : null,
                                 NomeCliente = eCliente != null ? eCliente.GetAttributeValue<string>(account.name) : sNomeCliente,

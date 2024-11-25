@@ -34,7 +34,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Document
     [DataContract]
     public class ImportInvoiceDanea
     {
-        [DataMember] public Option TipoDoc { get; set; } = new Option() { Text = "Fattura", Value = 100000000, ExternalValue = null };
+        [DataMember] public Option TipoDoc { get; set; }
         [DataMember] public string CodCliente { get; set; }
         [DataMember] public string NomeCliente { get; set; }
         [DataMember] public LookUp Cliente { get; set; }
