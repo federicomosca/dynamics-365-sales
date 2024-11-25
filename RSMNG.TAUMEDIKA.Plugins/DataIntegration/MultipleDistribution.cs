@@ -335,10 +335,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     {
                                         eDocumentReceiptUpt.Attributes.Add(res_document.res_date, null);
                                     }
-                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_nome, $"{importReceiptDanea.CodCliente}{(importReceiptDanea.Cliente != null ? $" - {importReceiptDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importReceiptDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_nome, $"{importReceiptDanea.CodCliente}{(importReceiptDanea.Cliente != null ? $" - {importReceiptDanea.Cliente.Text}" : $" - {importReceiptDanea.NomeCliente}")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importReceiptDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documentnumber, importReceiptDanea.NDoc);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documentyear, importReceiptDanea.Anno);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
+                                    eDocumentReceiptUpt.Attributes.Add(res_document.res_customername, importReceiptDanea.NomeCliente);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_agent, importReceiptDanea.CodAgente);
                                     if (importReceiptDanea.Agente != null)
                                     {
@@ -425,10 +426,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     {
                                         eDocumentInvoiceUpt.Attributes.Add(res_document.res_date, null);
                                     }
-                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_nome, $"{importInvoiceDanea.CodCliente}{(importInvoiceDanea.Cliente != null ? $" - {importInvoiceDanea.Cliente.Text}" : "")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importInvoiceDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_nome, $"{importInvoiceDanea.CodCliente}{(importInvoiceDanea.Cliente != null ? $" - {importInvoiceDanea.Cliente.Text}" : $" - {importInvoiceDanea.NomeCliente}")}{(!string.IsNullOrEmpty(formattedData) ? $" - {formattedData}" : "")} - {((decimal)importInvoiceDanea.TotDoc).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("it-IT"))}");
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentnumber, importInvoiceDanea.NDoc);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_documentyear, importInvoiceDanea.Anno);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_customernumber, importInvoiceDanea.CodCliente);
+                                    eDocumentInvoiceUpt.Attributes.Add(res_document.res_customername, importInvoiceDanea.NomeCliente);
                                     eDocumentInvoiceUpt.Attributes.Add(res_document.res_agent, importInvoiceDanea.CodAgente);
                                     if (importInvoiceDanea.Agente != null)
                                     {

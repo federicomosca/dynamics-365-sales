@@ -110,6 +110,8 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	res_isinvoicerequested: "res_isinvoicerequested",
 	///Località
 	res_location: "res_location",
+	///Motivo Stato Precedente
+	res_oldstatuscode: "res_oldstatuscode",
 	///Origine
 	res_origincode: "res_origincode",
 	///Condizione di pagamento
@@ -311,6 +313,22 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	res_isinvoicerequestedValues: {
 		No: 0,
 		Si: 1
+	},
+
+	/// Values for field Motivo Stato Precedente
+	res_oldstatuscodeValues: {
+		Annullato: 4,
+		Approvato: 100005,
+		Bozza: 1,
+		Completato: 100001,
+		Fatturato: 100003,
+		Inapprovazione: 2,
+		Incorso: 3,
+		Inelaborazione: 100006,
+		Nonapprovato: 100004,
+		Parziale: 100002,
+		Persa: 6,
+		Spedito: 100007
 	},
 
 	/// Values for field Origine

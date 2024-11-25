@@ -848,6 +848,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Account = 1,
 			AccountLeads = 16,
 			Allegato = 1001,
+			AllegatoarticolodellaKnowledgeBase = 10211,
 			Allegatoentita = 10668,
 			Allegatofileimpegno = 10196,
 			Associazioneproprieta = 1235,
@@ -872,16 +873,14 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Elementocoda = 2029,
 			ElementoSetdiopzioniproprieta = 1049,
 			Fattura = 1090,
+			ImmaginearticoloKnowledgeBase = 10205,
 			ImpostazioniIoT = 10434,
 			Indirizzoconcorrente = 1004,
 			InterazioneKnowledgeBaseCopilot = 10917,
 			IstanzadelproviderIoT = 10433,
 			IstanzaKPIdicontrattodiservizio = 9752,
 			Istanzaproprieta = 1333,
-			KnowledgeArticleAttachment = 10211,
-			KnowledgeArticleImage = 10205,
 			KnowledgeBaseRecordincidente = 9931,
-			KnowledgeHarvestJobRecord = 10219,
 			Lead = 4,
 			LeadCompetitors = 24,
 			LeadProduct = 27,
@@ -909,6 +908,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Proprieta = 1048,
 			ProprietadeldispositivoIoT = 10427,
 			ProviderIoT = 10432,
+			RecordprocessodiraccoltaKnowledgeBase = 10219,
 			Relazioneprodotti = 1028,
 			Rigaofferta = 1085,
 			Rigaordine = 1089,
@@ -1699,7 +1699,7 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		}
 
 		/// <summary>
-		/// Number of Search Results Options constants.
+		/// Opzioni numero di risultati della ricerca constants.
 		/// </summary>
 		public enum msdyn_numberofsearchresultsValues
 		{
@@ -3356,6 +3356,25 @@ namespace RSMNG.TAUMEDIKA.DataModel
 			Inapprovazione = 2,
 			Nonapprovata = 5,
 			Persa = 6
+		}
+
+		/// <summary>
+		/// OPT_Motivo Stato Precedente Ordine constants.
+		/// </summary>
+		public enum res_opt_motivostatoprecedenteordineValues
+		{
+			Annullato = 4,
+			Approvato = 100005,
+			Bozza = 1,
+			Completato = 100001,
+			Fatturato = 100003,
+			Inapprovazione = 2,
+			Incorso = 3,
+			Inelaborazione = 100006,
+			Nonapprovato = 100004,
+			Parziale = 100002,
+			Persa = 6,
+			Spedito = 100007
 		}
 
 		/// <summary>

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using RSMNG.TAUMEDIKA.Bot.CustomApi.Model.ImportInvoices;
 using RSMNG.TAUMEDIKA.DataModel;
 using System.IO;
+using System.Text.RegularExpressions;
+using Microsoft.Xrm.Sdk.Messages;
 
 namespace RSMNG.TAUMEDIKA.Bot.CustomApi
 {
@@ -94,10 +96,11 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             while ((line = sr.ReadLine()) != null)
                             {
                                 // Dividi la riga in colonne (basato su punto e virgola)
-                                string[] cells = line.Split(';');
+                                string pattern = @"(?<=^|;)(\""([^\""]|\""\"")*\""|[^;]*)";
+                                MatchCollection matches = Regex.Matches(line, pattern);
 
                                 // Aggiungi la riga (come array) alla lista
-                                rows.Add(cells.ToList());
+                                rows.Add(matches.Cast<Match>().Select(m => m.Value.Trim('"')).ToList());
                             }
                         }
 
@@ -132,6 +135,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                         <fetch>
                           <entity name=""{account.logicalName}"">
                             <attribute name=""{account.name}"" />
+                            <attribute name=""{account.accountnumber}"" />
                             <attribute name=""{account.accountid}"" />
                             <filter>
                               <condition attribute=""{account.statecode}"" operator=""eq"" value=""{fetchDataA.statecode}"" />
@@ -230,6 +234,8 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             string sCodCliente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.CodCliente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.CodCliente)).position] : null;
                             Entity eCliente = lAccount.FirstOrDefault(u => u.GetAttributeValue<string>(account.accountnumber) == sCodCliente);
 
+                            string sNomeCliente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportReceiptDanea.NomeCliente)).position] : null;
+
                             //Definisco l'Agente
                             PluginRegion = "Definisco l'agente";
                             string sCodAgente = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.Agente)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.Agente)).position] : null;
@@ -253,9 +259,18 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 ePaymentTerm = lPaymentTerm.FirstOrDefault(u => u.GetAttributeValue<string>(res_paymentterm.res_name) == sPaymentTerm);
                                 if (ePaymentTerm == null)
                                 {
-                                    ePaymentTerm = new Entity(res_paymentterm.logicalName);
+                                    ePaymentTerm = new Entity(res_paymentterm.logicalName, res_paymentterm.res_name, sPaymentTerm);
                                     ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
-                                    Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
+                                    UpsertRequest rqtPaymentTerm = new UpsertRequest()
+                                    {
+                                        Target = ePaymentTerm
+                                    };
+                                    UpsertResponse rspPaymentTerm = (UpsertResponse)crmServiceProvider.Service.Execute(rqtPaymentTerm);
+                                    Guid ePaymentTermId = rspPaymentTerm.Target.Id;
+                                    
+                                    //ePaymentTerm = new Entity(res_paymentterm.logicalName);
+                                    //ePaymentTerm.Attributes.Add(res_paymentterm.res_name, sPaymentTerm);
+                                    //Guid ePaymentTermId = crmServiceProvider.Service.Create(ePaymentTerm);
                                     ePaymentTerm.Id = ePaymentTermId;
                                     lPaymentTerm.Add(ePaymentTerm);
                                 }
@@ -270,9 +285,18 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 eBankDetails = lBankDetails.FirstOrDefault(u => u.GetAttributeValue<string>(res_bankdetails.res_name) == sBankDetails);
                                 if (eBankDetails == null)
                                 {
-                                    eBankDetails = new Entity(res_bankdetails.logicalName);
+                                    eBankDetails = new Entity(res_bankdetails.logicalName, res_bankdetails.res_name, sBankDetails);
                                     eBankDetails.Attributes.Add(res_bankdetails.res_name, sBankDetails);
-                                    Guid eBankDetailsId = crmServiceProvider.Service.Create(eBankDetails);
+                                    UpsertRequest rqtBankDetails = new UpsertRequest()
+                                    {
+                                        Target = eBankDetails
+                                    };
+                                    UpsertResponse rspBankDetails = (UpsertResponse)crmServiceProvider.Service.Execute(rqtBankDetails);
+                                    Guid eBankDetailsId = rspBankDetails.Target.Id;
+
+                                    //eBankDetails = new Entity(res_bankdetails.logicalName);
+                                    //eBankDetails.Attributes.Add(res_bankdetails.res_name, sBankDetails);
+                                    //Guid eBankDetailsId = crmServiceProvider.Service.Create(eBankDetails);
                                     eBankDetails.Id = eBankDetailsId;
                                     lBankDetails.Add(eBankDetails);
                                 }
@@ -312,6 +336,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             {
                                 CodCliente = sCodCliente,
                                 Cliente = eCliente != null ? new Shared.Document.LookUp() { Entity = eCliente.LogicalName, Id = eCliente.Id, Text = eCliente.GetAttributeValue<string>(account.name) } : null,
+                                NomeCliente = eCliente != null ? eCliente.GetAttributeValue<string>(account.name) : sNomeCliente,
                                 Data = date != null ? date?.ToString("yyyy-MM-dd") : null,
                                 Anno = date != null ? date?.Year.ToString() : null,
                                 NDoc = configuration.fields.FirstOrDefault(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.NDoc)) != null ? row[configuration.fields.First(f => f.name_invoice == nameof(Shared.Document.ImportInvoiceDanea.NDoc)).position] : null,
