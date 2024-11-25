@@ -104,6 +104,20 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
         }
     };
 
+    _self.SALESORDER_STATUS = {
+        Annullato: 4,
+        Approvato: 100005,
+        Bozza: 1,
+        Completato: 100001,
+        Fatturato: 100003,
+        Inapprovazione: 2,
+        Incorso: 3,
+        Inlavorazione: 100006,
+        Nonapprovato: 100004,
+        Parziale_StateEvaso: 100002,
+        Spedito_StateAttivo: 100007
+    };
+
     //---------------------------------------------------
     _self.onChangeUomId = function (executionContext) {
         var formContext = executionContext.getFormContext();
@@ -594,26 +608,41 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             }
             formContext.getControl(_self.formModel.fields.res_discountpercentage2).setDisabled(false);
         }
+
+
+
+        let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+        let salesOrder = formContext.getAttribute(_self.formModel.fields.salesorderid).getValue();
+
+        if (isAgent && salesOrder != null) {
+
+            let salesorder = await _self.getSalesOrderDetails(salesOrder[0].id);
+            let statuscode = salesorder != null && salesorder.statuscode != null ? salesorder.statuscode : null;
+
+            if (statuscode != null) {
+                if (statuscode == _self.SALESORDER_STATUS.Approvato ||
+                    statuscode == _self.SALESORDER_STATUS.Inapprovazione ||
+                    statuscode == _self.SALESORDER_STATUS.Annullato ||
+                    statuscode == _self.SALESORDER_STATUS.Inlavorazione ||
+                    statuscode == _self.SALESORDER_STATUS.Spedito_StateAttivo) {
+
+                    RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent);
+                    }
+            }
+                
+
+        }
+
+
     };
 
 
-    
-    let isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-    let salesOrder = formContext.getAttribute();
-
-    if (isAgent) {
-
-        let salesorder = await _self.getSalesOrderDetails(productId);
-    }
-
-    
-    RSMNG.TAUMEDIKA.GLOBAL.setAllFieldsReadOnly(formContext, isAgent, _self.readOnlyFields);
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
 
-        
+
     };
     //---------------------------------------------------
     _self.onLoadForm = async function (executionContext) {
