@@ -68,6 +68,13 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_customerid => "res_customerid";
 
 		/// <summary>
+		/// Display Name: Nome Cliente,
+		/// Type: String,
+		/// Description: 
+		/// </summary>
+		public static string res_customername => "res_customername";
+
+		/// <summary>
 		/// Display Name: Cod. Cliente,
 		/// Type: String,
 		/// Description: 

@@ -18,6 +18,8 @@ RSMNG.TAUMEDIKA.DataModel.res_document = {
 	res_calculatedcommission_base: "res_calculatedcommission_base",
 	///Cliente
 	res_customerid: "res_customerid",
+	///Nome Cliente
+	res_customername: "res_customername",
 	///Cod. Cliente
 	res_customernumber: "res_customernumber",
 	///Data

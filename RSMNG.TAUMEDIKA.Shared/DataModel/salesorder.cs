@@ -468,6 +468,26 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		public static string res_location => "res_location";
 
 		/// <summary>
+		/// Display Name: Motivo Stato Precedente,
+		/// Type: Picklist,
+		/// Values:
+		/// Bozza: 1,
+		/// In approvazione: 2,
+		/// Approvato: 100005,
+		/// In elaborazione: 100006,
+		/// Non approvato: 100004,
+		/// Persa: 6,
+		/// Spedito: 100007,
+		/// In corso: 3,
+		/// Annullato: 4,
+		/// Completato: 100001,
+		/// Parziale: 100002,
+		/// Fatturato: 100003,
+		/// Description: 
+		/// </summary>
+		public static string res_oldstatuscode => "res_oldstatuscode";
+
+		/// <summary>
 		/// Display Name: Origine,
 		/// Type: Picklist,
 		/// Values:
@@ -934,6 +954,25 @@ namespace RSMNG.TAUMEDIKA.DataModel
 		{
 			No = 0,
 			Si = 1
+		}
+
+		/// <summary>
+		/// Values for field Motivo Stato Precedente
+		/// <summary>
+		public enum res_oldstatuscodeValues
+		{
+			Annullato = 4,
+			Approvato = 100005,
+			Bozza = 1,
+			Completato = 100001,
+			Fatturato = 100003,
+			Inapprovazione = 2,
+			Incorso = 3,
+			Inelaborazione = 100006,
+			Nonapprovato = 100004,
+			Parziale = 100002,
+			Persa = 6,
+			Spedito = 100007
 		}
 
 		/// <summary>
