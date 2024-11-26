@@ -42,7 +42,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.AgentCommission
             {
                 decimal res_calculatedcommission = postImage.ContainsAttributeNotNull(res_agentcommission.res_calculatedcommission) ? postImage.GetAttributeValue<Money>(res_agentcommission.res_calculatedcommission).Value : 0;
                 decimal res_adjustment = postImage.ContainsAttributeNotNull(res_agentcommission.res_adjustment) ? postImage.GetAttributeValue<Money>(res_agentcommission.res_adjustment).Value : 0;
-                target.AddWithRemove(res_agentcommission.res_commissiontotalamount, new Money(res_calculatedcommission - res_adjustment));
+                target.AddWithRemove(res_agentcommission.res_commissiontotalamount, new Money(res_calculatedcommission + res_adjustment));
             }
             #endregion
 

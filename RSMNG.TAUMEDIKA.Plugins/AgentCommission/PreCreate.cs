@@ -40,7 +40,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.AgentCommission
             {
                 decimal res_calculatedcommission = target.ContainsAttributeNotNull(res_agentcommission.res_calculatedcommission) ? target.GetAttributeValue<Money>(res_agentcommission.res_calculatedcommission).Value : 0;
                 decimal res_adjustment = target.ContainsAttributeNotNull(res_agentcommission.res_adjustment) ? target.GetAttributeValue<Money>(res_agentcommission.res_adjustment).Value : 0;
-                target.AddWithRemove(res_agentcommission.res_commissiontotalamount, new Money(res_calculatedcommission - res_adjustment));
+                target.AddWithRemove(res_agentcommission.res_commissiontotalamount, new Money(res_calculatedcommission + res_adjustment));
             }
             #endregion
 
