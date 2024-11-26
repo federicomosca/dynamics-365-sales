@@ -99,7 +99,7 @@ namespace RSMNG.TAUMEDIKA.Shared.AgentCommission
                 #region Prelevo le date della provvigione
                 actionMsg = "Prelevo le date della provvigione";
                 Entity enCommission = service.Retrieve(res_commission.logicalName, new Guid(agentCommissionCalculationInput.CommissionId), new ColumnSet(new string[] { res_commission.res_startdate, res_commission.res_enddate }));
-                string startDate = enCommission.ContainsAttributeNotNull(res_commission.res_startdate) ? enCommission.GetAttributeValue<DateTime>(res_commission.res_startdate).ToString("yyyy-MM-dd") : DateTime.MinValue.ToString("yyyy-MM-dd");
+                string startDate = enCommission.ContainsAttributeNotNull(res_commission.res_startdate) ? enCommission.GetAttributeValue<DateTime>(res_commission.res_startdate).ToString("yyyy-MM-dd") : Convert.ToDateTime("1900-01-01").ToString("yyyy-MM-dd");
                 string endDate = enCommission.ContainsAttributeNotNull(res_commission.res_enddate) ? enCommission.GetAttributeValue<DateTime>(res_commission.res_enddate).ToString("yyyy-MM-dd") : string.Empty;
                 if (string.IsNullOrEmpty(endDate))
                 {
