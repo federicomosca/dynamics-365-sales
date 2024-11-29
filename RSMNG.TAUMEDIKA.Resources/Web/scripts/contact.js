@@ -905,15 +905,13 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
     _self.setCityRequirement = executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const addressControl = formContext.getControl(_self.formModel.fields.address1_name) ?? null;
         const cityControl = formContext.getControl(_self.formModel.fields.address1_city) ?? null;
+        const campoCAP = formContext.getControl(_self.formModel.fields.address1_postalcode) ?? null;
 
-        const addressHasValue = addressControl ? addressControl.getAttribute().getValue() ?? null : null;
+        const CAP = campoCAP.getAttribute()?.getValue() ?? null;
 
-        if (cityControl) {
-            if (addressHasValue) { cityControl.getAttribute().setRequiredLevel("required") }
-            else { cityControl.getAttribute().setRequiredLevel("none") }
-        }
+        cityControl.setDisabled(CAP == null);
+        cityControl.getAttribute().setRequiredLevel(CAP ? "required" : "none");
     };
     //---------------------------------------------------
     _self.setPostalCodeRequirement = executionContext => {
@@ -1055,7 +1053,7 @@ if (typeof (RSMNG.TAUMEDIKA.CONTACT) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.address1_city).addOnChange(_self.setCityRelatedFieldsEditability);
         formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.setAddressRequirement);
         formContext.getAttribute(_self.formModel.fields.address1_name).addOnChange(_self.setPostalCodeRequirement);
-        formContext.getAttribute(_self.formModel.fields.address1_name).addOnChange(_self.setCityRequirement);
+        formContext.getAttribute(_self.formModel.fields.address1_postalcode).addOnChange(_self.setCityRequirement);
 
         //Init function
         _self.setAddressRequirement(executionContext);
