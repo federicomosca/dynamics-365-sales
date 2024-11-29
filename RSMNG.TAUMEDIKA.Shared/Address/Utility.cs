@@ -129,9 +129,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
+                var customerValue = parent.ContainsAttributeNotNull(customerField) ? parent.GetAttributeValue<object>(customerField) : parentPreImage.GetAttributeValue<object>(customerField);
 
-                defaultAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
+                defaultAddress[addressField] = customerValue;
             }
 
             //link col customer

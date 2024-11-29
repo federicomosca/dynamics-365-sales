@@ -36,7 +36,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                 target.TryGetAttributeValue<string>(account.address1_city, out string città);
 
                 //cap e città sono obbligatori indirizzo è valorizzato
-                if (!string.IsNullOrEmpty(CAP) || !string.IsNullOrEmpty(città))
+                if (!string.IsNullOrEmpty(CAP) && !string.IsNullOrEmpty(città))
                 {
                     //recupero il primo indirizzo del Cliente che abbia Indirizzo Scheda Cliente e Default a SI
                     EntityCollection linkedAddressesCollection = Utility.GetAddresses(crmServiceProvider, target.Id);
