@@ -44,8 +44,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.Account
                     //se non trovo nemmeno un indirizzo
                     if (linkedAddressesCollection.Entities.Count == 0)
                     {
+                        if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Account PostCreate: prima di chiamare CreateCustomerAddress dalla classe Utility"); }
                         //creo il nuovo indirizzo di default (se uno dei valori facoltativi è null, viene impostata una stringa vuota di default)
                         Utility.CreateCustomerAddress(crmServiceProvider, target, isAlreadyDefaultAddress);
+
+                        if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace("Account PostCreate: dopo la chiamata a CreateCustomerAddress dalla classe Utility"); }
                     }
                 }
                 else throw new ApplicationException("Se il campo Indirizzo è valorizzato, i campi CAP e Città sono obbligatori.");

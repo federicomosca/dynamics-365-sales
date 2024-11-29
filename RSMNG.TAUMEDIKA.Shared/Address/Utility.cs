@@ -120,7 +120,7 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
 
                 parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                defaultAddress[addressField] = customerValue ?? parentPreImage.GetAttributeValue<object>(customerField);
+                defaultAddress[addressField] = customerValue ?? parentPreImage?.GetAttributeValue<object>(customerField);
             }
 
             //valorizzo i campi facoltativi, se sono stati cancellati, svuoto i campi
@@ -129,9 +129,9 @@ namespace RSMNG.TAUMEDIKA.Shared.Address
                 string customerField = field.Key;
                 string addressField = field.Value;
 
-                var customerValue = parent.ContainsAttributeNotNull(customerField) ? parent.GetAttributeValue<object>(customerField) : parentPreImage.GetAttributeValue<object>(customerField);
+                parent.TryGetAttributeValue<object>(customerField, out var customerValue);
 
-                defaultAddress[addressField] = customerValue;
+                defaultAddress[addressField] = customerValue ?? parentPreImage?.GetAttributeValue<object>(customerField);
             }
 
             //link col customer
