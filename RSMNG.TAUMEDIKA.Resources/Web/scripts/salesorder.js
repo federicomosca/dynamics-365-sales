@@ -549,7 +549,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getControl(_self.formModel.fields.res_location).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_countryid).setVisible(false);
-            formContext.getControl("WebResource_postalcode").setVisible(false);
+            formContext.getControl("WebResource_postalcode")?.setVisible(false);
 
         }
     };
@@ -560,7 +560,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
         formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
-        formContext.getControl("WebResource_postalcode").setVisible(shipToLine1 !== null ? true : false);
+        formContext.getControl("WebResource_postalcode")?.setVisible(shipToLine1 !== null ? true : false);
 
         if (shipToLine1 !== null) {
 
@@ -885,7 +885,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             if (isAgent) {
                 // nascono l'iframe che può modificare i valori di certi campi
-                formContext.getControl("WebResource_postalcode").setVisible(false);
+                formContext.getControl("WebResource_postalcode")?.setVisible(false);
             }
         }
         //-----
@@ -918,7 +918,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         var formContext = executionContext.getFormContext();
         _self.checkPotentialCustomerData(executionContext);
 
-        formContext.getControl("WebResource_postalcode").setVisible(false);
+        formContext.getControl("WebResource_postalcode")?.setVisible(false);
 
     };
     //---------------------------------------------------
