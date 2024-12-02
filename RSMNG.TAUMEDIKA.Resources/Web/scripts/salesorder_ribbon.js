@@ -66,15 +66,39 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     ];
 
     _self.Agent = undefined;
+    _self.hasSalesOrderDetails = null;
 
     //--------------------------------------------------
-    _self.hasSalesOrderDetails = formContext => {
-        const subgrid = formContext.getControl("salesorderdetailsGrid");
-        if (subgrid && subgrid.getGrid()) {
+    _self.getSalesOrderDetails = function (salesorderid) {
+        return new Promise(function (resolve, reject) {
 
-            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
-        }
-    }
+            var fetchData = {
+                "salesorderid": salesorderid
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='salesorderdetail'>",
+                "    <attribute name='salesorderdetailname'/>",
+                "    <filter>",
+                "      <condition attribute='salesorderid' operator='eq' value='", fetchData.salesorderid, "' />",
+                "    </filter>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+
+            Xrm.WebApi.retrieveMultipleRecords("salesorderdetail", fetchXml)
+                .then(function (result) {
+                    var count = result.entities.length;
+
+                    resolve(count > 0 ? true : false);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    reject(error.message);
+                });
+        });
+    };
     //--------------------------------------------------
     _self.isInvoiceRequested = formContext => {
         return formContext.getAttribute("res_isinvoicerequested").getValue();
@@ -93,20 +117,24 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
             let currentStatus = formContext.getAttribute("statuscode").getValue();
+            let salesorderId = formContext.data.entity.getId().replace("{", "").replace("}", "");
             let isVisible = false;
-            const hasSalesOrderDetails = _self.hasSalesOrderDetails(formContext);
+            
+
 
             if (_self.Agent === undefined) {
                 _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
             }
 
+
             switch (status) {
 
                 case "APPROVAL": //in approvazione 
+                    _self.hasSalesOrderDetails = await _self.getSalesOrderDetails(salesorderId);
                     if (formContext.ui.getFormType() != 1) {
                         if (currentStatus === _self.STATUS.Bozza &&
                             _self.Agent === true &&
-                            hasSalesOrderDetails) {
+                            _self.hasSalesOrderDetails) {
                             try {
                                 if (_self.isInvoiceRequested(formContext) == 1) {
 
@@ -135,7 +163,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
                     break;
 
                 case "APPROVED": //approvata
-                    if (formContext.ui.getFormType() != 1 && hasSalesOrderDetails) {
+                    _self.hasSalesOrderDetails = await _self.getSalesOrderDetails(salesorderId);
+                    if (formContext.ui.getFormType() != 1 && _self.hasSalesOrderDetails) {
 
                         if (currentStatus === _self.STATUS.Bozza && (_self.Agent === false || _self.Agent === null)) {
                             isVisible = true;

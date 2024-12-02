@@ -43,6 +43,9 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
     let agentPromise = null;
 
+    _self.isAgent = null;
+    _self.hasQuoteDetails = null;
+
     //--------------------------------------------------
     /**
      * invocare questa funzione nel caso "CREATE_ORDER" per determinare la visibilità del 
@@ -60,12 +63,43 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         return formContext.getAttribute("res_isinvoicerequested").getValue();
     }
     //--------------------------------------------------
-    _self.hasQuoteDetails = formContext => {
-        const subgrid = formContext.getControl("quotedetailsGrid");
-        if (subgrid && subgrid.getGrid()) {
-            return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
-        }
-    }
+    //_self.hasQuoteDetails = formContext => {
+    //    const subgrid = formContext.getControl("quotedetailsGrid");
+    //    if (subgrid && subgrid.getGrid()) {
+    //        return subgrid.getGrid().getTotalRecordCount() > 0 ? true : false;
+    //    }
+    //}
+    //--------------------------------------------------
+    _self.getQuoteDetails = function (quoteId) {
+        return new Promise(function (resolve, reject) {
+
+            var fetchData = {
+                "quoteid": quoteId
+            };
+            var fetchXml = [
+                "?fetchXml=<fetch>",
+                "  <entity name='quotedetail'>",
+                "    <attribute name='quotedetailname'/>",
+                "    <filter>",
+                "      <condition attribute='quoteid' operator='eq' value='", fetchData.quoteid, "' />",
+                "    </filter>",
+                "  </entity>",
+                "</fetch>"
+            ].join("");
+
+
+            Xrm.WebApi.retrieveMultipleRecords("quotedetail", fetchXml)
+                .then(function (result) {
+                    var count = result.entities.length;
+
+                    resolve(count > 0 ? true : false);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    reject(error.message);
+                });
+        });
+    };
     //--------------------------------------------------
     _self.UPDATESTATUS = {
         canExecute: async function (formContext, status) {
@@ -73,26 +107,34 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             await import('../res_scripts/res_global.js');
 
             let currentStatus = formContext.getAttribute("statuscode").getValue();
-
+            let quoteId = formContext.data.entity.getId().replace("{", "").replace("}", "");
             let visible = false;
+            let agent = _self.isAgent;
+            
 
-            const agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-            const hasQuoteDetails = _self.hasQuoteDetails(formContext);
+            if (agent == null) {
+                _self.isAgent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+                agent = _self.isAgent;
+            }
 
+           
             switch (status) {
 
                 case "APPROVAL": //in approvazione
-                    if (currentStatus === _self.STATUS.BOZZA && agent === true && hasQuoteDetails) { visible = true; } break;
+                    _self.hasQuoteDetails = await _self.getQuoteDetails(quoteId);
+                    if (currentStatus === _self.STATUS.BOZZA && agent === true && _self.hasQuoteDetails) { visible = true; } break;
 
                 case "APPROVED": //approvata
-                    if (currentStatus === _self.STATUS.BOZZA && (agent === false || agent === null) && hasQuoteDetails) { visible = true; }
-                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null) && hasQuoteDetails) { visible = true; } break;
+                    _self.hasQuoteDetails = await _self.getQuoteDetails(quoteId);
+                    if (currentStatus === _self.STATUS.BOZZA && (agent === false || agent === null) && _self.hasQuoteDetails) { visible = true; }
+                    if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null) && _self.hasQuoteDetails) { visible = true; } break;
 
                 case "NOT_APPROVED": //non approvata
                     if (currentStatus === _self.STATUS.IN_APPROVAZIONE && (agent === false || agent === null)) { visible = true; } break;
 
                 case "CREATE_ORDER": //crea ordine
-                    if (currentStatus === _self.STATUS.APPROVATA && hasQuoteDetails) {
+                    _self.hasQuoteDetails = await _self.getQuoteDetails(quoteId);
+                    if (currentStatus === _self.STATUS.APPROVATA && _self.hasQuoteDetails) {
                         visible = true;
                         if (_self.isInvoiceRequested(formContext) == 1) {
                             try {

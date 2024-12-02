@@ -958,6 +958,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
 
+       
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
         //Init function
         _self.addPriceLevelCustomView(executionContext);
