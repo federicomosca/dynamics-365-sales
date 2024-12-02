@@ -597,13 +597,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             if (!control) throw new Error(`${field} field is missing`);
 
             if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
-                formContext.getControl("WebResource_postalcode").setVisible(true);
-                control.setVisible(true);
                 _self.setContextCapIframe(executionContext);
+                formContext.getControl("WebResource_postalcode")?.setVisible(true);
+                control.setVisible(true);
             }
 
             if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
-                formContext.getControl("WebResource_postalcode").setVisible(false);
+                formContext.getControl("WebResource_postalcode")?.setVisible(false);
                 control.setVisible(false);
                 control.getAttribute().setValue(null)
             }
@@ -713,7 +713,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
-        var wrControl = formContext.getControl("WebResource_postalcode");
+        var wrControl = formContext.getControl("WebResource_postalcode") ?? null;
 
         var fields = {
             cap: _self.formModel.fields.shipto_postalcode,
