@@ -200,8 +200,10 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         const campoCellulare = formContext.getControl(_self.formModel.fields.res_mobilenumber);
 
         const hasValueTelefono = campoTelefono.getAttribute().getValue() != null;
+        const hasValueCellulare = campoCellulare.getAttribute().getValue() != null;
 
         campoCellulare.getAttribute().setRequiredLevel(hasValueTelefono ? "none" : "required");
+        campoTelefono.getAttribute().setRequiredLevel(hasValueCellulare ? "none" : "required");
     };
     //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
@@ -277,6 +279,7 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_taxcode).addOnChange(_self.checkCodiceFiscale);
         formContext.getAttribute(_self.formModel.fields.res_sdi).addOnChange(_self.checkSDI);
         formContext.getAttribute(_self.formModel.fields.telephone1).addOnChange(_self.gestioneObbligatorietàCampiTelefono);
+        formContext.getAttribute(_self.formModel.fields.res_mobilenumber).addOnChange(_self.gestioneObbligatorietàCampiTelefono);
 
         //Init function
         _self.onChangeVatNumber(executionContext);
