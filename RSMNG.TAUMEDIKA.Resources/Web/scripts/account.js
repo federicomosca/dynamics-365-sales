@@ -45,6 +45,10 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
             res_countryid: "res_countryid",
             ///Nazione (Testo)
             address1_country: "address1_country",
+            //Telefono 
+            telephone1: "telephone1",
+            //Cellulare
+            res_mobilenumber: "res_mobilenumber",
 
             /// Values for field Natura giuridica
             res_accountnaturecodeValues: {
@@ -189,6 +193,17 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         }
     }
     //---------------------------------------------------
+    _self.gestioneObbligatorietàCampiTelefono = function (executionContext) {
+        const formContext = executionContext.getFormContext();
+
+        const campoTelefono = formContext.getControl(_self.formModel.fields.telephone1);
+        const campoCellulare = formContext.getControl(_self.formModel.fields.res_mobilenumber);
+
+        const hasValueTelefono = campoTelefono.getAttribute().getValue() != null;
+
+        campoCellulare.getAttribute().setRequiredLevel(hasValueTelefono ? "none" : "required");
+    };
+    //---------------------------------------------------
     _self.setContextCapIframe = function (executionContext) {
         let formContext = executionContext.getFormContext();
         var wrControl = formContext.getControl("WebResource_postalcode");
@@ -261,12 +276,14 @@ if (typeof (RSMNG.TAUMEDIKA.ACCOUNT) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_countryid).addOnChange(_self.onChangeCountry);
         formContext.getAttribute(_self.formModel.fields.res_taxcode).addOnChange(_self.checkCodiceFiscale);
         formContext.getAttribute(_self.formModel.fields.res_sdi).addOnChange(_self.checkSDI);
+        formContext.getAttribute(_self.formModel.fields.telephone1).addOnChange(_self.gestioneObbligatorietàCampiTelefono);
 
         //Init function
         _self.onChangeVatNumber(executionContext);
         _self.onChangeAddress(executionContext);
         _self.checkCodiceFiscale(executionContext);
         _self.checkSDI(executionContext);
+        _self.gestioneObbligatorietàCampiTelefono(executionContext);
 
         //Init IFrame
         _self.setContextCapIframe(executionContext);
