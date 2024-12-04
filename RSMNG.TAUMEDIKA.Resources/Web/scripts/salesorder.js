@@ -93,6 +93,8 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             res_vatnumberid: "res_vatnumberid",
             ///Ordine
             salesorderid: "salesorderid",
+            ///Segnacollo
+            res_segnacollo: "res_segnacollo",
             ///Metodo di spedizione
             shippingmethodcode: "shippingmethodcode",
             ///ID indirizzo di spedizione
@@ -789,6 +791,24 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         }, 500);
     };
     //---------------------------------------------------
+    _self.gestioneVisibilitàCampoSegnacollo = async function (executionContext) {
+        const formContext = executionContext.getFormContext();
+        const isAgente = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+
+        if (!isAgente) {
+            const motivoStato = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+            const motivoStatoSpedito = _self.formModel.fields.statuscodeValues.Spedito_StateAttivo;
+            const motivoStatoInLavorazione = _self.formModel.fields.statuscodeValues.Inlavorazione_StateAttivo;
+
+            if (motivoStato == motivoStatoSpedito || motivoStato == motivoStatoInLavorazione) {
+                const campoSegnacollo = formContext.getControl(_self.formModel.fields.res_segnacollo);
+
+                campoSegnacollo.setVisible(true);
+                campoSegnacollo.setDisabled(false);
+            }
+        }
+    };
+    //---------------------------------------------------
     _self.onLoadCreateForm = async function (executionContext) {
 
         var formContext = executionContext.getFormContext();
@@ -958,12 +978,13 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
 
-       
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
+
         //Init function
         _self.addPriceLevelCustomView(executionContext);
         _self.setContextCapIframe(executionContext);
         _self.checkPotentialCustomerData(executionContext);
+        _self.gestioneVisibilitàCampoSegnacollo(executionContext);
 
         switch (formContext.ui.getFormType()) {
             case RSMNG.Global.CRM_FORM_TYPE_CREATE:
