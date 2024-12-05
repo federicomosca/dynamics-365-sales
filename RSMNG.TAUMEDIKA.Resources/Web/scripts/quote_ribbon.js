@@ -256,36 +256,37 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
         canExecute: async function (formContext) {
 
 
-            let currentStatus = formContext.getAttribute("statuscode").getValue();
-            let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-            let agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            //let currentStatus = formContext.getAttribute("statuscode").getValue();
+            //let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+            //let agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
 
-            let isVisible = isMobile;
+            //let isVisible = isMobile;
 
 
-            if (agent === true) {
-                if (currentStatus == _self.STATUS.APPROVATA ||
-                    currentStatus == _self.STATUS.AGGIORNATA ||
-                    currentStatus == _self.STATUS.PERSA ||
-                    currentStatus == _self.STATUS.ACQUISITA
-                ) {
-                    isVisible = false;
-                }
-            }
+            //if (agent === true) {
+            //    if (currentStatus == _self.STATUS.APPROVATA ||
+            //        currentStatus == _self.STATUS.AGGIORNATA ||
+            //        currentStatus == _self.STATUS.PERSA ||
+            //        currentStatus == _self.STATUS.ACQUISITA
+            //    ) {
+            //        isVisible = false;
+            //    }
+            //}
 
-            return isVisible;
+            //return isVisible;
+            return true;
         },
         execute: async function (formContext) {
 
             var recordId = Xrm.Page.data.entity.getId(); // This retrieves the ID of the current record
             const source = Xrm.Page.data.entity.getEntityName()
             recordId = recordId.replace('{', '').replace('}', ''); // Clean up the ID format
-
+            let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
 
             var pageInput = {
                 pageType: "custom",
-                name: "res_app_a0afc",  // Use the unique name of your custom page
+                name: isMobile ? "res_app_a0afc" : "res_appcopia_7db7b",  // Use the unique name of your custom page
                 entityName: "quote",
                 recordId: recordId,
                 parameters: {

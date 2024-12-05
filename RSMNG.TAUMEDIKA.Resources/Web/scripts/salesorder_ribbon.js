@@ -384,27 +384,28 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
         canExecute: async function (formContext) {
 
 
-            let currentStatus = formContext.getAttribute("statuscode").getValue();
-            let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+            //let currentStatus = formContext.getAttribute("statuscode").getValue();
+            //let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-            let isVisible = isMobile;
+            //let isVisible = isMobile;
 
-            if (_self.Agent === undefined) {
-                _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-            }
-            console.log("agent: " + _self.Agent);
-            if (_self.Agent === true) {
-                if (currentStatus == _self.STATUS.Approvato ||
-                    currentStatus == _self.STATUS.Inapprovazione ||
-                    currentStatus == _self.STATUS.Annullato ||
-                    currentStatus == _self.STATUS.Inlavorazione ||
-                    currentStatus == _self.STATUS.Spedito_StateAttivo
-                ) {
-                    isVisible = false;
-                }
-            }
+            //if (_self.Agent === undefined) {
+            //    _self.Agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
+            //}
+            //console.log("agent: " + _self.Agent);
+            //if (_self.Agent === true) {
+            //    if (currentStatus == _self.STATUS.Approvato ||
+            //        currentStatus == _self.STATUS.Inapprovazione ||
+            //        currentStatus == _self.STATUS.Annullato ||
+            //        currentStatus == _self.STATUS.Inlavorazione ||
+            //        currentStatus == _self.STATUS.Spedito_StateAttivo
+            //    ) {
+            //        isVisible = false;
+            //    }
+            //}
 
-            return isVisible;
+            //return isVisible;
+            return true;
         },
         execute: async function (formContext) {
 
@@ -413,10 +414,13 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER.RIBBON.HOME) == "undefined") {
             var recordId = Xrm.Page.data.entity.getId(); // This retrieves the ID of the current record
             const source = Xrm.Page.data.entity.getEntityName()
             recordId = recordId.replace('{', '').replace('}', ''); // Clean up the ID format
+            let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+
 
             var pageInput = {
                 pageType: "custom",
-                name: "res_app_a0afc",  // Use the unique name of your custom page
+                name: isMobile ? "res_app_a0afc" : "res_appcopia_7db7b",  // Use the unique name of your custom page
                 entityName: "salesorder",
                 recordId: recordId,
                 parameters: {
