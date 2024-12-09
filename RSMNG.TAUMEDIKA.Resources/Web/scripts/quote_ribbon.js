@@ -195,7 +195,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             let currStatus = formContext.getAttribute("statuscode").getValue();
             let customerLookup = formContext.getAttribute("customerid").getValue();
-            console.log(currStatus);
 
             if (currStatus != _self.STATUS.BOZZA) {
                 if (currStatus == _self.STATUS.APPROVATA ||
@@ -252,30 +251,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
             }
         }
     };
-    //--------------------------------------------------
     _self.MOBILEAPP = {
-        canExecute: async function (formContext) {
+        canExecute: function (formContext) {
 
-
-            //let currentStatus = formContext.getAttribute("statuscode").getValue();
-            //let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-            //let agent = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
-
-            //let isVisible = isMobile;
-
-
-            //if (agent === true) {
-            //    if (currentStatus == _self.STATUS.APPROVATA ||
-            //        currentStatus == _self.STATUS.AGGIORNATA ||
-            //        currentStatus == _self.STATUS.PERSA ||
-            //        currentStatus == _self.STATUS.ACQUISITA
-            //    ) {
-            //        isVisible = false;
-            //    }
-            //}
-
-            //return isVisible;
-            return true;
+            const currentStatus = formContext.getAttribute("statuscode").getValue();
+            if (currentStatus == _self.STATUS.BOZZA) { return true; }
         },
         execute: async function (formContext) {
 
