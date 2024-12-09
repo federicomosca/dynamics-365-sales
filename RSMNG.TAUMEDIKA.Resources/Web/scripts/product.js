@@ -256,9 +256,9 @@ if (typeof (RSMNG.TAUMEDIKA.PRODUCT) == "undefined") {
         if (!famigliaAssociataControl) { console.error(`Campo Famiglia associata non trovato`); return; }
 
         var fetchData = {
-            "statecode": _self.formModel.fields.statecodeValues.Attivo,
-            "Famigliadiprodotti": _self.formModel.fields.productstructureValues.Famigliadiprodotti,
-            "Aggregazioneprodotti": _self.formModel.fields.productstructureValues.Aggregazioneprodotti
+            "statecode": _self.formModel.options.statecodeValues.Attivo,
+            "Famigliadiprodotti": _self.formModel.options.productstructureValues.Famigliadiprodotti,
+            "Aggregazioneprodotti": _self.formModel.options.productstructureValues.Aggregazioneprodotti
         };
         var filtro = [
             "    <filter>",
