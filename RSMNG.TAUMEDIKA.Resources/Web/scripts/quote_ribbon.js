@@ -199,6 +199,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE.RIBBON.HOME) == "undefined") {
 
             if (currStatus != _self.STATUS.BOZZA) {
                 if (currStatus == _self.STATUS.APPROVATA ||
+                    currStatus == _self.STATUS.NON_APPROVATA ||
                     currStatus == _self.STATUS.AGGIORNATA ||
                     currStatus == _self.STATUS.PERSA ||
                     currStatus == _self.STATUS.ACQUISITA ||
