@@ -341,10 +341,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.DataIntegration
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customernumber, importReceiptDanea.CodCliente);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_customername, importReceiptDanea.NomeCliente);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_agent, importReceiptDanea.CodAgente);
-                                    if (importReceiptDanea.Agente != null)
-                                    {
-                                        eDocumentReceiptUpt.Attributes.Add(res_document.ownerid, new EntityReference(importReceiptDanea.Agente.Entity, importReceiptDanea.Agente.Id));
-                                    }
+                                    //if (importReceiptDanea.Agente != null)
+                                    //{
+                                    //    eDocumentReceiptUpt.Attributes.Add(res_document.ownerid, new EntityReference(importReceiptDanea.Agente.Entity, importReceiptDanea.Agente.Id));
+                                    //}
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_nettotalexcludingvat, importReceiptDanea.TotNettoIva != null ? new Money((decimal)importReceiptDanea.TotNettoIva) : null);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_vat, importReceiptDanea.Iva != null ? new Money((decimal)importReceiptDanea.Iva) : null);
                                     eDocumentReceiptUpt.Attributes.Add(res_document.res_documenttotal, importReceiptDanea.TotDoc != null ? new Money((decimal)importReceiptDanea.TotDoc) : null);

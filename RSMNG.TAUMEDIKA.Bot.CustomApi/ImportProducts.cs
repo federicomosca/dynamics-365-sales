@@ -27,11 +27,12 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
             PluginMessage = "res_ImportProducts";
             PluginPrimaryEntityName = "none";
             PluginRegion = "ImportProducts";
+            PluginActiveTrace = true;
         }
 
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
-            crmServiceProvider.TracingService.Trace("Inizio");
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Inizio");
             Response response = null;
             string outResult = "OK";
             string outMessage = "Nessun errore riscontrato";
@@ -111,7 +112,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             }
                         }
 
-                        crmServiceProvider.TracingService.Trace($"NumeroRighePrima:{rows.Count}");
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"NumeroRighePrima:{rows.Count}");
 
                         //Aggiorno la configurazione con la posizione corretta della cella
                         foreach (Field field in configuration.fields)
@@ -134,7 +135,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             //rows = rows.Skip(1).Take(rows.Count - 2).ToList();
                         }
 
-                        crmServiceProvider.TracingService.Trace($"NumeroRigheDopo:{rows.Count}");
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"NumeroRigheDopo:{rows.Count}");
 
                         #endregion
 
@@ -172,8 +173,9 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             ePriceLevel.Attributes.Add(pricelevel.res_iserpimport, true);
                             ePriceLevel.Attributes.Add(pricelevel.transactioncurrencyid, RSMNG.Plugins.TransactionCurrency.GetDefaultCurrency(crmServiceProvider.Service));
                             ePriceLevel.Attributes.Add(pricelevel.res_scopetypecodes, new OptionSetValueCollection() { new OptionSetValue((int)pricelevel.res_scopetypecodesValues.Agenti) });
-                            crmServiceProvider.Service.Create(ePriceLevel);
+                            ePriceLevel.Id = crmServiceProvider.Service.Create(ePriceLevel);
                             lPriceLevel.Add(ePriceLevel);
+
                         }
 
                         //Unita Di vendite
@@ -204,15 +206,18 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             eUomSchedule.Attributes.Add(uomschedule.description, null);
                             eUomSchedule.Attributes.Add(uomschedule.res_isdefault, true);
                             eUomSchedule.Attributes.Add(uomschedule.baseuomname, "Unità primaria");
-                            crmServiceProvider.Service.Create(eUomSchedule);
+                            eUomSchedule.Id = crmServiceProvider.Service.Create(eUomSchedule);
                             lUomSchedule.Add(eUomSchedule);
+                            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Default Creato.");
                         }
+                        if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Lista Unità di Vendita :{lUomSchedule.Count}");
 
                         //Unità di misura
                         PluginRegion = "Unità di misura";
                         var fetchXmlU = $@"<?xml version=""1.0"" encoding=""utf-16""?>
                         <fetch>
                           <entity name=""{uom.logicalName}"">
+                            <attribute name=""{uom.uomscheduleid}"" />
                             <attribute name=""{uom.baseuom}"" />
                             <attribute name=""{uom.name}"" />
                             <attribute name=""{uom.res_isdefault}"" />
@@ -264,20 +269,22 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             }
                             else
                             {
-                                eUom = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower());
+                                eUom = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUom.ToLower() && u.ContainsAttributeNotNull(uom.uomscheduleid) && u.GetAttributeValue<EntityReference>(uom.uomscheduleid).Id.Equals(lUomSchedule[0].ToEntityReference().Id));
                             }
-                            Entity eBaseUom = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom));
+                            Entity eBaseUom = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom) && u.ContainsAttributeNotNull(uom.uomscheduleid) && u.GetAttributeValue<EntityReference>(uom.uomscheduleid).Id.Equals(lUomSchedule[0].ToEntityReference().Id));
 
                             if (eUom == null)
                             {
+                                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Inizio Unità di misura creato.");
                                 //Creo l'unita di misura
                                 eUom = new Entity(uom.logicalName);
                                 eUom.Attributes.Add(uom.uomscheduleid, lUomSchedule[0].ToEntityReference());
                                 eUom.Attributes.Add(uom.name, sUom);
                                 eUom.Attributes.Add(uom.quantity, new decimal(1));
                                 eUom.Attributes.Add(uom.baseuom, eBaseUom.ToEntityReference());
-                                crmServiceProvider.Service.Create(eUom);
+                                eUom.Id = crmServiceProvider.Service.Create(eUom);
                                 lUom.Add(eUom);
+                                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Unità di misura creato.");
                             }
 
 
@@ -291,20 +298,23 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             }
                             else
                             {
-                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUomPeso.ToLower());
+                                eUomPeso = lUom.FirstOrDefault(u => u.GetAttributeValue<string>(uom.name).ToLower() == sUomPeso.ToLower() && u.ContainsAttributeNotNull(uom.uomscheduleid) && u.GetAttributeValue<EntityReference>(uom.uomscheduleid).Id.Equals(lUomSchedule[0].ToEntityReference().Id));
                             }
-                            Entity eBaseUomPeso = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom));
+                            Entity eBaseUomPeso = lUom.FirstOrDefault(u => u.NotContainsAttributeOrNull(uom.baseuom) && u.ContainsAttributeNotNull(uom.uomscheduleid) && u.GetAttributeValue<EntityReference>(uom.uomscheduleid).Id.Equals(lUomSchedule[0].ToEntityReference().Id));
+
 
                             if (eUomPeso == null)
                             {
-                                //Creo l'unita di misura
+                                //Creo l'unita di misura Peso
+                                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"Unità di misura peso:{sUomPeso}");
                                 eUomPeso = new Entity(uom.logicalName);
                                 eUomPeso.Attributes.Add(uom.uomscheduleid, lUomSchedule[0].ToEntityReference());
                                 eUomPeso.Attributes.Add(uom.name, sUomPeso);
                                 eUomPeso.Attributes.Add(uom.quantity, new decimal(1));
                                 eUomPeso.Attributes.Add(uom.baseuom, eBaseUomPeso.ToEntityReference());
-                                crmServiceProvider.Service.Create(eUomPeso);
+                                eUomPeso.Id = crmServiceProvider.Service.Create(eUomPeso);
                                 lUom.Add(eUomPeso);
+                                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Unità di misura peso creato");
                             }
 
                             //Definisco il Codice Iva
@@ -315,7 +325,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                             //Definisco il Prezzo di listino
                             // Stringa con il valore da convertire
                             PluginRegion = "Definisco il Prezzo di listino";
-                            crmServiceProvider.TracingService.Trace(row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)).position]);
+                            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)).position]);
                             string priceList = configuration.fields.FirstOrDefault(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)) != null ? row[configuration.fields.First(f => f.name_product == nameof(Shared.Product.ImportProductDanea.PrezzoDiListino)).position] : "0";
                             priceList = string.IsNullOrEmpty(priceList) ? "0" : priceList;
 
@@ -383,7 +393,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                                 Tipologia = new Shared.Product.Option() { Text = null, Value = null, ExternalValue = productTypeCode }
                             };
                             productsDanea.Add(productDanea);
-                            crmServiceProvider.TracingService.Trace(productsDanea.ToString());
+                            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace(productsDanea.ToString());
                         }
                         #endregion
 
@@ -485,7 +495,7 @@ namespace RSMNG.TAUMEDIKA.Bot.CustomApi
                 crmServiceProvider.PluginContext.OutputParameters[ParametersOut.result] = outResult;
                 crmServiceProvider.PluginContext.OutputParameters[ParametersOut.error] = response.ErrorResponseEntity;
             }
-            crmServiceProvider.TracingService.Trace("Fine");
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace("Fine");
         }
     }
 }
