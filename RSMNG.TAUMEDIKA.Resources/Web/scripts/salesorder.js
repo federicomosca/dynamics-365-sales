@@ -795,15 +795,22 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         const formContext = executionContext.getFormContext();
         const isAgente = await RSMNG.TAUMEDIKA.GLOBAL.getAgent();
 
-        if (!isAgente) {
-            const motivoStato = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
-            const motivoStatoSpedito = _self.formModel.fields.statuscodeValues.Spedito_StateAttivo;
-            const motivoStatoInLavorazione = _self.formModel.fields.statuscodeValues.Inlavorazione_StateAttivo;
+        /**
+         * il campo è visibile solo se motivo stato = "Spedito" oppure "In lavorazione"
+         */
+        const motivoStato = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
+        const motivoStatoSpedito = _self.formModel.fields.statuscodeValues.Spedito_StateAttivo;
+        const motivoStatoInLavorazione = _self.formModel.fields.statuscodeValues.Inlavorazione_StateAttivo;
 
-            if (motivoStato == motivoStatoSpedito || motivoStato == motivoStatoInLavorazione) {
-                const campoSegnacollo = formContext.getControl(_self.formModel.fields.res_segnacollo);
+        if (motivoStato == motivoStatoSpedito || motivoStato == motivoStatoInLavorazione) {
+            const campoSegnacollo = formContext.getControl(_self.formModel.fields.res_segnacollo);
 
-                campoSegnacollo.setVisible(true);
+            campoSegnacollo.setVisible(true);
+
+            /**
+             * se Agente = No, è anche editabile
+             */
+            if (!isAgente) {
                 campoSegnacollo.setDisabled(false);
             }
         }
