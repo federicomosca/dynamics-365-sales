@@ -46,7 +46,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             if (target.Contains(salesorderdetail.res_vatnumberid) ||
                 target.Contains(salesorderdetail.quantity) ||
                 target.Contains(salesorderdetail.manualdiscountamount) ||
-                target.Contains(salesorderdetail.priceperunit)
+                target.Contains(salesorderdetail.priceperunit) ||
+                postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas")
                 )
             {
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
