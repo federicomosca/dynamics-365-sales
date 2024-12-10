@@ -20,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -52,7 +52,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             if (target.Contains(quotedetail.res_vatnumberid) ||
                 target.Contains(quotedetail.quantity) ||
                 target.Contains(quotedetail.manualdiscountamount) ||
-                target.Contains(quotedetail.priceperunit)
+                target.Contains(quotedetail.priceperunit) ||
+                postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas")
                 )
             {
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
@@ -144,31 +145,29 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             #endregion
 
 
-            #region Gestisco il campo Prezzo unitario modificato da Canvas App
-            PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
+            #region Gestisco il campo Prezzo unitario modificato da Canvas App [DISABLED]
+            //PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";
 
-            bool isFromCanvas = postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas");
+            //bool isFromCanvas = postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas");
 
-            if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
+            //if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"From Canvas? {isFromCanvas}"); }
 
-            if (isFromCanvas)
-            {
-                //EntityReference preImageCodiceIva = preImage.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ? preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) : null;
-                //decimal preImageBaseamount = preImage.ContainsAttributeNotNull(quotedetail.baseamount) ? preImage.GetAttributeValue<Money>(quotedetail.baseamount).Value : 0;
+            //if (isFromCanvas)
+            //{
+            //    EntityReference preImageCodiceIva = preImage.ContainsAttributeNotNull(quotedetail.res_vatnumberid) ? preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid) : null;
+            //    decimal preImagePrezzoUnitario = preImage.ContainsAttributeNotNull(quotedetail.priceperunit) ? preImage.GetAttributeValue<Money>(quotedetail.priceperunit).Value : 0;
+            //    decimal preImageQuantità = preImage.ContainsAttributeNotNull(quotedetail.quantity) ? preImage.GetAttributeValue<decimal>(quotedetail.quantity) : 0;
+            //    decimal baseamount = preImagePrezzoUnitario * preImageQuantità;
 
-                //if (PluginActiveTrace)
-                //{
-                //    if (preImageCodiceIva != null)
-                //    {
-                //        Entity enCodiceIva = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, preImageCodiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
-                //        crmServiceProvider.TracingService.Trace($"PreImage Codice IVA: {enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate)}");
-                //    }
-                //}
-                //target[quotedetail.res_vatnumberid] = preImageCodiceIva;
-                //target[quotedetail.priceperunit] = new Money(preImagePriceperunit);
-                //target[quotedetail.baseamount] = new Money(preImageBaseamount);
-                target[quotedetail.res_isfromcanvas] = false;
-            }
+            //    Entity enCodiceIva = crmServiceProvider.Service.Retrieve(res_vatnumber.logicalName, preImageCodiceIva.Id, new ColumnSet(res_vatnumber.res_rate));
+            //    decimal aliquotaIva = enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate) ?? 0;
+            //    crmServiceProvider.TracingService.Trace($"PreImage Codice IVA: {enCodiceIva?.GetAttributeValue<decimal>(res_vatnumber.res_rate)}");
+            //    crmServiceProvider.TracingService.Trace($"PreImage Importo: {baseamount}");
+
+            //    target[quotedetail.res_vatnumberid] = new EntityReference(res_vatnumber.logicalName, preImageCodiceIva.Id);
+            //    target[quotedetail.baseamount] = new Money(baseamount);
+            //    target[quotedetail.res_vatrate] = aliquotaIva;
+            //}
             #endregion
         }
     }
