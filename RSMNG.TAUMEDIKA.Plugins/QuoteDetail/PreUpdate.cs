@@ -20,7 +20,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             PluginMessage = "Update";
             PluginPrimaryEntityName = quotedetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = true;
+            PluginActiveTrace = false;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -48,15 +48,28 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             decimal totaleIva = 0;
             decimal importoTotale = 0;
 
+            if (PluginActiveTrace)
+            {
+                crmServiceProvider.TracingService.Trace($"target contains codice iva: {target.Contains(quotedetail.res_vatnumberid)}");
+                crmServiceProvider.TracingService.Trace($"preimage contains codice iva: {preImage.Contains(quotedetail.res_vatnumberid)}");
+                if (target.Contains(quotedetail.res_vatnumberid)) crmServiceProvider.TracingService.Trace($"target codice iva: {target.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid).Name ?? null}");
+                if (preImage.Contains(quotedetail.res_vatnumberid)) crmServiceProvider.TracingService.Trace($"preimage codice iva: {preImage.GetAttributeValue<EntityReference>(quotedetail.res_vatnumberid).Name ?? null}");
+                crmServiceProvider.TracingService.Trace($"target contains quantità: {target.Contains(quotedetail.quantity)}");
+                crmServiceProvider.TracingService.Trace($"target contains sconto totale: {target.Contains(quotedetail.manualdiscountamount)}");
+                crmServiceProvider.TracingService.Trace($"target contains prezzo unitario: {target.Contains(quotedetail.priceperunit)}");
+            }
 
             if (target.Contains(quotedetail.res_vatnumberid) ||
                 target.Contains(quotedetail.quantity) ||
                 target.Contains(quotedetail.manualdiscountamount) ||
                 target.Contains(quotedetail.priceperunit) ||
-                postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas")
+                (preImage.Contains(quotedetail.res_isfromcanvas) && preImage.Contains(quotedetail.res_vatnumberid))
                 )
             {
-                if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
+                if (PluginActiveTrace)
+                {
+                    crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente");
+                }
 
                 if (target.Contains(quotedetail.res_vatnumberid))
                 {
@@ -143,7 +156,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.QuoteDetail
             target[quotedetail.tax] = new Money(totaleIva);
             target[quotedetail.extendedamount] = new Money(importoTotale);
             #endregion
-
 
             #region Gestisco il campo Prezzo unitario modificato da Canvas App [DISABLED]
             //PluginRegion = "Gestisco il campo Prezzo unitario modificato da Canvas App";

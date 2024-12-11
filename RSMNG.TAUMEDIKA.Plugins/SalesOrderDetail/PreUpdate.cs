@@ -47,7 +47,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 target.Contains(salesorderdetail.quantity) ||
                 target.Contains(salesorderdetail.manualdiscountamount) ||
                 target.Contains(salesorderdetail.priceperunit) ||
-                postImage.ContainsAttributeNotNull("res_isfromcanvas") && postImage.GetAttributeValue<bool>("res_isfromcanvas")
+                (preImage.Contains(quotedetail.res_isfromcanvas) && preImage.Contains(quotedetail.res_vatnumberid))
                 )
             {
                 if (PluginActiveTrace) { crmServiceProvider.TracingService.Trace($"Codice IVA è stato selezionato dall'utente"); }
@@ -66,7 +66,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                 scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                 importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
-                
+
                 totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                 totaleIva = omaggio ? 0 : (totaleImponibile * (aliquota == null ? 1 : aliquota.Value)) / 100;
                 importoTotale = totaleImponibile + totaleIva;
@@ -110,14 +110,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         codiceIva = prodotto.ContainsAttributeNotNull(product.res_vatnumberid) ? prodotto.GetAttributeValue<EntityReference>(product.res_vatnumberid) : null;
 
                         aliquota = prodotto.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? (decimal)prodotto.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 0m;
-                        
+
                         scontoTotale = postImage.ContainsAttributeNotNull(salesorderdetail.manualdiscountamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.manualdiscountamount).Value : 0;
                         importo = postImage.ContainsAttributeNotNull(salesorderdetail.baseamount) ? postImage.GetAttributeValue<Money>(salesorderdetail.baseamount).Value : 0;
 
                         totaleImponibile = omaggio ? 0 : importo - scontoTotale;
                         totaleIva = omaggio ? 0 : (totaleImponibile * (aliquota == null ? 1 : aliquota.Value)) / 100;
                         importoTotale = totaleImponibile + totaleIva;
-                        
+
                         if (PluginActiveTrace)
                         {
                             crmServiceProvider.TracingService.Trace($"aliquota: {aliquota}");
@@ -130,14 +130,14 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     }
                 }
             }
-            
+
             target[salesorderdetail.res_vatnumberid] = codiceIva;
             target[salesorderdetail.res_vatrate] = aliquota;
             target[salesorderdetail.res_taxableamount] = new Money(totaleImponibile);
             target[salesorderdetail.tax] = new Money(totaleIva);
             target[salesorderdetail.extendedamount] = new Money(importoTotale);
-            
-            
+
+
             #endregion
 
         }
