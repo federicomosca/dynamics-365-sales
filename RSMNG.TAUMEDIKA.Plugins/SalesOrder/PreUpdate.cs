@@ -41,6 +41,20 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             target.AddWithRemove(salesorder.res_recipient, destination);
             #endregion
 
+            #region Valorizzo il campo Nome
+            PluginRegion = "Valorizzo il campo Nome";
+
+            string nomeOrdine = string.Empty;
+            string nOrdine = string.Empty;
+            string nomeCliente = string.Empty;
+
+            nOrdine = target.ContainsAttributeNotNull(salesorder.ordernumber) ? target.GetAttributeValue<string>(salesorder.ordernumber) : string.Empty;
+            //nome cliente lo prelevo dall'entity customer
+
+            //if(!string.IsNullOrEmpty(nOrdine)) { nomeOrdine = nOrdine + " - " + nomeCliente; }
+
+            #endregion
+
             #region Valorizzazione automatica del campo Motivo Stato Precedente
             PluginRegion = "Valorizzazione automatica del campo Motivo Stato Precedente";
 

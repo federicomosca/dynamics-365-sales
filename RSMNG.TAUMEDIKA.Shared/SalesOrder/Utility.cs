@@ -18,7 +18,6 @@ namespace RSMNG.TAUMEDIKA.Shared.SalesOrder
     public class Utility
     {
         public static List<string> mandatoryFields = new List<string> {
-            salesorder.name,
             salesorder.pricelevelid,
             salesorder.ordernumber,
             salesorder.customerid,
