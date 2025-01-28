@@ -50,6 +50,38 @@ namespace RSMNG.TAUMEDIKA.Plugins.Quote
             target.AddWithRemove(quote.res_recipient, destination);
             #endregion
 
+            #region Valorizzo il campo Nome
+            PluginRegion = "Valorizzo il campo Nome";
+
+            string nomeCliente = string.Empty;
+
+            string nOfferta = target.ContainsAttributeNotNull(quote.quotenumber) ? target.GetAttributeValue<string>(quote.quotenumber) : string.Empty;
+
+            //recupero il nome cliente dalla lookup polimorfica
+            EntityReference erCliente = target.GetAttributeValue<EntityReference>(quote.customerid) ?? null;
+
+            if (erCliente != null)
+            {
+                bool isAccount = erCliente.LogicalName == account.logicalName;
+
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"customer is account? {isAccount}");
+
+                //columnset relativo alla natura della lookup polimorfica
+                ColumnSet columnSetCliente = isAccount ? new ColumnSet(account.name) : new ColumnSet(contact.fullname);
+                Entity cliente = crmServiceProvider.Service.Retrieve(isAccount ? account.logicalName : contact.logicalName, erCliente.Id, columnSetCliente);
+
+                if (cliente != null)
+                {
+                    nomeCliente = cliente.ContainsAttributeNotNull(isAccount ? account.name : contact.fullname) ?
+                        cliente.GetAttributeValue<string>(isAccount ? account.name : contact.fullname) : string.Empty;
+                }
+            }
+
+            string nomeOfferta = !string.IsNullOrEmpty(nOfferta) ? nOfferta + " - " + nomeCliente : nomeCliente;
+
+            target[quote.name] = nomeOfferta;
+            #endregion
+
             #region Valorizzazione automatica del campo Importo spesa accessoria [DISABLED]
             //PluginRegion = "Valorizzazione automatica del campo Importo spesa accessoria"; 
             //Money amount = null;

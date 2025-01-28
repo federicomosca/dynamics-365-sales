@@ -49,7 +49,8 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             string nOrdine = preImage.ContainsAttributeNotNull(salesorder.ordernumber) ? preImage.GetAttributeValue<string>(salesorder.ordernumber) : string.Empty;
 
             //recupero il nome cliente dalla lookup polimorfica
-            EntityReference erCliente = postImage.GetAttributeValue<EntityReference>(salesorder.customerid) ?? null;
+            EntityReference erCliente = target.Contains(salesorder.customerid) ? target.GetAttributeValue<EntityReference>(salesorder.customerid) :
+                preImage.Contains(salesorder.customerid) ? preImage.GetAttributeValue<EntityReference>(salesorder.customerid) : null;
 
             if (erCliente != null)
             {
@@ -77,7 +78,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             PluginRegion = "Valorizzazione automatica del campo Motivo Stato Precedente";
 
             //recupero il motivo stato dalla preimage e lo salvo nel campo motivo stato precedente
-            preImage.TryGetAttributeValue<OptionSetValue>(quote.statuscode, out var previousStatusCode);
+            preImage.TryGetAttributeValue<OptionSetValue>(salesorder.statuscode, out var previousStatusCode);
             if (previousStatusCode != null)
             {
                 target["res_oldstatuscode"] = previousStatusCode;

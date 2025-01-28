@@ -18,13 +18,12 @@ namespace RSMNG.TAUMEDIKA.Shared.Quote
     public class Utility
     {
         public static List<string> mandatoryFields = new List<string> {
-                DataModel.quote.name,
-                DataModel.quote.revisionnumber,
-                DataModel.quote.pricelevelid,
-                DataModel.quote.quotenumber,
-                DataModel.quote.customerid,
-                DataModel.quote.ownerid,
-                DataModel.quote.transactioncurrencyid,
+                quote.revisionnumber,
+                quote.pricelevelid,
+                quote.quotenumber,
+                quote.customerid,
+                quote.ownerid,
+                quote.transactioncurrencyid,
             };
         public static string UpdateQuoteStatusCode(IOrganizationService service, ITracingService trace, String jsonDataInput)
         {
