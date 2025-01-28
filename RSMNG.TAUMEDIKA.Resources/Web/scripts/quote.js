@@ -195,7 +195,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             /// statuscode
             statuscode: "statuscode",
             ///Spedizione
-            willcall: "willcall",
+            res_spedizione: "res_spedizione",
 
             /// Values for field Stato
             statecodeValues: {
@@ -241,9 +241,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             },
 
             /// Values for field Spedizione
-            willcallValues: {
-                Indirizzo: 0,
-                Spedizioneacaricodelcliente: 1
+            spedizioneValues: {
+                Indirizzo: 100000001,
+                Spedizioneacaricodelcliente: 100000000,
+                Spedizioneallagente: 100000002
             }
         },
         tabs: {
@@ -567,16 +568,16 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
     };
     //---------------------------------------------------
-    _self.handleWillCallRelatedFields = executionContext => {
+    _self.handleSpedizioneRelatedFields = executionContext => {
         const formContext = executionContext.getFormContext();
 
-        const willCallControl = formContext.getControl(_self.formModel.fields.willcall);
+        const spedizioneControl = formContext.getControl(_self.formModel.fields.res_spedizione);
 
         /**
          * mostro/nascondo tutti i campi relativi al campo Spedizione
          * e gestisco obbligatorietà e read-only
          */
-        const willCallControlsVisibility = [
+        const spedizioneControlsVisibility = [
             _self.formModel.fields.res_shippingreference,
             _self.formModel.fields.shipto_line1,
             _self.formModel.fields.shipto_postalcode,
@@ -586,39 +587,39 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             _self.formModel.fields.res_countryid,
         ];
 
-        const willCallControlsRequirement = [
+        const spedizioneControlsRequirement = [
             _self.formModel.fields.shipto_line1,
             _self.formModel.fields.shipto_postalcode,
             _self.formModel.fields.shipto_city,
         ];
 
-        willCallControlsVisibility.forEach(field => {
+        spedizioneControlsVisibility.forEach(field => {
             const control = formContext.getControl(field);
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Indirizzo) {
                 _self.setContextCapIframe(executionContext);
                 formContext.getControl("WebResource_postalcode")?.setVisible(true);
                 control.setVisible(true);
             }
 
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Spedizioneacaricodelcliente) {
                 formContext.getControl("WebResource_postalcode")?.setVisible(false);
                 control.setVisible(false);
                 control.getAttribute().setValue(null)
             }
         });
 
-        willCallControlsRequirement.forEach(field => {
+        spedizioneControlsRequirement.forEach(field => {
             const control = formContext.getControl(field);
 
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Indirizzo) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Indirizzo) {
                 control.getAttribute().setRequiredLevel("required");
             }
 
-            if (willCallControl.getAttribute().getValue() == _self.formModel.fields.willcallValues.Spedizioneacaricodelcliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Spedizioneacaricodelcliente) {
                 control.getAttribute().setRequiredLevel("none");
             }
 
@@ -733,7 +734,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     };
     //---------------------------------------------------
     _self.onChangeAddress = executionContext => {
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
     };
     //---------------------------------------------------
     _self.filterPotentialCustomer = executionContext => {
@@ -757,9 +758,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         console.log("on change customer");
         let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
-        //let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
 
-        if (customerLookup !== null) { // && tipoSpedizione == _self.formModel.fields.willcallValues.Indirizzo
+        if (customerLookup !== null) {
 
             let addresses = await RSMNG.TAUMEDIKA.GLOBAL.getCustomerAddresses(customerLookup[0].id, true);
 
@@ -771,7 +771,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
-                formContext.getAttribute(_self.formModel.fields.willcall).setValue(Boolean(_self.formModel.fields.willcallValues.Indirizzo));
+                formContext.getAttribute(_self.formModel.fields.spedizione).setValue(Boolean(_self.formModel.fields.spedizioneValues.Indirizzo));
 
                 if (address._res_countryid_value != null) {
                     let countryLookup = [{
@@ -795,17 +795,17 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         }
         _self.setPostalCodeRelatedFieldsRequirement(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
     };
     //---------------------------------------------------
-    _self.onChangeWillCall = function (executionContext) {
+    _self.onChangeSpedizione = function (executionContext) {
         var formContext = executionContext.getFormContext();
 
-        let willCall = formContext.getAttribute(_self.formModel.fields.willcall).getValue();
-        if (willCall == _self.formModel.fields.willcallValues.Indirizzo) {
+        let spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
+        if (spedizione == _self.formModel.fields.res_spedizione.Indirizzo) {
             _self.onChangeCustomer(executionContext);
         }
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
     };
     //---------------------------------------------------
     _self.getQuoteDetailsCount = gridContext => {
@@ -870,7 +870,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.onChangeSpesaAccessoria(executionContext, false);
         _self.setPriceLevelLookup(executionContext);
 
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
         _self.setPostalCodeRelatedFieldsRequirement(executionContext);
     };
@@ -882,7 +882,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         _self.onChangeSpesaAccessoria(executionContext, false);
 
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
         _self.setCityRelatedFieldsEditability(executionContext);
         _self.setPostalCodeRelatedFieldsRequirement(executionContext);
 
@@ -899,7 +899,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     //---------------------------------------------------
     _self.onLoadReadyOnlyForm = async function (executionContext) {
         var formContext = executionContext.getFormContext();
-        _self.handleWillCallRelatedFields(executionContext);
+        _self.handleSpedizioneRelatedFields(executionContext);
         _self.checkPotentialCustomerData(executionContext);
 
         let statuscodeValue = formContext.getAttribute(_self.formModel.fields.statuscode).getValue();
@@ -938,7 +938,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         //-----------------------------------< DATI SPEDIZIONE >-----------------------------------//
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.setPostalCodeRelatedFieldsRequirement);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.setCityRelatedFieldsEditability);
-        formContext.getAttribute(_self.formModel.fields.willcall).addOnChange(_self.onChangeWillCall);
+        formContext.getAttribute(_self.formModel.fields.res_spedizione).addOnChange(_self.onChangeSpedizione);
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
 
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
