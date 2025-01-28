@@ -589,8 +589,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
         const spedizioneControlsRequirement = [
             _self.formModel.fields.shipto_line1,
-            _self.formModel.fields.shipto_postalcode,
-            _self.formModel.fields.shipto_city,
+            _self.formModel.fields.shipto_postalcode
         ];
 
         spedizioneControlsVisibility.forEach(field => {
