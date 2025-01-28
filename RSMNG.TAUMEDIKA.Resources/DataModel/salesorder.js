@@ -361,8 +361,8 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 
 	/// Values for field Spedizione
 	res_spedizioneValues: {
-		Indirizzo: 100000001,
-		Spedizioneacaricodelcliente: 100000000,
-		Spedizioneallagente: 100000002
+		spedizionePressoCliente: 100000000,
+		ritiroDaCliente: 100000001,
+		spedizioneAllAgente: 100000002
 	}
 };

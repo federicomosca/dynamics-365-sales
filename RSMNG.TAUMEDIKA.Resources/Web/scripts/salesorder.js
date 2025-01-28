@@ -208,9 +208,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             /// Values for field Spedizione
             res_spedizioneValues: {
-                Indirizzo: 100000001,
-                Spedizioneacaricodelcliente: 100000000,
-                Spedizioneallagente: 100000002
+                spedizionePressoCliente: 100000000,
+                ritiroDaCliente: 100000001,
+                spedizioneAllAgente: 100000002
             }
         },
         tabs: {
@@ -514,23 +514,26 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     //-----------Spedizione------------------------------
     _self.onChangeSpedizione = function (executionContext, isEvent) {
+        const formContext = executionContext.getFormContext();
 
-        var formContext = executionContext.getFormContext();
-        let spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
+        const spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
 
-        if (spedizione == _self.formModel.fields.res_spedizioneValues.Indirizzo) {
-
+        if (spedizione == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
-            //formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(true);
             formContext.getControl(_self.formModel.fields.res_countryid).setVisible(true);
-            //formContext.getControl("WebResource_postalcode").setVisible(true);
-            //_self.setContextCapIframe(executionContext); 
+            formContext.getControl("WebResource_postalcode")?.setVisible(true);
+            _self.setContextCapIframe(executionContext);
 
-            if (isEvent) { _self.onChangeCustomer(executionContext); } // controlla se cliente ha un indirizzo default per settare in auto i campi spedizione
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("required");
+            formContext.getAttribute(_self.formModel.fields.shipto_line1).setRequiredLevel("required");
+
+
+            if (isEvent) { _self.onChangeCustomer(executionContext, false); } // controlla se cliente ha un indirizzo default per settare in auto i campi spedizione
         } else {
             if (isEvent) {
                 formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
@@ -543,6 +546,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
                 formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("none");
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
+
+                formContext.getControl("WebResource_postalcode")?.setVisible(false);
+                _self.setContextCapIframe(executionContext); 
             }
 
             formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(false);
@@ -552,8 +558,11 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getControl(_self.formModel.fields.res_location).setVisible(false);
             formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(false);
             formContext.getControl(_self.formModel.fields.res_countryid).setVisible(false);
-            formContext.getControl("WebResource_postalcode")?.setVisible(false);
 
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("none");
+            formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
+
+            formContext.getControl("WebResource_postalcode")?.setVisible(false);
         }
     };
     //-----------Indirizzo-Spedizione--------------------
@@ -562,12 +571,12 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         let shipToLine1 = formContext.getAttribute(_self.formModel.fields.shipto_line1).getValue();
 
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel(shipToLine1 !== null ? "required" : "none");
-        formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
-        formContext.getControl("WebResource_postalcode")?.setVisible(shipToLine1 !== null ? true : false);
+        //formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(shipToLine1 !== null ? true : false);
+        //formContext.getControl("WebResource_postalcode")?.setVisible(shipToLine1 !== null ? true : false);
 
         if (shipToLine1 !== null) {
 
-            _self.setContextCapIframe(executionContext);
+            //_self.setContextCapIframe(executionContext);
         } else {
 
             formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
@@ -636,9 +645,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
     };
     //---------------------------------------------------
-    _self.onChangeCustomer = async function (executionContext) {
+    _self.onChangeCustomer = async function (executionContext, isEvent) {
         var formContext = executionContext.getFormContext();
-        console.log("on change customer");
+
         let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
         let tipoSpedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
 
@@ -648,8 +657,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
             if (addresses != null && addresses.entities.length > 0) {
 
-
-
                 let address = addresses.entities[0];
 
                 formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(address.res_address);
@@ -658,11 +665,9 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
 
-
-                formContext.getAttribute(_self.formModel.fields.res_spedizione).setValue(Boolean(_self.formModel.fields.res_spedizioneValues.Indirizzo));
+                formContext.getAttribute(_self.formModel.fields.res_spedizione).setValue(Boolean(_self.formModel.fields.res_spedizioneValues.ritiroDaCliente));
 
                 if (address._res_countryid_value != null) {
-
 
                     let countryLookup = [{
                         id: address["_res_countryid_value"],
@@ -672,13 +677,13 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
                     formContext.getAttribute(_self.formModel.fields.shipto_country).setValue(address["_res_countryid_value@OData.Community.Display.V1.FormattedValue"]);
                     formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(countryLookup);
-
-
                 }
 
                 _self.updateAddressFieldsRequirements(executionContext);
             }
         } else {
+            if (isEvent) {
+
             formContext.getAttribute(_self.formModel.fields.shipto_line1).setValue(null);
             formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setValue(null);
             formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(null);
@@ -688,12 +693,12 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getAttribute(_self.formModel.fields.res_countryid).setValue(null);
 
             _self.updateAddressFieldsRequirements(executionContext);
+            }
         }
     };
     //---------------------------------------------------
     _self.updateAddressFieldsRequirements = function (executionContext) {
         var formContext = executionContext.getFormContext();
-
 
         _self.onChangeShipToLine1(executionContext);
 
@@ -703,7 +708,6 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
 
         let citta = formContext.getAttribute(_self.formModel.fields.shipto_city).getValue();
         _self.disableCityRelated(executionContext, citta != null ? false : true);
-
     };
     //---------------------------------------------------
     _self.disableCityRelated = function (executionContext, isDisable) {
@@ -827,7 +831,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         const shipToLine1Control = formContext.getControl(_self.formModel.fields.shipto_line1);
         const spedizioneControl = formContext.getControl(_self.formModel.fields.res_spedizione);
         if (spedizioneControl) {
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.Indirizzo) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
                 if (shipToLine1Control) {
                     shipToLine1Control.getAttribute().setRequiredLevel("required");
                 }
@@ -981,7 +985,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getAttribute(_self.formModel.fields.shipto_postalcode).addOnChange(_self.onChangeShipToPostalCode);
         formContext.getAttribute(_self.formModel.fields.shipto_city).addOnChange(_self.onChangeShipToCity);
         formContext.getAttribute(_self.formModel.fields.res_spedizione).addOnChange(() => { _self.onChangeSpedizione(executionContext, true); });
-        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.onChangeCustomer);
+        formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(() => { _self.onChangeCustomer(executionContext, true) });
 
         formContext.getAttribute(_self.formModel.fields.res_isinvoicerequested).addOnChange(_self.checkPotentialCustomerData);
         formContext.getAttribute(_self.formModel.fields.customerid).addOnChange(_self.checkPotentialCustomerData);
@@ -989,6 +993,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
         formContext.getControl(_self.formModel.fields.customerid).addPreSearch(_self.filterPotentialCustomer);
 
         //Init function
+        _self.onChangeSpedizione(executionContext, false);
         _self.addPriceLevelCustomView(executionContext);
         _self.setContextCapIframe(executionContext);
         _self.checkPotentialCustomerData(executionContext);
