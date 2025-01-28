@@ -596,7 +596,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             const control = formContext.getControl(field);
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente ||
+                spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.spedizioneAllAgente) {
                 _self.setContextCapIframe(executionContext);
                 formContext.getControl("WebResource_postalcode")?.setVisible(true);
                 control.setVisible(true);
@@ -614,7 +615,8 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente ||
+                spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.spedizioneAllAgente) {
                 control.getAttribute().setRequiredLevel("required");
             }
 
@@ -755,7 +757,6 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     _self.onChangeCustomer = async function (executionContext) {
         var formContext = executionContext.getFormContext();
 
-        console.log("on change customer");
         let customerLookup = formContext.getAttribute(_self.formModel.fields.customerid).getValue();
 
         if (customerLookup !== null) {
@@ -797,15 +798,25 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
         _self.handleSpedizioneRelatedFields(executionContext);
     };
     //---------------------------------------------------
-    _self.onChangeSpedizione = function (executionContext) {
+    _self.onChangeSpedizione = async function (executionContext) {
         var formContext = executionContext.getFormContext();
 
         let spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
-        if (spedizione == _self.formModel.fields.res_spedizione.Indirizzo) {
+        if (spedizione == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
             _self.onChangeCustomer(executionContext);
         }
+
+        if (spedizione == _self.formModel.fields.res_spedizioneValues.spedizioneAllAgente) {
+            _self.recuperaIndirizzoAgente(executionContext);
+        }
+
         _self.handleSpedizioneRelatedFields(executionContext);
     };
+    //---------------------------------------------------
+    _self.recuperaIndirizzoAgente = executionContext => {
+
+        //await della fetch per recuperare i dati dell'utente con agente = SI
+    }
     //---------------------------------------------------
     _self.getQuoteDetailsCount = gridContext => {
         return new Promise((resolve, reject) => {
