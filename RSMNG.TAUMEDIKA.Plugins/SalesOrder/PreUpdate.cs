@@ -44,15 +44,33 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             #region Valorizzo il campo Nome
             PluginRegion = "Valorizzo il campo Nome";
 
-            string nomeOrdine = string.Empty;
-            string nOrdine = string.Empty;
             string nomeCliente = string.Empty;
 
-            nOrdine = target.ContainsAttributeNotNull(salesorder.ordernumber) ? target.GetAttributeValue<string>(salesorder.ordernumber) : string.Empty;
-            //nome cliente lo prelevo dall'entity customer
+            string nOrdine = preImage.ContainsAttributeNotNull(salesorder.ordernumber) ? preImage.GetAttributeValue<string>(salesorder.ordernumber) : string.Empty;
 
-            //if(!string.IsNullOrEmpty(nOrdine)) { nomeOrdine = nOrdine + " - " + nomeCliente; }
+            //recupero il nome cliente dalla lookup polimorfica
+            EntityReference erCliente = postImage.GetAttributeValue<EntityReference>(salesorder.customerid) ?? null;
 
+            if (erCliente != null)
+            {
+                bool isAccount = erCliente.LogicalName == account.logicalName;
+
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"customer is account? {isAccount}");
+
+                //columnset relativo alla natura della lookup polimorfica
+                ColumnSet columnSetCliente = isAccount ? new ColumnSet(account.name) : new ColumnSet(contact.fullname);
+                Entity cliente = crmServiceProvider.Service.Retrieve(isAccount ? account.logicalName : contact.logicalName, erCliente.Id, columnSetCliente);
+
+                if (cliente != null)
+                {
+                    nomeCliente = cliente.ContainsAttributeNotNull(isAccount ? account.name : contact.fullname) ?
+                        cliente.GetAttributeValue<string>(isAccount ? account.name : contact.fullname) : string.Empty;
+                }
+            }
+
+            string nomeOrdine = !string.IsNullOrEmpty(nOrdine) ? nOrdine + " - " + nomeCliente : nomeCliente;
+
+            target[salesorder.name] = nomeOrdine;
             #endregion
 
             #region Valorizzazione automatica del campo Motivo Stato Precedente
@@ -108,10 +126,10 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                 {
                     Entity enSalesOrder = orderCollection.Entities[0];
 
-                    decimal importoSpesaAccessoria = enSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ?  enSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
-                   
+                    decimal importoSpesaAccessoria = enSalesOrder.ContainsAttributeNotNull(salesorder.freightamount) ? enSalesOrder.GetAttributeValue<Money>(salesorder.freightamount).Value : 0;
+
                     decimal aliquota = enSalesOrder.ContainsAliasNotNull($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") ? enSalesOrder.GetAliasedValue<decimal>($"{res_vatnumber.logicalName}.{res_vatnumber.res_rate}") : 1;
-                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * ((aliquota == 0 ? 1: aliquota) / 100);
+                    decimal aliquotaImportoSpesaAccessoria = importoSpesaAccessoria * ((aliquota == 0 ? 1 : aliquota) / 100);
 
                     totaleIva += aliquotaImportoSpesaAccessoria != 0 ? aliquotaImportoSpesaAccessoria : 0;
                     totaleImponibile = totaleProdotti + importoSpesaAccessoria;
@@ -142,11 +160,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             #endregion
 
             #region Data
-            
+
             EntityReference erQuote = target.Contains(salesorder.quoteid) ? target.GetAttributeValue<EntityReference>(salesorder.quoteid) : preImage.GetAttributeValue<EntityReference>(salesorder.quoteid);
             DateTime? date = target.Contains(salesorder.res_date) ? target.GetAttributeValue<DateTime?>(salesorder.res_date) : preImage.GetAttributeValue<DateTime?>(salesorder.res_date);
 
-            if(date == null && erQuote != null)
+            if (date == null && erQuote != null)
             {
 
                 var fetchData = new
@@ -164,13 +182,13 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
                                     </fetch>";
 
                 EntityCollection ecQuoteClose = crmServiceProvider.Service.RetrieveMultiple(new FetchExpression(fetchXml));
-                
+
                 if (ecQuoteClose.Entities.Count > 0 && ecQuoteClose.Entities[0].ContainsAttributeNotNull("actualend"))
-                {                    
+                {
                     target[salesorder.res_date] = ecQuoteClose.Entities[0].GetAttributeValue<DateTime>("actualend");
                 }
 
-                    
+
             }
             #endregion
         }

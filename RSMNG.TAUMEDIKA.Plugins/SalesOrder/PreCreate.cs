@@ -44,6 +44,39 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrder
             target.AddWithRemove(salesorder.res_recipient, destination);
             #endregion
 
+            #region Valorizzo il campo Nome
+            PluginRegion = "Valorizzo il campo Nome";
+
+            string nomeCliente = string.Empty;
+
+            if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"target n. ordine: {target.GetAttributeValue<string>(salesorder.ordernumber)}");
+            string nOrdine = target.ContainsAttributeNotNull(salesorder.ordernumber) ? target.GetAttributeValue<string>(salesorder.ordernumber) : string.Empty;
+
+            //recupero il nome cliente dalla lookup polimorfica
+            EntityReference erCliente = target.GetAttributeValue<EntityReference>(salesorder.customerid) ?? null;
+
+            if (erCliente != null)
+            {
+                bool isAccount = erCliente.LogicalName == account.logicalName;
+
+                if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"customer is account? {isAccount}");
+
+                //columnset relativo alla natura della lookup polimorfica
+                ColumnSet columnSetCliente = isAccount ? new ColumnSet(account.name) : new ColumnSet(contact.fullname);
+                Entity cliente = crmServiceProvider.Service.Retrieve(isAccount ? account.logicalName : contact.logicalName, erCliente.Id, columnSetCliente);
+
+                if (cliente != null)
+                {
+                    nomeCliente = cliente.ContainsAttributeNotNull(isAccount ? account.name : contact.fullname) ?
+                        cliente.GetAttributeValue<string>(isAccount ? account.name : contact.fullname) : string.Empty;
+                }
+            }
+
+            string nomeOrdine = !string.IsNullOrEmpty(nOrdine) ? nOrdine + " - " + nomeCliente : nomeCliente;
+
+            target[salesorder.name] = nomeOrdine;
+            #endregion
+
             #region Valorizzo il campo Nazione (testo)
             PluginRegion = "Valorizzo il campo Nazione (testo)";
             if (target.Contains(salesorder.res_countryid))
