@@ -241,7 +241,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             },
 
             /// Values for field Spedizione
-            spedizioneValues: {
+            res_spedizioneValues: {
                 Indirizzo: 100000001,
                 Spedizioneacaricodelcliente: 100000000,
                 Spedizioneallagente: 100000002
@@ -597,13 +597,13 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
             const control = formContext.getControl(field);
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Indirizzo) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.Indirizzo) {
                 _self.setContextCapIframe(executionContext);
                 formContext.getControl("WebResource_postalcode")?.setVisible(true);
                 control.setVisible(true);
             }
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Spedizioneacaricodelcliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.Spedizioneacaricodelcliente) {
                 formContext.getControl("WebResource_postalcode")?.setVisible(false);
                 control.setVisible(false);
                 control.getAttribute().setValue(null)
@@ -615,11 +615,11 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
 
             if (!control) throw new Error(`${field} field is missing`);
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Indirizzo) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.Indirizzo) {
                 control.getAttribute().setRequiredLevel("required");
             }
 
-            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.spedizioneValues.Spedizioneacaricodelcliente) {
+            if (spedizioneControl.getAttribute().getValue() == _self.formModel.fields.res_spedizioneValues.Spedizioneacaricodelcliente) {
                 control.getAttribute().setRequiredLevel("none");
             }
 
@@ -771,7 +771,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
-                formContext.getAttribute(_self.formModel.fields.spedizione).setValue(Boolean(_self.formModel.fields.spedizioneValues.Indirizzo));
+                formContext.getAttribute(_self.formModel.fields.spedizione).setValue(Boolean(_self.formModel.fields.res_spedizioneValues.Indirizzo));
 
                 if (address._res_countryid_value != null) {
                     let countryLookup = [{
