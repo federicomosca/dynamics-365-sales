@@ -145,7 +145,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
             ///Sconto per volume (Base)
             volumediscountamount_base: "volumediscountamount_base",
             ///Spedizione
-            willcall: "willcall",
+            res_spedizione: "res_spedizione",
 
             /// Values for field Prezzi
             ispriceoverriddenValues: {
@@ -257,9 +257,10 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTEDETAIL) == "undefined") {
             },
 
             /// Values for field Spedizione
-            willcallValues: {
-                Indirizzo: 0,
-                Ritiroacaricodelcliente: 1
+            res_spedizioneValues: {
+                Indirizzo: 100000001,
+                Spedizioneacaricodelcliente: 100000000,
+                Spedizioneallagente: 100000002
             }
         },
         tabs: {

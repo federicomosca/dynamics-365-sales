@@ -197,7 +197,7 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	///(Deprecated) Traversed Path
 	traversedpath: "traversedpath",
 	///Spedizione
-	willcall: "willcall",
+	res_spedizione: "res_spedizione",
 
 	/// Values for field Stato
 	statecodeValues: {
@@ -360,8 +360,9 @@ RSMNG.TAUMEDIKA.DataModel.salesorder = {
 	},
 
 	/// Values for field Spedizione
-	willcallValues: {
-		Ritirodacliente: 1,
-		Spedizionepressocliente: 0
+	res_spedizioneValues: {
+		Indirizzo: 100000001,
+		Spedizioneacaricodelcliente: 100000000,
+		Spedizioneallagente: 100000002
 	}
 };

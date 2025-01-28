@@ -129,7 +129,7 @@ RSMNG.TAUMEDIKA.DataModel.quotedetail = {
 	///Sconto per volume (Base)
 	volumediscountamount_base: "volumediscountamount_base",
 	///Spedizione
-	willcall: "willcall",
+	res_spedizione: "res_spedizione",
 
 	/// Values for field Prezzi
 	ispriceoverriddenValues: {
@@ -247,8 +247,9 @@ RSMNG.TAUMEDIKA.DataModel.quotedetail = {
 	},
 
 	/// Values for field Spedizione
-	willcallValues: {
-		Indirizzo: 0,
-		Ritiroacaricodelcliente: 1
+	res_spedizioneValues: {
+		Indirizzo: 100000001,
+		Spedizioneacaricodelcliente: 100000000,
+		Spedizioneallagente: 100000002
 	}
 };

@@ -94,7 +94,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDERDETAIL) == "undefined") {
             ///Sconto per volume (Base)
             volumediscountamount_base: "volumediscountamount_base",
             ///Spedizione
-            willcall: "willcall",
+            res_spedizione: "res_spedizione",
         },
         tabs: {
 

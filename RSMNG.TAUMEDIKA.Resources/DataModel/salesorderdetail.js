@@ -141,7 +141,7 @@ RSMNG.TAUMEDIKA.DataModel.salesorderdetail = {
 	///Sconto per volume (Base)
 	volumediscountamount_base: "volumediscountamount_base",
 	///Spedizione
-	willcall: "willcall",
+	res_spedizione: "res_spedizione",
 
 	/// Values for field Copiato
 	iscopiedValues: {
@@ -271,8 +271,9 @@ RSMNG.TAUMEDIKA.DataModel.salesorderdetail = {
 	},
 
 	/// Values for field Spedizione
-	willcallValues: {
-		Indirizzo: 0,
-		Ritiroacaricodelcliente: 1
+	res_spedizioneValues: {
+		Indirizzo: 100000001,
+		Spedizioneacaricodelcliente: 100000000,
+		Spedizioneallagente: 100000002
 	}
 };
