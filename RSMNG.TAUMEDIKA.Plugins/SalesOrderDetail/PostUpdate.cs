@@ -18,7 +18,7 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
             PluginMessage = "Update";
             PluginPrimaryEntityName = salesorderdetail.logicalName;
             PluginRegion = "";
-            PluginActiveTrace = false;
+            PluginActiveTrace = true;
         }
         public override void ExecutePlugin(CrmServiceProvider crmServiceProvider)
         {
@@ -119,20 +119,11 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                         ordineScontoTotale,            // S [salesorderdetail] sconto totale
                         ordineTotaleIva;               // S [salesorderdetail] totale iva + iva calcolata su importo spesa accessoria
 
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"scontoTotaleRigheOrdine {scontoTotaleRigheOrdine}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleImponibileRigheOrdine {totaleImponibileRigheOrdine}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"importoSpesaAccessoriaOrdine {importoSpesaAccessoriaOrdine}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"aliquotaOrdine {aliquotaOrdine}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"totaleIvaRigheOrdine {totaleIvaRigheOrdine}");
                     //--------------------------------------< CALCOLO DEI CAMPI >---------------------------------------//
 
                     ordineTotaleProdotti = totaleImponibileRigheOrdine;
                     ordineScontoTotale = scontoTotaleRigheOrdine;
                     ordineTotaleIva = totaleIvaRigheOrdine + (importoSpesaAccessoriaOrdine * (aliquotaOrdine / 100));
-
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineTotaleProdotti {ordineTotaleProdotti}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineScontoTotale {ordineScontoTotale}");
-                    if (PluginActiveTrace) crmServiceProvider.TracingService.Trace($"ordineTotaleIva {ordineTotaleIva}");
 
                     Entity enSalesOrder = new Entity(salesorder.logicalName, erSalesOrder.Id);
 
@@ -140,7 +131,6 @@ namespace RSMNG.TAUMEDIKA.Plugins.SalesOrderDetails
                     enSalesOrder[salesorder.totaldiscountamount] = ordineScontoTotale != 0 ? new Money(ordineScontoTotale) : null;
                     enSalesOrder[salesorder.totaltax] = ordineTotaleIva != 0 ? new Money(ordineTotaleIva) : null;
 
-                    crmServiceProvider.Service.Update(enSalesOrder);
                 }
             }
             #endregion
