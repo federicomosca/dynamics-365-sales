@@ -513,7 +513,7 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
     };
 
     //-----------Spedizione------------------------------
-    _self.onChangeSpedizione = function (executionContext, isEvent) {
+    _self.onChangeSpedizione = async function (executionContext, isEvent) {
         const formContext = executionContext.getFormContext();
 
         const spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
@@ -563,6 +563,56 @@ if (typeof (RSMNG.TAUMEDIKA.SALESORDER) == "undefined") {
             formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("none");
 
             formContext.getControl("WebResource_postalcode")?.setVisible(false);
+        }
+
+        if (spedizione == _self.formModel.fields.res_spedizioneValues.spedizioneAllAgente) {
+
+            formContext.getControl(_self.formModel.fields.shipto_line1).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_shippingreference).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_postalcode).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_city).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_location).setVisible(true);
+            formContext.getControl(_self.formModel.fields.shipto_stateorprovince).setVisible(true);
+            formContext.getControl(_self.formModel.fields.res_countryid).setVisible(true);
+            formContext.getControl("WebResource_postalcode")?.setVisible(true);
+            _self.setContextCapIframe(executionContext);
+
+            formContext.getAttribute(_self.formModel.fields.shipto_postalcode).setRequiredLevel("required");
+            formContext.getAttribute(_self.formModel.fields.shipto_city).setRequiredLevel("required");
+
+            //----- svuoto i campi se già valorizzati
+            const campiIndirizzo = [
+                _self.formModel.fields.shipto_line1,
+                _self.formModel.fields.shipto_postalcode,
+                _self.formModel.fields.shipto_city,
+                _self.formModel.fields.res_location,
+                _self.formModel.fields.shipto_stateorprovince
+            ];
+
+            campiIndirizzo.forEach(field => {
+                const attribute = formContext.getAttribute(field);
+                if (attribute && attribute.getValue()) attribute.setValue(null);
+            });
+            //-----//
+
+            //----- recupero l'owner del record e verifico se è agente
+            const ownerObj = formContext.getControl("header_ownerid").getAttribute().getValue();
+            const owner = await Xrm.WebApi.retrieveRecord("systemuser", ownerObj[0].id, "?$select=res_isagente, address1_line1, address1_postalcode, address1_city");
+            //-----//
+
+            if (owner.res_isagente) {
+                const indirizzoOfferta = {
+                    via: formContext.getAttribute("shipto_line1"),
+                    cap: formContext.getAttribute("shipto_postalcode"),
+                    città: formContext.getAttribute("shipto_city"),
+                }
+
+                indirizzoOfferta.via.setValue(owner.address1_line1);
+                indirizzoOfferta.cap.setValue(owner.address1_postalcode);
+                indirizzoOfferta.città.setValue(owner.address1_city);
+            }
+
+            _self.handleSpedizioneRelatedFields(executionContext);
         }
     };
     //-----------Indirizzo-Spedizione--------------------
