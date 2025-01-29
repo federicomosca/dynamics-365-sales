@@ -771,7 +771,7 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
                 formContext.getAttribute(_self.formModel.fields.shipto_city).setValue(address.res_city);
                 formContext.getAttribute(_self.formModel.fields.res_location).setValue(address.res_location);
                 formContext.getAttribute(_self.formModel.fields.shipto_stateorprovince).setValue(address.res_province);
-                formContext.getAttribute(_self.formModel.fields.spedizione).setValue(Boolean(_self.formModel.fields.res_spedizioneValues.ritiroDaCliente));
+                //formContext.getAttribute(_self.formModel.fields.res_spedizione).setValue(_self.formModel.fields.res_spedizioneValues.ritiroDaCliente);
 
                 if (address._res_countryid_value != null) {
                     let countryLookup = [{
@@ -799,24 +799,53 @@ if (typeof (RSMNG.TAUMEDIKA.QUOTE) == "undefined") {
     };
     //---------------------------------------------------
     _self.onChangeSpedizione = async function (executionContext) {
-        var formContext = executionContext.getFormContext();
+        const formContext = executionContext.getFormContext();
 
-        let spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
+        const spedizione = formContext.getAttribute(_self.formModel.fields.res_spedizione).getValue();
+
         if (spedizione == _self.formModel.fields.res_spedizioneValues.ritiroDaCliente) {
             _self.onChangeCustomer(executionContext);
         }
 
         if (spedizione == _self.formModel.fields.res_spedizioneValues.spedizioneAllAgente) {
-            _self.recuperaIndirizzoAgente(executionContext);
+
+            //----- svuoto i campi se già valorizzati
+            const campiIndirizzo = [
+                _self.formModel.fields.shipto_line1,
+                _self.formModel.fields.shipto_postalcode,
+                _self.formModel.fields.shipto_city,
+                _self.formModel.fields.res_location,
+                _self.formModel.fields.shipto_stateorprovince
+            ];
+
+            campiIndirizzo.forEach(field => {
+                const attribute = formContext.getAttribute(field);
+                if (attribute && attribute.getValue()) attribute.setValue(null);
+            });
+            //-----//
+
+            //----- recupero l'owner del record e verifico se è agente
+            const ownerObj = formContext.getControl("header_ownerid").getAttribute().getValue();
+            const owner = await Xrm.WebApi.retrieveRecord("systemuser", ownerObj[0].id, "?$select=res_isagente, address1_line1, address1_postalcode, address1_city");
+            //-----//
+
+            if (owner.res_isagente) {
+                const indirizzoOfferta = {
+                    via: formContext.getAttribute("shipto_line1"),
+                    cap: formContext.getAttribute("shipto_postalcode"),
+                    città: formContext.getAttribute("shipto_city"),
+                }
+
+                indirizzoOfferta.via.setValue(owner.address1_line1);
+                indirizzoOfferta.cap.setValue(owner.address1_postalcode);
+                indirizzoOfferta.città.setValue(owner.address1_city);
+            }
+
+            _self.handleSpedizioneRelatedFields(executionContext);
         }
 
         _self.handleSpedizioneRelatedFields(executionContext);
     };
-    //---------------------------------------------------
-    _self.recuperaIndirizzoAgente = executionContext => {
-
-        //await della fetch per recuperare i dati dell'utente con agente = SI
-    }
     //---------------------------------------------------
     _self.getQuoteDetailsCount = gridContext => {
         return new Promise((resolve, reject) => {
